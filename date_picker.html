@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: "Google Sans", Arial, sans-serif;
+      padding: 18px;
+      background: #fff;
+    }
+
+    h3 {
+      margin-top: 0;
+      font-size: 18px;
+      font-weight: 500;
+    }
+
+    input[type="date"] {
+      font-size: 16px;
+      padding: 6px;
+      width: 100%;
+      margin-bottom: 14px;
+    }
+
+    /* Layout */
+    .footer-wrap {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      margin-top: 12px;
+    }
+
+    .button-row {
+      display: flex;
+      flex-direction: row;
+      gap: 10px;
+    }
+
+    /* Buttons */
+    .btn-primary {
+      background:#1a73e8;
+      color:white;
+      border:none;
+      padding:6px 14px;
+      border-radius:6px;
+      cursor:pointer;
+      font-size:14px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      min-width:80px;
+      justify-content:center;
+    }
+
+    .btn-primary:disabled {
+      opacity:0.75;
+      cursor:default;
+    }
+
+    .btn-secondary {
+      font-size:14px;
+      background:none;
+      border:none;
+      cursor:pointer;
+      color:#555;
+      padding:6px 10px;
+      border-radius:6px;
+    }
+
+    /* Spinner */
+    .spinner {
+      width:16px;
+      height:16px;
+      border:2px solid rgba(255,255,255,0.4);
+      border-top-color:white;
+      border-radius:50%;
+      animation:spin 0.9s linear infinite;
+      display:none;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+
+<body>
+  <h3>בחר תאריך חדש עבור <?= name ?></h3>
+
+  <input type="date" id="newDate">
+
+  <!-- FOOTER WITH TWO SECTIONS -->
+  <div class="footer-wrap">
+
+    <!-- Right section: OK / Cancel -->
+    <div class="button-row">
+      <button id="saveBtn" class="btn-primary" onclick="submitDate()">
+        <div id="spinner" class="spinner"></div>
+        <span id="btnText">שמירה</span>
+      </button>
+
+      <button class="btn-secondary" onclick="google.script.host.close()">ביטול</button>
+    </div>
+
+    <!-- Left section: Tomorrow button -->
+    <div class="button-row">
+      <button id="tomorrowBtn" class="btn-primary" onclick="setTomorrow()">
+        <div id="spinnerTomorrow" class="spinner"></div>
+        <span id="btnTomorrowText">מחר</span>
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+    function activateLoading(buttonId, spinnerId, textId, loadingText) {
+      const btn = document.getElementById(buttonId);
+      const spinner = document.getElementById(spinnerId);
+      const text = document.getElementById(textId);
+
+      spinner.style.display = "inline-block";
+      text.textContent = loadingText;
+      btn.disabled = true;
+    }
+
+    function submitDate() {
+      const val = document.getElementById("newDate").value;
+      if (!val) return;
+
+      activateLoading("saveBtn", "spinner", "btnText", "שומר...");
+
+      google.script.run.withSuccessHandler(() => {
+        google.script.host.close();
+      }).updateFollowUpDate('<?= name ?>', val);
+    }
+
+    function setTomorrow() {
+      // Compute tomorrow
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      const iso = d.toISOString().split("T")[0];
+
+      activateLoading("tomorrowBtn", "spinnerTomorrow", "btnTomorrowText", "שומר...");
+
+      google.script.run.withSuccessHandler(() => {
+        google.script.host.close();
+      }).updateFollowUpDate('<?= name ?>', iso);
+    }
+  </script>
+</body>
+</html>

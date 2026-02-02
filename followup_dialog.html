@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: "Google Sans", Arial, sans-serif;
+      padding: 18px;
+      background: #fff;
+      color: #202124;
+    }
+
+    h3 {
+      margin-top: 0;
+      margin-bottom: 18px;
+      font-size: 20px;
+      font-weight: 500;
+      text-align: right;
+    }
+
+    /* Two-column grid: text on right, button on left */
+    .item {
+      display: grid;
+      grid-template-columns: 1fr 140px;   /* RIGHT text, LEFT button */
+      align-items: center;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid #e0e0e0;
+      min-height: 70px;
+    }
+
+    .text {
+      font-size: 15px;
+      line-height: 1.4;
+      text-align: right;
+    }
+
+    /* Left-side button */
+    .btn {
+      width: 120px;
+      height: 42px;
+      background: #1a73e8;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 500;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn:disabled {
+      opacity: 0.7;
+      cursor: default;
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+
+<body>
+
+  <h3>לקוחות ממתינים לטיפול</h3>
+
+  <? for (let p of pending) { ?>
+    <div class="item">
+
+      <!-- Right column: text -->
+      <div class="text">
+        <strong><?= p.cust ?></strong> – <?= p.date ?>
+        <? if (p.note) { ?>
+          <br><span><?= p.note ?></span>
+        <? } ?>
+      </div>
+
+      <!-- Left column: button -->
+      <button class="btn" onclick="pickDate('<?= p.cust ?>', this)">
+        <div class="spinner"></div>
+        <span>בחר תאריך חדש</span>
+      </button>
+
+    </div>
+  <? } ?>
+
+  <script>
+    function pickDate(name, button) {
+      const spinner = button.querySelector('.spinner');
+      const label   = button.querySelector('span');
+
+      spinner.style.display = "inline-block";
+      label.textContent = "טוען...";
+      button.disabled = true;
+
+      google.script.run
+        .withSuccessHandler(() => google.script.host.close())
+        .showDatePickerDialog(name);
+    }
+  </script>
+
+</body>
+</html>

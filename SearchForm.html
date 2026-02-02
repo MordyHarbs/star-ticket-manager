@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: 'Google Sans', Arial, sans-serif;
+      background-color: #f8f9fa;
+      color: #202124;
+      padding: 20px;
+      margin: 0;
+      box-sizing: border-box;
+    }
+
+    h3 {
+      text-align: center;
+      margin-top: 0;
+      color: #1a73e8;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+      position: relative; /* Context for absolute dropdown */
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+      font-size: 13px;
+      color: #5f6368;
+    }
+
+    /* The input container looking like a box */
+    .multi-select-container {
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      background: #fff;
+      min-height: 38px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      padding: 2px 6px;
+      cursor: text;
+      transition: border 0.2s;
+    }
+
+    .multi-select-container:focus-within {
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 1px #1a73e8;
+    }
+
+    /* Selected Item "Pill" */
+    .pill {
+      background-color: #e8f0fe;
+      color: #1a73e8;
+      border: 1px solid #d2e3fc;
+      border-radius: 16px;
+      padding: 2px 8px;
+      margin: 2px;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      user-select: none;
+    }
+
+    .pill .remove {
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+      line-height: 1;
+      color: #1967d2;
+    }
+    
+    .pill .remove:hover {
+      color: #0d47a1;
+    }
+
+    /* The actual input field inside the container */
+    .search-input {
+      border: none;
+      outline: none;
+      flex: 1;
+      min-width: 60px;
+      padding: 6px;
+      font-size: 14px;
+      color: #3c4043;
+      background: transparent;
+    }
+
+    /* Dropdown list styling */
+    .dropdown-list {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: white;
+      border: 1px solid #dadce0;
+      border-top: none;
+      border-radius: 0 0 4px 4px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      max-height: 200px;
+      overflow-y: auto;
+      display: none; /* Hidden by default */
+    }
+
+    .dropdown-list.show {
+      display: block;
+    }
+
+    .dropdown-item {
+      padding: 8px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      border-bottom: 1px solid #f1f3f4;
+    }
+
+    .dropdown-item:hover {
+      background-color: #f1f3f4;
+    }
+
+    .dropdown-item.selected {
+      background-color: #e8f0fe;
+      color: #1a73e8;
+    }
+
+    /* Specific field styles */
+    textarea.notes-field {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      padding: 10px;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 60px;
+    }
+    
+    textarea.notes-field:focus {
+      outline: none;
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 1px #1a73e8;
+    }
+
+    /* Style specifically for the Notes placeholder to match other inputs */
+    textarea.notes-field::placeholder {
+      font-size: 14px;        
+      color: #9aa0a6;         
+      font-family: inherit;   
+      font-weight: 400;
+    }
+
+    /* Footer buttons */
+    .footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+      padding-top: 10px;
+      border-top: 1px solid #dadce0;
+    }
+
+    button {
+      padding: 8px 20px;
+      border-radius: 4px;
+      font-size: 14px;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .btn-submit {
+      background-color: #1a73e8;
+      color: white;
+    }
+    .btn-submit:hover {
+      background-color: #1558b0;
+    }
+    .btn-cancel {
+      background-color: white;
+      color: #5f6368;
+      border: 1px solid #dadce0;
+    }
+    .btn-cancel:hover {
+      background-color: #f1f3f4;
+    }
+    
+    /* Loading overlay */
+    #loading {
+      position: fixed; top:0; left:0; width:100%; height:100%;
+      background: rgba(255,255,255,0.8);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 2000; font-size: 1.2em; color: #1a73e8;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loading">טוען נתונים...</div>
+
+  <h3>חיפוש והזנת נתונים</h3>
+
+  <div class="form-group" id="group-clientName">
+    <label>שם לקוח </label>
+    <div class="multi-select-container" id="container-clientName">
+      <input type="text" class="search-input" placeholder="בחר לקוחות..." autocomplete="off">
+    </div>
+    <div class="dropdown-list" id="list-clientName"></div>
+  </div>
+
+  <div class="form-group" id="group-debtType">
+    <label>סוג חוב</label>
+    <div class="multi-select-container" id="container-debtType">
+      <input type="text" class="search-input" placeholder="בחר סוג חוב..." autocomplete="off">
+    </div>
+    <div class="dropdown-list" id="list-debtType"></div>
+  </div>
+
+  <div class="form-group" id="group-carNumber">
+    <label>מספר רכב</label>
+    <div class="multi-select-container" id="container-carNumber">
+      <input type="text" class="search-input" placeholder="בחר רכב..." autocomplete="off">
+    </div>
+    <div class="dropdown-list" id="list-carNumber"></div>
+  </div>
+
+  <div class="form-group" id="group-carModel">
+    <label>דגם רכב</label>
+    <div class="multi-select-container" id="container-carModel">
+      <input type="text" class="search-input" placeholder="בחר דגם..." autocomplete="off">
+    </div>
+    <div class="dropdown-list" id="list-carModel"></div>
+  </div>
+
+  <div class="form-group" id="group-entrySection">
+    <label>מקטע כניסה / נסיעה</label>
+    <div class="multi-select-container" id="container-entrySection">
+      <input type="text" class="search-input" placeholder="בחר מקטע..." autocomplete="off">
+    </div>
+    <div class="dropdown-list" id="list-entrySection"></div>
+  </div>
+
+  <div class="form-group" id="group-exitSection">
+    <label>מקטע יציאה / גוף נותן דוח</label>
+    <div class="multi-select-container" id="container-exitSection">
+      <input type="text" class="search-input" placeholder="בחר מקטע..." autocomplete="off">
+    </div>
+    <div class="dropdown-list" id="list-exitSection"></div>
+  </div>
+
+  <div class="form-group" id="group-reportNumber">
+    <label>מספר דוח</label>
+    <div class="multi-select-container" id="container-reportNumber">
+      <input type="text" class="search-input" placeholder="חפש מספר דוח..." autocomplete="off">
+    </div>
+    <div class="dropdown-list" id="list-reportNumber"></div>
+  </div>
+
+  <div class="form-group" id="group-status">
+    <label>סטטוס טיפול</label>
+    <div class="multi-select-container" id="container-status">
+      <input type="text" class="search-input" placeholder="בחר סטטוס..." autocomplete="off">
+    </div>
+    <div class="dropdown-list" id="list-status"></div>
+  </div>
+  
+  <div class="form-group">
+    <label>
+      הערות 
+      <span style="font-weight:normal; color:#9aa0a6; font-size:11px; margin-right:4px;">
+        (להפרדה בין ערכים השתמש בפסיק)
+      </span>
+    </label>
+    <textarea id="input-notes" class="notes-field" placeholder="לדוגמא: סיכום מחיר 1..."></textarea>
+  </div> 
+
+  <div class="form-group" id="group-paidStatus">
+    <label>גם חובות ששולמו?</label>
+    <div class="multi-select-container" id="container-paidStatus">
+      <input type="text" class="search-input" placeholder="בחר..." autocomplete="off" readonly>
+    </div>
+    <div class="dropdown-list" id="list-paidStatus"></div>
+  </div>
+
+  <div class="footer">
+    <button class="btn-cancel" onclick="google.script.host.close()">בטל</button>
+    <button class="btn-submit" onclick="submitForm()">עדכן בגיליון</button>
+  </div>
+
+  <script>
+    // State management for all fields
+    const formState = {
+      clientName: [],
+      debtType: [],
+      carNumber: [],
+      carModel: [],
+      entrySection: [],
+      exitSection: [],
+      reportNumber: [],
+      status: [],
+      paidStatus: [] 
+    };
+
+    // Initialize
+    window.onload = function() {
+      google.script.run
+        .withSuccessHandler(initForms)
+        .withFailureHandler(err => alert("Error: " + err))
+        .getSearchFormData();
+    };
+
+    function initForms(data) {
+      document.getElementById('loading').style.display = 'none';
+
+      // Setup Multi-Select Fields
+      setupMultiSelect('clientName', data.names);
+      setupMultiSelect('debtType', data.debtTypes);
+      setupMultiSelect('carNumber', data.carNumbers);
+      setupMultiSelect('carModel', data.carModels);
+      setupMultiSelect('entrySection', data.entrySections);
+      setupMultiSelect('exitSection', data.exitSections);
+      setupMultiSelect('reportNumber', data.reportNumbers);
+      setupMultiSelect('status', data.statuses);
+      
+      // Setup Single Select Field (Paid Status)
+      setupMultiSelect('paidStatus', ['כולל שולם', 'לא שולם'], true);
+
+      // *** Set Default Value to "כולל שולם" ***
+      formState.paidStatus = ['כולל שולם'];
+      renderPills('paidStatus', true);
+    }
+
+    /**
+     * Fixed function to handle both Search and Read-only Select fields
+     */
+    function setupMultiSelect(key, options, isSingle = false) {
+      const container = document.getElementById(`container-${key}`);
+      const input = container.querySelector('.search-input');
+      const list = document.getElementById(`list-${key}`);
+      const isReadonly = input.hasAttribute('readonly');
+
+      // Helper to draw the dropdown items
+      const renderList = (filterText = '') => {
+        list.innerHTML = '';
+        
+        // If readonly, IGNORE filter text and show everything. 
+        // Otherwise, filter by typing.
+        let filtered = options;
+        if (!isReadonly) {
+           const lowerFilter = filterText.toLowerCase();
+           filtered = options.filter(opt => String(opt).toLowerCase().includes(lowerFilter));
+        }
+
+        if (filtered.length === 0) {
+          const div = document.createElement('div');
+          div.className = 'dropdown-item';
+          div.textContent = 'אין תוצאות';
+          div.style.color = '#999';
+          list.appendChild(div);
+          return;
+        }
+
+        filtered.forEach(opt => {
+          const isSelected = formState[key].includes(opt);
+          
+          const item = document.createElement('div');
+          item.className = `dropdown-item ${isSelected ? 'selected' : ''}`;
+          item.textContent = opt;
+          
+          // Item Click Handler
+          item.onclick = (e) => {
+            e.stopPropagation(); // Stop bubbling
+            selectItem(key, opt, isSingle);
+            
+            // Interaction logic
+            if (!isReadonly) {
+                input.value = ''; 
+                input.focus();
+                // Keep list open for multi-select search, close for single
+                if(isSingle) list.classList.remove('show');
+                else renderList(''); 
+            } else {
+                // For readonly, always close after selection
+                list.classList.remove('show');
+            }
+          };
+          list.appendChild(item);
+        });
+      };
+
+      // Logic to Open/Toggle the list
+      const toggleList = (forceOpen = false) => {
+        const isOpen = list.classList.contains('show');
+        
+        // Close all other lists first
+        document.querySelectorAll('.dropdown-list').forEach(el => {
+          if (el !== list) el.classList.remove('show');
+        });
+
+        if (forceOpen || !isOpen) {
+          renderList(input.value); 
+          list.classList.add('show');
+        } else {
+          list.classList.remove('show');
+        }
+      };
+
+      // --- EVENT LISTENERS ---
+
+      // 1. Container Click: The main trigger
+      container.addEventListener('click', (e) => {
+        // If user clicked the "remove pill" X, do nothing here
+        if (e.target.classList.contains('remove')) return;
+        
+        // Prevent immediate closing by document listener
+        e.stopPropagation();
+
+        if (isReadonly) {
+           // For Readonly: Toggle On/Off
+           toggleList(); 
+        } else {
+           // For Search: Always Open and Focus
+           input.focus();
+           toggleList(true);
+        }
+      });
+
+      // 2. Input Typing (Only for search fields)
+      if (!isReadonly) {
+        input.addEventListener('input', (e) => {
+           if (!list.classList.contains('show')) list.classList.add('show');
+           renderList(e.target.value);
+        });
+        
+        // Open on focus for search fields (tabbing navigation)
+        input.addEventListener('focus', () => toggleList(true));
+      }
+
+      // 3. Close when clicking outside (Global listener)
+      document.addEventListener('click', (e) => {
+        if (!container.contains(e.target)) {
+          list.classList.remove('show');
+        }
+      });
+    }
+
+    function selectItem(key, value, isSingle) {
+      if (isSingle) {
+        formState[key] = [value];
+      } else {
+        // Toggle logic
+        if (formState[key].includes(value)) {
+           formState[key] = formState[key].filter(v => v !== value);
+        } else {
+           formState[key].push(value);
+        }
+      }
+      renderPills(key, isSingle);
+    }
+
+    function removePill(key, value) {
+      formState[key] = formState[key].filter(v => v !== value);
+      renderPills(key);
+    }
+
+    function renderPills(key, isSingle) {
+      const container = document.getElementById(`container-${key}`);
+      const input = container.querySelector('.search-input');
+      
+      // Remove existing pills
+      container.querySelectorAll('.pill').forEach(el => el.remove());
+
+      formState[key].forEach(val => {
+        const pill = document.createElement('div');
+        pill.className = 'pill';
+        pill.innerHTML = `
+          <span>${val}</span>
+          <span class="remove" onclick="removePill('${key}', '${val}')">&times;</span>
+        `;
+        container.insertBefore(pill, input);
+      });
+      
+      // Adjust placeholder
+      if (formState[key].length > 0) {
+        input.placeholder = '';
+      } else {
+        if(key === 'clientName') input.placeholder = 'בחר לקוחות...';
+        else input.placeholder = 'בחר...'; 
+      }
+    }
+
+    function submitForm() {
+      const btn = document.querySelector('.btn-submit');
+      btn.textContent = 'שומר...';
+      btn.disabled = true;
+
+      const payload = {
+        clientName: formState.clientName,
+        debtType: formState.debtType,
+        carNumber: formState.carNumber,
+        carModel: formState.carModel,
+        entrySection: formState.entrySection,
+        exitSection: formState.exitSection,
+        reportNumber: formState.reportNumber,
+        status: formState.status,
+        paidStatus: formState.paidStatus[0] || '', 
+        notes: document.getElementById('input-notes').value
+      };
+
+      google.script.run
+        .withSuccessHandler(() => {
+          google.script.host.close();
+        })
+        .withFailureHandler(err => {
+          alert('Error: ' + err);
+          btn.textContent = 'עדכן בגיליון';
+          btn.disabled = false;
+        })
+        .processSearchForm(payload);
+    }
+  </script>
+</body>
+</html>

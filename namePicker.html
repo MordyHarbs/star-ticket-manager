@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html dir="rtl">
+  <head>
+    <base target="_top">
+
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        font-family: "Google Sans", Arial, sans-serif;
+        background: #fafafa;
+        color: #202124;
+      }
+
+      h3 {
+        margin-top: 0;
+        margin-bottom: 16px;
+        font-size: 20px;
+        font-weight: 500;
+      }
+
+      #searchBox, #nameSelect {
+        width: 100%;
+        box-sizing: border-box;
+        font-size: 15px;
+        padding: 8px 10px;
+        border: 1px solid #dadce0;
+        border-radius: 8px;
+        background: #fff;
+      }
+
+      #searchBox:focus, #nameSelect:focus {
+        outline: none;
+        border-color: #1a73e8;
+        box-shadow: 0 0 0 1px #1a73e8;
+      }
+
+      #nameSelect {
+        margin-top: 10px;
+        height: 160px;
+      }
+
+      .selected-box {
+        margin-top: 12px;
+        padding: 10px;
+        background: #ffffff;
+        border: 1px solid #dadce0;
+        border-radius: 8px;
+      }
+
+      .selected-pill {
+        display: inline-flex;
+        align-items: center;
+        background: #e8f0fe;
+        color: #1a73e8;
+        padding: 4px 12px 4px 8px;
+        border-radius: 20px;
+        margin: 4px 4px 0 0;
+        font-size: 13px;
+        border: 1px solid #c6dafc;
+        gap: 6px;
+      }
+
+      .pill-x {
+        width: 16px;
+        height: 16px;
+        font-size: 12px;
+        line-height: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #d2e3fc;
+        color: #1a73e8;
+        border-radius: 50%;
+        cursor: pointer;
+      }
+      .pill-x:hover {
+        background: #c2d7fc;
+        color: #1558b0;
+      }
+
+      .footer {
+        margin-top: 20px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+
+      button {
+        min-width: 70px;
+        padding: 8px 18px;
+        font-size: 14px;
+        border-radius: 6px;
+        cursor: pointer;
+        border: none;
+        transition: background 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .btn-cancel {
+        background: #f1f3f4;
+        color: #3c4043;
+      }
+      .btn-cancel:hover {
+        background: #e9eaeb;
+      }
+
+      .btn-ok {
+        background: #1a73e8;
+        color: white;
+      }
+      .btn-ok:hover {
+        background: #1558b0;
+      }
+    </style>
+
+    <script>
+      let allClients = [];
+      let selectedNames = [];
+      const defaultName = "<?= defaultName ?>";  // but we won't auto-select it
+
+      function onLoad() {
+        google.script.run.withSuccessHandler(clients => {
+          allClients = clients;
+          const select = document.getElementById("nameSelect");
+
+          // Fill dropdown
+          clients.forEach(name => {
+            const opt = document.createElement("option");
+            opt.value = name;
+            opt.textContent = name;
+            select.appendChild(opt);
+          });
+
+          // *** DO NOT auto-select defaultName ***
+          // (We simply ignore defaultName completely)
+
+          document.getElementById("searchBox").focus();
+
+          refreshSelectVisual();
+          updateSelectedBox();
+        }).getAllClients();
+      }
+
+      function addName(name) {
+        if (!selectedNames.includes(name)) {
+          selectedNames.push(name);
+          refreshSelectVisual();
+          updateSelectedBox();
+        }
+      }
+
+      function removeName(name) {
+        selectedNames = selectedNames.filter(n => n !== name);
+        refreshSelectVisual();
+        updateSelectedBox();
+      }
+
+      function refreshSelectVisual() {
+        const select = document.getElementById("nameSelect");
+
+        // Clear selected states
+        for (const opt of select.options) {
+          opt.selected = false;
+        }
+
+        // Re-apply highlighted selected names
+        selectedNames.forEach(name => {
+          for (const opt of select.options) {
+            if (opt.value === name) opt.selected = true;
+          }
+        });
+      }
+
+      function updateSelectedBox() {
+        const list = document.getElementById("selectedList");
+        list.innerHTML = "";
+
+        selectedNames.forEach(name => {
+          const pill = document.createElement("div");
+          pill.className = "selected-pill";
+
+          const x = document.createElement("span");
+          x.className = "pill-x";
+          x.textContent = "×";
+          x.onclick = () => removeName(name);
+
+          pill.appendChild(x);
+          pill.appendChild(document.createTextNode(name));
+
+          list.appendChild(pill);
+        });
+      }
+
+      function submit() {
+  // Start the server call
+  google.script.run.runMarkAllForName(selectedNames);
+
+  // Close the dialog after the call is safely queued
+  setTimeout(() => {
+    google.script.host.close();
+  }, 250);
+}
+
+      function cancel() {
+        google.script.host.close();
+      }
+
+      function filterNames() {
+        const input = document.getElementById("searchBox").value.toLowerCase();
+        const select = document.getElementById("nameSelect");
+        select.innerHTML = "";
+
+        allClients
+          .filter(n => n.toLowerCase().includes(input))
+          .forEach(n => {
+            const opt = document.createElement("option");
+            opt.value = n;
+            opt.textContent = n;
+            select.appendChild(opt);
+          });
+
+        refreshSelectVisual();
+      }
+
+      function handleDoubleClick(event) {
+        const name = event.target.value;
+        if (name) addName(name);
+      }
+    </script>
+
+  </head>
+
+  <body onload="onLoad()">
+    <h3>בחר לקוח</h3>
+
+    <input
+      type="text"
+      id="searchBox"
+      placeholder="הקלד כדי לחפש..."
+      oninput="filterNames()"
+    >
+
+    <select id="nameSelect" size="6" multiple ondblclick="handleDoubleClick(event)">
+    </select>
+
+    <div id="selectedBox" class="selected-box">
+      <strong>נבחרו:</strong>
+      <div id="selectedList"></div>
+    </div>
+
+    <div class="footer">
+      <button class="btn-cancel" onclick="cancel()">בטל</button>
+      <button class="btn-ok" onclick="submit()">אישור</button>
+    </div>
+  </body>
+</html>

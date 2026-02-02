@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html dir="rtl">
+  <head>
+    <base target="_top">
+    <style>
+      table {
+        border: 1px solid black;
+        border-collapse: collapse;
+        width: 750px;
+        direction: rtl;
+      }
+      th, td {
+        border: 1px solid black;
+        padding: 4px;
+        word-break: break-word;
+        max-width: 200px;
+        text-align: right;
+      }
+      th {
+        font-weight: bold;
+        background-color: #f2f2f2;
+      }
+      tr:nth-child(even):not(:first-child) {
+        background-color: #f9f9f9;
+      }
+      a {
+        color: blue;
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <h3>Sources Table</h3>
+    <div id="tableContainer">טוען...</div>
+
+    <script>
+      google.script.run.withSuccessHandler(function(data) {
+        let html = '<table>';
+
+        // If first row is headers
+        if (data.length > 0) {
+          html += '<tr>' + data[0].map(cell => `<th>${cell}</th>`).join('') + '</tr>';
+        }
+
+        // Render data rows
+        for (let i = 1; i < data.length; i++) {
+          html += '<tr>' + data[i].map(cell => {
+            if (typeof cell === 'object' && cell.url) {
+              return `<td><a href="${cell.url}" target="_blank">${cell.text}</a></td>`;
+            }
+            return `<td>${cell}</td>`;
+          }).join('') + '</tr>';
+        }
+
+        html += '</table>';
+        document.getElementById('tableContainer').innerHTML = html;
+      }).getSourcesTable();
+    </script>
+  </body>
+</html>

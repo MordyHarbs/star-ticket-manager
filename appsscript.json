@@ -1,0 +1,49 @@
+{
+  "timeZone": "Asia/Hebron",
+  "dependencies": {
+    "enabledAdvancedServices": [{
+      "userSymbol": "Drive",
+      "serviceId": "drive",
+      "version": "v3"
+    }],
+    "libraries": [{
+      "userSymbol": "CustomerSync",
+      "libraryId": "1WjUyxGrzEdvAxXOKcs1Y7dJFRQPs6DyYTwX4VYKueJ9ROizNfOGMBhRu",
+      "version": "0",
+      "developmentMode": true
+    }]
+  },
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
+  "sheets": {
+    "macros": [{
+      "menuName": "showSourcesDialog",
+      "functionName": "showSourcesDialog",
+      "defaultShortcut": "Ctrl+Alt+Shift+1"
+    }, {
+      "menuName": "showLocalUploadDialog",
+      "functionName": "showLocalUploadDialog",
+      "defaultShortcut": "Ctrl+Alt+Shift+2"
+    }, {
+      "menuName": "checkFollowUpReminders",
+      "functionName": "checkFollowUpReminders",
+      "defaultShortcut": "Ctrl+Alt+Shift+3"
+    }, {
+      "menuName": "updateDateMenu",
+      "functionName": "updateDateMenu",
+      "defaultShortcut": "Ctrl+Alt+Shift+5"
+    }, {
+      "menuName": "ShowAllFollowUpReminders",
+      "functionName": "ShowAllFollowUpReminders",
+      "defaultShortcut": "Ctrl+Alt+Shift+4"
+    }, {
+      "menuName": "markAllAsPaid",
+      "functionName": "markAllAsPaid",
+      "defaultShortcut": "Ctrl+Alt+Shift+2"
+    }, {
+      "menuName": "runTicketCheck",
+      "functionName": "runTicketCheck",
+      "defaultShortcut": "Ctrl+Alt+Shift+6"
+    }]
+  }
+}
