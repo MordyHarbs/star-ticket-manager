@@ -559,26 +559,15 @@
 
     // HARDCODED TO PREVENT CRASH
     var ABC_DAYS = 14;
-    /* 
-    try {
-       // We inject as a string literal. If it prints 14, we get '14'. 
-       // If undefined, we get 'undefined'.
-       var injected = '<?!= abcDays ?>';
-       console.log("Client: Injected raw value: ", injected);
-       if (injected && injected !== 'undefined' && injected !== 'null') {
-         var parsed = parseInt(injected, 10);
-         if (!isNaN(parsed)) {
-           ABC_DAYS = parsed;
-         }
-       }
-    } catch (err) {
-       console.error("Client: Error parsing abcDays", err);
-    }
-    */
+
+    // DEBUG ALERTS - TO CONFIRM EXECUTION
+    // window.alert("DEBUG: Script Loaded. ABC_DAYS: " + ABC_DAYS);
     console.log("Client: Final ABC_DAYS using: ", ABC_DAYS);
 
     window.onload = function () {
       console.log("Client: window.onload started");
+      // window.alert("DEBUG: window.onload started");
+
       try {
         // Generate Headers Dynamically
         const headersHTML = `<tr>
@@ -598,18 +587,22 @@
         document.querySelector('#table2 thead').innerHTML = headersHTML.replace(/THIS_ID/g, 'table2');
 
         console.log("Client: Calling google.script.run.getTicketData with abcDays:", ABC_DAYS);
+
         google.script.run
           .withSuccessHandler((data) => {
             console.log("Client: getTicketData success", data);
+            // window.alert("DEBUG: success handler called!");
             renderTables(data);
           })
           .withFailureHandler((err) => {
             console.error("Client: getTicketData failed", err);
+            window.alert("DEBUG: failure handler called! " + err.message);
             showError(err);
           })
           .getTicketData(ABC_DAYS);
       } catch (e) {
         console.error("Client: Exception in window.onload", e);
+        window.alert("DEBUG: Exception! " + e.message);
         showError(e);
       }
     };
