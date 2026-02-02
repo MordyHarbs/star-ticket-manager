@@ -556,8 +556,8 @@
     let currentEditRowIndex = null;
     let currentNoteElement = null;
     let isCollapsible = false;
-    // Inject abcDays value safely (wrapped in quotes for linter)
-    const ABC_DAYS = Number('<?!= abcDays ?>');
+    // Inject abcDays value safely
+    const ABC_DAYS = <?!= JSON.stringify(abcDays) ?>;
 
     window.onload = function () {
       // Generate Headers Dynamically

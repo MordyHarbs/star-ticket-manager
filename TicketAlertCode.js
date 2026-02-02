@@ -118,7 +118,7 @@ function getTicketData(abcDays) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('דוחות');
 
-  if (abcDays == null) abcDays = 0;
+  if (abcDays == null || isNaN(abcDays)) abcDays = 0;
   if (!sheet) throw new Error("Sheet 'דוחות' not found.");
 
   const lastRow = sheet.getLastRow();
