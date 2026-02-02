@@ -114,151 +114,156 @@ function getBodyDetails(bodyName) {
 
 
 
+
 function getTicketData(abcDays) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName('דוחות');
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName('דוחות');
 
-  if (abcDays == null || isNaN(abcDays)) abcDays = 0;
-  if (!sheet) throw new Error("Sheet 'דוחות' not found.");
+    if (abcDays == null || isNaN(abcDays)) abcDays = 0;
+    if (!sheet) throw new Error("Sheet 'דוחות' not found.");
 
-  const lastRow = sheet.getLastRow();
-  if (lastRow < 2) return { section1: [], section2: [] };
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 2) return { section1: [], section2: [] };
 
-  const range = sheet.getRange(2, 1, lastRow - 1, 23);
-  const data = range.getValues();
+    const range = sheet.getRange(2, 1, lastRow - 1, 23);
+    const data = range.getValues();
 
-  const todayMidnight = toMidnight(new Date());
+    const todayMidnight = toMidnight(new Date());
 
-  const activeStatuses = [
-    'הותחל טיפול',
-    'נשלח פעם אחת ממתין לתגובה',
-    'מוכן להסבה',
-    'נשלחה בקשה להסבה',
-    'ממתין לטיפול',
-    'שונות',
-    ''
-  ];
+    const activeStatuses = [
+      'הותחל טיפול',
+      'נשלח פעם אחת ממתין לתגובה',
+      'מוכן להסבה',
+      'נשלחה בקשה להסבה',
+      'ממתין לטיפול',
+      'שונות',
+      ''
+    ];
 
-  const excludedRequests = ['בקשה להפחתה', 'ערעור', 'בקשה להשפט'];
+    const excludedRequests = ['בקשה להפחתה', 'ערעור', 'בקשה להשפט'];
 
-  const section1 = []; // Stale / Status Check
-  const section2 = []; // Urgent / About to pass
+    const section1 = []; // Stale / Status Check
+    const section2 = []; // Urgent / About to pass
 
-  const fmt = (d) => {
-    if (d instanceof Date) return Utilities.formatDate(d, Session.getScriptTimeZone(), "dd/MM/yyyy");
-    return d ? String(d) : "";
-  };
-
-  const fmtTime = (d) => {
-    if (d instanceof Date) return Utilities.formatDate(d, Session.getScriptTimeZone(), "dd/MM/yyyy HH:mm");
-    return d ? String(d) : "";
-  };
-
-  const daysDiff = (d1, d2) => {
-    if (!d1 || !d2) return 0;
-    const diffTime = Math.abs(d2.getTime() - d1.getTime());
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  };
-
-  data.forEach((row, index) => {
-    const renterName = row[1];
-    const ticketOrigin = row[2];
-    const carModel = row[3];
-    const carNo = row[4];
-    const ticketNo = row[5];
-    const rawTicketDate = row[6];
-    const rawExpDate = row[8];
-    const ticketAmount = row[9];
-    let ticketStatus = row[13];
-    let requestNo = row[14];
-    const rawRequestDate = row[15];
-    const notes = row[16];
-    const rawLastChecked = row[22];
-
-    if (!ticketNo || String(ticketNo).trim() === "") return;
-    if (typeof ticketStatus === 'string') ticketStatus = ticketStatus.trim();
-
-    if (requestNo instanceof Date) {
-      requestNo = fmt(requestNo);
-    }
-
-    const requestDate = toMidnight(parseDate(rawRequestDate));
-    const lastChecked = toMidnight(parseDate(rawLastChecked));
-    const expDate = toMidnight(parseDate(rawExpDate));
-
-    const displayTicketDate = parseDate(rawTicketDate);
-    const displayExpDate = parseDate(rawExpDate);
-
-    const displayReqDate = fmt(parseDate(rawRequestDate) || rawRequestDate);
-
-    let reqDetails = "";
-    if (requestNo) {
-      reqDetails = String(requestNo);
-      if (displayReqDate && displayReqDate !== requestNo) {
-        reqDetails += ` (${displayReqDate})`;
-      }
-    } else if (displayReqDate) {
-      reqDetails = displayReqDate;
-    }
-
-    const realRowIndex = index + 2;
-
-    if (!activeStatuses.includes(ticketStatus)) return;
-    const reqStr = String(requestNo);
-    if (excludedRequests.some(r => reqStr.includes(r))) return;
-
-    const rowObj = {
-      rowIndex: realRowIndex,
-      renter: renterName,
-      origin: ticketOrigin,
-      car: `${carModel} (${carNo})`,
-      ticketNo: ticketNo,
-      offenseDate: fmtTime(displayTicketDate || rawTicketDate),
-      expDate: fmt(displayExpDate || rawExpDate),
-      amount: ticketAmount,
-      status: ticketStatus,
-      reqDetails: reqDetails,
-      notes: notes
+    const fmt = (d) => {
+      if (d instanceof Date) return Utilities.formatDate(d, Session.getScriptTimeZone(), "dd/MM/yyyy");
+      return d ? String(d) : "";
     };
 
-    let addedToSection = false;
+    const fmtTime = (d) => {
+      if (d instanceof Date) return Utilities.formatDate(d, Session.getScriptTimeZone(), "dd/MM/yyyy HH:mm");
+      return d ? String(d) : "";
+    };
 
-    // --- SECTION 2 (Stale Checks) LOGIC ---
-    let isRequestOld = false;
-    if (requestDate && requestDate < todayMidnight && daysDiff(requestDate, todayMidnight) > abcDays) {
-      isRequestOld = true;
-    }
+    const daysDiff = (d1, d2) => {
+      if (!d1 || !d2) return 0;
+      const diffTime = Math.abs(d2.getTime() - d1.getTime());
+      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    };
 
-    let isRecentlyChecked = false;
-    if (lastChecked) {
-      if (lastChecked <= todayMidnight) {
-        if (daysDiff(lastChecked, todayMidnight) <= abcDays) {
-          isRecentlyChecked = true;
+    data.forEach((row, index) => {
+      try {
+        const renterName = row[1];
+        const ticketOrigin = row[2];
+        const carModel = row[3];
+        const carNo = row[4];
+        const ticketNo = row[5];
+        const rawTicketDate = row[6];
+        const rawExpDate = row[8];
+        const ticketAmount = row[9];
+        let ticketStatus = row[13];
+        let requestNo = row[14];
+        const rawRequestDate = row[15];
+        const notes = row[16];
+        const rawLastChecked = row[22];
+
+        if (!ticketNo || String(ticketNo).trim() === "") return;
+        if (typeof ticketStatus === 'string') ticketStatus = ticketStatus.trim();
+
+        if (requestNo instanceof Date) {
+          requestNo = fmt(requestNo);
         }
-      }
-    }
 
-    if (isRequestOld && !isRecentlyChecked) {
-      section1.push(rowObj);
-      addedToSection = true;
-    }
+        const requestDate = toMidnight(parseDate(rawRequestDate));
+        const lastChecked = toMidnight(parseDate(rawLastChecked));
+        const expDate = toMidnight(parseDate(rawExpDate));
 
-    // --- SECTION 1 (Urgent / About to pass) LOGIC ---
-    // Condition: Not already in Section 2 AND Request Date is empty
-    if (!addedToSection && (!rawRequestDate || String(rawRequestDate).trim() === "")) {
+        const displayTicketDate = parseDate(rawTicketDate);
+        const displayExpDate = parseDate(rawExpDate);
 
-      // CHANGE IS HERE:
-      // We ONLY verify if expDate exists. If it is null/empty, we skip it.
-      if (expDate) {
-        const diff = (expDate.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24);
+        const displayReqDate = fmt(parseDate(rawRequestDate) || rawRequestDate);
 
-        // Show if 15 days or less remain (or negative if passed)
-        if (diff <= 15) {
-          section2.push(rowObj);
+        let reqDetails = "";
+        if (requestNo) {
+          reqDetails = String(requestNo);
+          if (displayReqDate && displayReqDate !== requestNo) {
+            reqDetails += ` (${displayReqDate})`;
+          }
+        } else if (displayReqDate) {
+          reqDetails = displayReqDate;
         }
-      }
-    }
-  });
 
-  return { section1: section1, section2: section2 };
+        const realRowIndex = index + 2;
+
+        if (!activeStatuses.includes(ticketStatus)) return;
+        const reqStr = String(requestNo);
+        if (excludedRequests.some(r => reqStr.includes(r))) return;
+
+        const rowObj = {
+          rowIndex: realRowIndex,
+          renter: renterName,
+          origin: ticketOrigin,
+          car: `${carModel} (${carNo})`,
+          ticketNo: ticketNo,
+          offenseDate: fmtTime(displayTicketDate || rawTicketDate),
+          expDate: fmt(displayExpDate || rawExpDate),
+          amount: ticketAmount,
+          status: ticketStatus,
+          reqDetails: reqDetails,
+          notes: notes
+        };
+
+        let addedToSection = false;
+
+        // --- SECTION 2 (Stale Checks) LOGIC ---
+        let isRequestOld = false;
+        if (requestDate && requestDate < todayMidnight && daysDiff(requestDate, todayMidnight) > abcDays) {
+          isRequestOld = true;
+        }
+
+        let isRecentlyChecked = false;
+        if (lastChecked) {
+          if (lastChecked <= todayMidnight) {
+            if (daysDiff(lastChecked, todayMidnight) <= abcDays) {
+              isRecentlyChecked = true;
+            }
+          }
+        }
+
+        if (isRequestOld && !isRecentlyChecked) {
+          section1.push(rowObj);
+          addedToSection = true;
+        }
+
+        // --- SECTION 1 (Urgent / About to pass) LOGIC ---
+        if (!addedToSection && (!rawRequestDate || String(rawRequestDate).trim() === "")) {
+          if (expDate) {
+            const diff = (expDate.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24);
+            if (diff <= 15) {
+              section2.push(rowObj);
+            }
+          }
+        }
+      } catch (rowError) {
+        console.error("Error processing row " + (index + 2) + ": " + rowError.message);
+      }
+    });
+
+    return { section1: section1, section2: section2 };
+
+  } catch (e) {
+    console.error("Critical Error in getTicketData: " + e.message);
+    throw e; // Re-throw to be caught by failureHandler
+  }
 }

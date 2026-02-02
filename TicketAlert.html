@@ -560,27 +560,40 @@
     const ABC_DAYS = <?!= JSON.stringify(abcDays) ?>;
 
     window.onload = function () {
-      // Generate Headers Dynamically
-      const headersHTML = `<tr>
-        <th><div class="th-inner"><div class="sort-header" onclick="sortTable(0, 'THIS_ID')">שם שוכר</div><input type="text" class="filter-input" onkeyup="filterTable(0, 'THIS_ID')" placeholder="..."></div></th>
-        <th><div class="th-inner"><div class="sort-header" onclick="sortTable(1, 'THIS_ID')">גוף הדוח</div><input type="text" class="filter-input" onkeyup="filterTable(1, 'THIS_ID')" placeholder="..."></div></th>
-        <th><div class="th-inner"><div class="sort-header" onclick="sortTable(2, 'THIS_ID')">פרטי הרכב</div><input type="text" class="filter-input" onkeyup="filterTable(2, 'THIS_ID')" placeholder="..."></div></th>
-        <th><div class="th-inner"><div class="sort-header" onclick="sortTable(3, 'THIS_ID')">פרטי עבירה</div><input type="text" class="filter-input" onkeyup="filterTable(3, 'THIS_ID')" placeholder="..."></div></th>
-        <th><div class="th-inner"><div class="sort-header" onclick="sortTable(4, 'THIS_ID')">תאריך קובע</div><input type="text" class="filter-input" onkeyup="filterTable(4, 'THIS_ID')" placeholder="..."></div></th>
-        <th><div class="th-inner"><div class="sort-header" onclick="sortTable(5, 'THIS_ID')">סכום הדוח</div><input type="text" class="filter-input" onkeyup="filterTable(5, 'THIS_ID')" placeholder="..."></div></th>
-        <th><div class="th-inner"><div class="sort-header" onclick="sortTable(6, 'THIS_ID')">סטטוס</div><input type="text" class="filter-input" onkeyup="filterTable(6, 'THIS_ID')" placeholder="..."></div></th>
-        <th><div class="th-inner"><div class="sort-header" onclick="sortTable(7, 'THIS_ID')">פרטי בקשה</div><input type="text" class="filter-input" onkeyup="filterTable(7, 'THIS_ID')" placeholder="..."></div></th>
-        <th><div class="th-inner"><div class="sort-header" onclick="sortTable(8, 'THIS_ID')">הערות</div><input type="text" class="filter-input" onkeyup="filterTable(8, 'THIS_ID')" placeholder="..."></div></th>
-        <th>פעולה</th>
-    </tr>`;
+      console.log("Client: window.onload started");
+      try {
+        // Generate Headers Dynamically
+        const headersHTML = `<tr>
+            <th><div class="th-inner"><div class="sort-header" onclick="sortTable(0, 'THIS_ID')">שם שוכר</div><input type="text" class="filter-input" onkeyup="filterTable(0, 'THIS_ID')" placeholder="..."></div></th>
+            <th><div class="th-inner"><div class="sort-header" onclick="sortTable(1, 'THIS_ID')">גוף הדוח</div><input type="text" class="filter-input" onkeyup="filterTable(1, 'THIS_ID')" placeholder="..."></div></th>
+            <th><div class="th-inner"><div class="sort-header" onclick="sortTable(2, 'THIS_ID')">פרטי הרכב</div><input type="text" class="filter-input" onkeyup="filterTable(2, 'THIS_ID')" placeholder="..."></div></th>
+            <th><div class="th-inner"><div class="sort-header" onclick="sortTable(3, 'THIS_ID')">פרטי עבירה</div><input type="text" class="filter-input" onkeyup="filterTable(3, 'THIS_ID')" placeholder="..."></div></th>
+            <th><div class="th-inner"><div class="sort-header" onclick="sortTable(4, 'THIS_ID')">תאריך קובע</div><input type="text" class="filter-input" onkeyup="filterTable(4, 'THIS_ID')" placeholder="..."></div></th>
+            <th><div class="th-inner"><div class="sort-header" onclick="sortTable(5, 'THIS_ID')">סכום הדוח</div><input type="text" class="filter-input" onkeyup="filterTable(5, 'THIS_ID')" placeholder="..."></div></th>
+            <th><div class="th-inner"><div class="sort-header" onclick="sortTable(6, 'THIS_ID')">סטטוס</div><input type="text" class="filter-input" onkeyup="filterTable(6, 'THIS_ID')" placeholder="..."></div></th>
+            <th><div class="th-inner"><div class="sort-header" onclick="sortTable(7, 'THIS_ID')">פרטי בקשה</div><input type="text" class="filter-input" onkeyup="filterTable(7, 'THIS_ID')" placeholder="..."></div></th>
+            <th><div class="th-inner"><div class="sort-header" onclick="sortTable(8, 'THIS_ID')">הערות</div><input type="text" class="filter-input" onkeyup="filterTable(8, 'THIS_ID')" placeholder="..."></div></th>
+            <th>פעולה</th>
+        </tr>`;
 
-      document.querySelector('#table1 thead').innerHTML = headersHTML.replace(/THIS_ID/g, 'table1');
-      document.querySelector('#table2 thead').innerHTML = headersHTML.replace(/THIS_ID/g, 'table2');
+        document.querySelector('#table1 thead').innerHTML = headersHTML.replace(/THIS_ID/g, 'table1');
+        document.querySelector('#table2 thead').innerHTML = headersHTML.replace(/THIS_ID/g, 'table2');
 
-      google.script.run
-        .withSuccessHandler(renderTables)
-        .withFailureHandler(showError)
-        .getTicketData(ABC_DAYS);
+        console.log("Client: Calling google.script.run.getTicketData with abcDays:", ABC_DAYS);
+        google.script.run
+          .withSuccessHandler((data) => {
+            console.log("Client: getTicketData success", data);
+            renderTables(data);
+          })
+          .withFailureHandler((err) => {
+            console.error("Client: getTicketData failed", err);
+            showError(err);
+          })
+          .getTicketData(ABC_DAYS);
+      } catch (e) {
+        console.error("Client: Exception in window.onload", e);
+        showError(e);
+      }
     };
 
     function renderTables(data) {
