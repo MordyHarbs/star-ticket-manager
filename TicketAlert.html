@@ -557,22 +557,24 @@
     let currentNoteElement = null;
     let isCollapsible = false;
 
-    // FAIL-SAFE INJECTION
-    var ABC_DAYS = 14; // Default fallback
+    // HARDCODED TO PREVENT CRASH
+    var ABC_DAYS = 14;
+    /* 
     try {
-      // We inject as a string literal. If it prints 14, we get '14'. 
-      // If undefined, we get 'undefined'.
-      var injected = '<?!= abcDays ?>';
-      console.log("Client: Injected raw value: ", injected);
-      if (injected && injected !== 'undefined' && injected !== 'null') {
-        var parsed = parseInt(injected, 10);
-        if (!isNaN(parsed)) {
-          ABC_DAYS = parsed;
-        }
-      }
+       // We inject as a string literal. If it prints 14, we get '14'. 
+       // If undefined, we get 'undefined'.
+       var injected = '<?!= abcDays ?>';
+       console.log("Client: Injected raw value: ", injected);
+       if (injected && injected !== 'undefined' && injected !== 'null') {
+         var parsed = parseInt(injected, 10);
+         if (!isNaN(parsed)) {
+           ABC_DAYS = parsed;
+         }
+       }
     } catch (err) {
-      console.error("Client: Error parsing abcDays", err);
+       console.error("Client: Error parsing abcDays", err);
     }
+    */
     console.log("Client: Final ABC_DAYS using: ", ABC_DAYS);
 
     window.onload = function () {
