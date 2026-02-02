@@ -548,6 +548,8 @@
     let currentEditRowIndex = null;
     let currentNoteElement = null;
     let isCollapsible = false;
+    // Inject abcDays value safely
+    const ABC_DAYS = <?!= JSON.stringify(abcDays) ?>;
 
     window.onload = function () {
       // Generate Headers Dynamically
@@ -570,7 +572,7 @@
       google.script.run
         .withSuccessHandler(renderTables)
         .withFailureHandler(showError)
-        .getTicketData(Number('<?!= abcDays ?>'));
+        .getTicketData(ABC_DAYS);
     };
 
     function renderTables(data) {
