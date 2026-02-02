@@ -8,7 +8,7 @@ function runTicketCheck() {
 
 function showTicketWarnings(abcDays) {
   const html = HtmlService.createTemplateFromFile('TicketAlert');
-  html.abcDays = abcDays; 
+  html.abcDays = abcDays;
   const ui = SpreadsheetApp.getUi();
   ui.showModalDialog(html.evaluate().setWidth(1400).setHeight(800), 'דוח סטטוס דוחות - התראות');
 }
@@ -43,7 +43,7 @@ function updateTicketNote(rowIndex, newNote) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('דוחות');
   // Column Q is the 17th column
-  sheet.getRange(rowIndex, 17).setValue(newNote); 
+  sheet.getRange(rowIndex, 17).setValue(newNote);
   return "Note Updated";
 }
 
@@ -51,25 +51,65 @@ function updateTicketNote(rowIndex, newNote) {
 function updateTransferStatus(rowIndex) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('דוחות');
-  
+
   // Column M is index 13
   const rangeM = sheet.getRange(rowIndex, 13);
   const valueM = rangeM.getValue();
-  
+
   // Column N is index 14 (Status)
   const rangeN = sheet.getRange(rowIndex, 14);
-  
+
   let newStatus = "";
-  
+
   // Check if M is exactly 0 (strict check depending on data type, usually 0 or "0")
   if (valueM == 0) {
     newStatus = "סיום טיפול הוסב";
   } else {
     newStatus = "אושרה הסבה";
   }
-  
+
   rangeN.setValue(newStatus);
   return newStatus;
+}
+
+function getBodyDetails(bodyName) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('רשימות');
+
+  if (!sheet) return { error: "Sheet 'רשימות' not found" };
+
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 3) return { error: "No data in lists sheet" };
+
+  // Headers are in Row 3. Data starts in Row 4.
+  // We need to fetch Columns G (7) to L (12).
+  // Number of rows to fetch = lastRow - 2.
+  // Number of columns = 6.
+  const range = sheet.getRange(3, 7, lastRow - 2, 6);
+  const data = range.getValues();
+
+  const headers = data[0]; // This is Row 3
+  const rows = data.slice(1); // This is Row 4+
+
+  const searchStr = String(bodyName).trim();
+
+  // Find the matching row (Index 0 is Column G - Body Name)
+  const foundRow = rows.find(r => String(r[0]).trim() === searchStr);
+
+  if (!foundRow) return null;
+
+  const result = {};
+  headers.forEach((header, index) => {
+    if (header && String(header).trim() !== "") {
+      let val = foundRow[index];
+      if (val instanceof Date) {
+        val = Utilities.formatDate(val, Session.getScriptTimeZone(), "dd/MM/yyyy");
+      }
+      result[header] = val;
+    }
+  });
+
+  return result;
 }
 
 
@@ -108,7 +148,7 @@ function getTicketData(abcDays) {
     if (d instanceof Date) return Utilities.formatDate(d, Session.getScriptTimeZone(), "dd/MM/yyyy");
     return d ? String(d) : "";
   };
-  
+
   const fmtTime = (d) => {
     if (d instanceof Date) return Utilities.formatDate(d, Session.getScriptTimeZone(), "dd/MM/yyyy HH:mm");
     return d ? String(d) : "";
@@ -121,19 +161,19 @@ function getTicketData(abcDays) {
   };
 
   data.forEach((row, index) => {
-    const renterName = row[1];       
-    const ticketOrigin = row[2];     
-    const carModel = row[3];         
-    const carNo = row[4];            
-    const ticketNo = row[5];         
-    const rawTicketDate = row[6];    
-    const rawExpDate = row[8];       
-    const ticketAmount = row[9];     
-    let ticketStatus = row[13];      
-    let requestNo = row[14];       
-    const rawRequestDate = row[15];  
-    const notes = row[16];           
-    const rawLastChecked = row[22];  
+    const renterName = row[1];
+    const ticketOrigin = row[2];
+    const carModel = row[3];
+    const carNo = row[4];
+    const ticketNo = row[5];
+    const rawTicketDate = row[6];
+    const rawExpDate = row[8];
+    const ticketAmount = row[9];
+    let ticketStatus = row[13];
+    let requestNo = row[14];
+    const rawRequestDate = row[15];
+    const notes = row[16];
+    const rawLastChecked = row[22];
 
     if (!ticketNo || String(ticketNo).trim() === "") return;
     if (typeof ticketStatus === 'string') ticketStatus = ticketStatus.trim();
@@ -148,14 +188,14 @@ function getTicketData(abcDays) {
 
     const displayTicketDate = parseDate(rawTicketDate);
     const displayExpDate = parseDate(rawExpDate);
-    
+
     const displayReqDate = fmt(parseDate(rawRequestDate) || rawRequestDate);
-    
+
     let reqDetails = "";
     if (requestNo) {
       reqDetails = String(requestNo);
       if (displayReqDate && displayReqDate !== requestNo) {
-         reqDetails += ` (${displayReqDate})`;
+        reqDetails += ` (${displayReqDate})`;
       }
     } else if (displayReqDate) {
       reqDetails = displayReqDate;
@@ -177,7 +217,7 @@ function getTicketData(abcDays) {
       expDate: fmt(displayExpDate || rawExpDate),
       amount: ticketAmount,
       status: ticketStatus,
-      reqDetails: reqDetails, 
+      reqDetails: reqDetails,
       notes: notes
     };
 
@@ -206,12 +246,12 @@ function getTicketData(abcDays) {
     // --- SECTION 1 (Urgent / About to pass) LOGIC ---
     // Condition: Not already in Section 2 AND Request Date is empty
     if (!addedToSection && (!rawRequestDate || String(rawRequestDate).trim() === "")) {
-      
+
       // CHANGE IS HERE:
       // We ONLY verify if expDate exists. If it is null/empty, we skip it.
       if (expDate) {
         const diff = (expDate.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24);
-        
+
         // Show if 15 days or less remain (or negative if passed)
         if (diff <= 15) {
           section2.push(rowObj);

@@ -544,12 +544,20 @@
 
 
 
+  <div id="infoModal" class="modal-overlay">
+    <div class="modal-content" style="width: 500px;">
+      <div class="modal-title" id="infoTitle">פרטי גוף דוח</div>
+      <div id="infoBody"></div>
+      <button class="btn-close" onclick="document.getElementById('infoModal').style.display='none'">סגור</button>
+    </div>
+  </div>
+
   <script>
     let currentEditRowIndex = null;
     let currentNoteElement = null;
     let isCollapsible = false;
-    // Inject abcDays value safely
-    const ABC_DAYS = <?!= JSON.stringify(abcDays) ?>;
+    // Inject abcDays value safely (wrapped in quotes for linter)
+    const ABC_DAYS = Number('<?!= abcDays ?>');
 
     window.onload = function () {
       // Generate Headers Dynamically
@@ -644,9 +652,17 @@
         tdName.textContent = item.renter || '';
         tr.appendChild(tdName);
 
-        // 2. Ticket Body (Plain Text)
+        // 2. Ticket Body (Clickable Link)
         const tdOrigin = document.createElement('td');
-        tdOrigin.textContent = item.origin || '';
+        if (item.origin) {
+          const link = document.createElement('span');
+          link.className = 'body-link';
+          link.textContent = item.origin;
+          link.onclick = function () { showBodyInfo(item.origin); };
+          tdOrigin.appendChild(link);
+        } else {
+          tdOrigin.textContent = '';
+        }
         tr.appendChild(tdOrigin);
 
         // 3. Car
@@ -712,6 +728,54 @@
     }
 
 
+
+    // --- INFO MODAL LOGIC ---
+    function showBodyInfo(bodyName) {
+      const modal = document.getElementById('infoModal');
+      const bodyDiv = document.getElementById('infoBody');
+      const titleDiv = document.getElementById('infoTitle');
+
+      titleDiv.textContent = bodyName;
+      bodyDiv.innerHTML = '<div class="modal-loading">טוען פרטים...</div>';
+      modal.style.display = 'flex';
+
+      google.script.run
+        .withSuccessHandler((data) => {
+          if (!data) {
+            bodyDiv.innerHTML = '<div style="color:red; padding:10px;">לא נמצא מידע ברשימות</div>';
+            return;
+          }
+          if (data.error) {
+            bodyDiv.innerHTML = `<div style="color:red; padding:10px;">${data.error}</div>`;
+            return;
+          }
+
+          let html = '';
+          for (const [key, value] of Object.entries(data)) {
+            // Skip the body name itself if it's the same as the title, or if value is empty
+            if (key === 'גוף' || String(value).trim() === '') continue;
+
+            let displayValue = value;
+            if (String(value).match(/^https?:\/\//) || String(value).includes('www.')) {
+              let url = String(value).startsWith('http') ? value : 'http://' + value;
+              displayValue = `<a href="${url}" target="_blank">לחץ למעבר לאתר</a>`;
+            } else if (String(value).includes('@')) {
+              displayValue = `<a href="mailto:${value}">${value}</a>`;
+            }
+
+            html += `
+                <div class="info-row">
+                    <div class="info-label">${key}:</div>
+                    <div class="info-value">${displayValue}</div>
+                </div>`;
+          }
+          bodyDiv.innerHTML = html || 'אין מידע נוסף';
+        })
+        .withFailureHandler((err) => {
+          bodyDiv.innerHTML = `<div style="color:red; padding:10px;">שגיאה: ${err.message}</div>`;
+        })
+        .getBodyDetails(bodyName);
+    }
 
     // --- EDIT NOTE LOGIC ---
     function openEditNote(rowIndex, currentText, domElement) {
