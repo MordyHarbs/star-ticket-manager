@@ -553,6 +553,14 @@
   </div>
 
   <script>
+    // SAFETY SCRIPT - Runs before main logic
+    window.onerror = function (message, source, lineno, colno, error) {
+      window.alert("CRITICAL ERROR: " + message + "\nLine: " + lineno);
+    };
+    window.alert("DEBUG: 1. Safety Script Loaded");
+  </script>
+
+  <script>
     let currentEditRowIndex = null;
     let currentNoteElement = null;
     let isCollapsible = false;
@@ -561,12 +569,12 @@
     var ABC_DAYS = 14;
 
     // DEBUG ALERTS - TO CONFIRM EXECUTION
-    window.alert("DEBUG: Script Loaded. ABC_DAYS: " + ABC_DAYS);
+    window.alert("DEBUG: 2. Main Script Start. ABC_DAYS: " + ABC_DAYS);
     console.log("Client: Final ABC_DAYS using: ", ABC_DAYS);
 
     window.onload = function () {
       console.log("Client: window.onload started");
-      window.alert("DEBUG: window.onload started");
+      window.alert("DEBUG: 3. window.onload running");
 
       try {
         // Generate Headers Dynamically
@@ -591,7 +599,6 @@
         google.script.run
           .withSuccessHandler((data) => {
             console.log("Client: getTicketData success", data);
-            // window.alert("DEBUG: success handler called!");
             renderTables(data);
           })
           .withFailureHandler((err) => {
@@ -676,8 +683,9 @@
         tdName.textContent = item.renter || '';
         tr.appendChild(tdName);
 
-        // 2. Ticket Body (Clickable Link)
+        // 2. Ticket Body (Clickable Link REVERTED FOR DEBUGGING)
         const tdOrigin = document.createElement('td');
+        /*
         if (item.origin) {
           const link = document.createElement('span');
           link.className = 'body-link';
@@ -687,6 +695,8 @@
         } else {
           tdOrigin.textContent = '';
         }
+        */
+        tdOrigin.textContent = item.origin || ''; // Reverted to simple text
         tr.appendChild(tdOrigin);
 
         // 3. Car
@@ -752,8 +762,8 @@
     }
 
 
-
-    // --- INFO MODAL LOGIC ---
+    /*
+    // --- INFO MODAL LOGIC - COMMENTED OUT FOR DEBUGGING ---
     function showBodyInfo(bodyName) {
       const modal = document.getElementById('infoModal');
       const bodyDiv = document.getElementById('infoBody');
@@ -800,6 +810,7 @@
         })
         .getBodyDetails(bodyName);
     }
+    */
 
     // --- EDIT NOTE LOGIC ---
     function openEditNote(rowIndex, currentText, domElement) {
