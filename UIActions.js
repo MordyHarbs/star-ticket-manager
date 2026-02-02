@@ -8,6 +8,7 @@ function runOnce_createOnOpenTrigger() {
 
 function onOpenWithUi(e) {
   buildCustomMenu();
+  runTicketCheck();
   // checkFollowUpReminders();
 }
 
@@ -38,20 +39,20 @@ function syncCustomerSheet() {
 }
 
 function checkFollowUpReminders() {
-  const ss    = SpreadsheetApp.getActive();
+  const ss = SpreadsheetApp.getActive();
   const sheet = ss.getSheetByName('follow_up_date');
   if (!sheet) return;
 
-  const rows  = sheet.getRange(1, 1, sheet.getLastRow(), 3).getValues(); // A:C
-  const today = new Date(); 
-  today.setHours(0,0,0,0);
+  const rows = sheet.getRange(1, 1, sheet.getLastRow(), 3).getValues(); // A:C
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   const sorted = rows
     .filter(([cust, d]) => cust && d instanceof Date)
     .sort((a, b) => a[1] - b[1]);
 
   const pending = sorted
-    .filter(([cust, d]) => d instanceof Date && d.setHours(0,0,0,0) <= today)
+    .filter(([cust, d]) => d instanceof Date && d.setHours(0, 0, 0, 0) <= today)
     .map(([cust, d, note]) => ({
       cust,
       date: Utilities.formatDate(d, Session.getScriptTimeZone(), 'dd/MM/yyyy'),
@@ -82,7 +83,7 @@ function include(filename) {
 function showSourcesDialog() {
   Logger.log('showSourcesDialog');
   const html = HtmlService.createHtmlOutputFromFile('SourcesDialog')
-                          .setWidth(900).setHeight(900);
+    .setWidth(900).setHeight(900);
   SpreadsheetApp.getUi().showModalDialog(html, 'Sources for Reports');
 }
 
@@ -100,17 +101,17 @@ function updateDateMenu() {
 
 // show all info from follow_up_date
 function ShowAllFollowUpReminders() {
-  const ss    = SpreadsheetApp.getActive();
+  const ss = SpreadsheetApp.getActive();
   const sheet = ss.getSheetByName('follow_up_date');
   if (!sheet) return;
 
-  const rows  = sheet.getRange(2, 1, sheet.getLastRow()-1, 3).getValues(); // A:C
+  const rows = sheet.getRange(2, 1, sheet.getLastRow() - 1, 3).getValues(); // A:C
 
   // Keep only rows with column A filled (customer name)
   const filtered = rows.filter(([cust, d, note]) =>
     cust && (d instanceof Date || (note && note.toString().trim() !== ''))
   );
-  
+
   // Sort: rows with dates first, sorted earliest → latest; then rows without dates
   const sorted = filtered.sort((a, b) => {
     const d1 = a[1] instanceof Date ? a[1].getTime() : Infinity;
@@ -133,7 +134,7 @@ function ShowAllFollowUpReminders() {
      <ul style="padding-right:16px; direction: rtl; text-align: right; list-style-position: inside;">
        ${pending.map(p => `<li><strong>${p.cust}</strong> – ${p.date}${p.note ? ` – ${p.note}` : ''}</li>`).join('')}
      </ul>`
-     )
+  )
     .setWidth(700)
     .setHeight(450);
 
@@ -148,7 +149,7 @@ function markAllAsPaid() {
   const ui = SpreadsheetApp.getUi();
   const response = ui.alert(
     "אישור פעולה",
-    "האם הנך בטוח שברצונך לסמן את הכל כשולם עבור:\n\n" + 
+    "האם הנך בטוח שברצונך לסמן את הכל כשולם עבור:\n\n" +
     "            ------ " + defaultName + " ------\n\n" +
     "ללקוח אחר לחץ 'לא'.",
     ui.ButtonSet.YES_NO_CANCEL
@@ -156,21 +157,21 @@ function markAllAsPaid() {
 
   if (response == ui.Button.NO) {
     const html = HtmlService.createTemplateFromFile("namePicker");
-  html.defaultName = defaultName;
-  const dialog = html.evaluate()
-    .setWidth(450)
-    .setHeight(420)
-    .setTitle("בחירת שם לסימון 'שולם'");
+    html.defaultName = defaultName;
+    const dialog = html.evaluate()
+      .setWidth(450)
+      .setHeight(420)
+      .setTitle("בחירת שם לסימון 'שולם'");
 
-  ss.show(dialog);
+    ss.show(dialog);
   }
-  else if (response == ui.Button.YES){
+  else if (response == ui.Button.YES) {
     runMarkAllForName(defaultName)
   }
-  else{
-    ui.alert("הפעולה בוטלה.");  
+  else {
+    ui.alert("הפעולה בוטלה.");
   }
-  
+
 }
 
 function runMarkAllForName(selectedName) {
@@ -203,12 +204,12 @@ function markAllForName(name, ss) {
   let sh = ss.getSheetByName('דוחות');
   let last = sh.getLastRow();
   if (last >= 2) {
-    const data = sh.getRange(2, 2, last - 1, 13).getValues(); 
+    const data = sh.getRange(2, 2, last - 1, 13).getValues();
     // columns B..N (13 columns)
     for (let i = 0; i < data.length; i++) {
       const rowName = normalizeHebrew(data[i][0]); // col B
-      const total   = Number(data[i][11]); // col M
-      const colN    = data[i][13 - 1]; // col N (index 12)
+      const total = Number(data[i][11]); // col M
+      const colN = data[i][13 - 1]; // col N (index 12)
       if (rowName === normName && total > 0) {
         const tr = i + 2;
         sh.getRange(tr, 12).setValue(true); // L = true
@@ -228,7 +229,7 @@ function markAllForName(name, ss) {
     // columns E..K (7 columns)
     for (let i = 0; i < data.length; i++) {
       const rowName = normalizeHebrew(data[i][0]); // E
-      const total   = Number(data[i][6]); // K (index 6 in this slice)
+      const total = Number(data[i][6]); // K (index 6 in this slice)
       if (rowName === normName && total > 0) {
         const tr = i + 2;
         sh.getRange(tr, 12).setValue('שולם'); // L
@@ -244,7 +245,7 @@ function markAllForName(name, ss) {
     // columns E..I (5 columns)
     for (let i = 0; i < data.length; i++) {
       const rowName = normalizeHebrew(data[i][0]); // E
-      const total   = Number(data[i][4]); // I (index 4)
+      const total = Number(data[i][4]); // I (index 4)
       if (rowName === normName && total > 0) {
         const tr = i + 2;
         sh.getRange(tr, 10).setValue('שולם'); // J
@@ -262,8 +263,8 @@ function markAllForName(name, ss) {
 
       for (let i = 0; i < data.length; i++) {
         const rowName = normalizeHebrew(data[i][0]); // Column A (index 0)
-        const total   = Number(data[i][4]);          // Column E (index 4)
-        
+        const total = Number(data[i][4]);          // Column E (index 4)
+
         if (rowName === normName && total > 0) {
           const tr = i + 2; // Real row index in the sheet
           sh.getRange(tr, 4).setValue(true); // Column D (4) = true
@@ -286,7 +287,7 @@ function processPaymentRow(sh, r, ss) {
       data = target.getRange(2, 6, last - 1, 2).getValues();
       for (let i = 0; i < data.length; i++) {
         if (normalizeHebrew(data[i][1]) === curF &&
-            normalizeHebrew(data[i][0]) === curI) {
+          normalizeHebrew(data[i][0]) === curI) {
           tr = i + 2;
           target.getRange(tr, 12).setValue(true);
           const colNVal = target.getRange(tr, 14).getValue();
@@ -306,7 +307,7 @@ function processPaymentRow(sh, r, ss) {
       data = target.getRange(2, 2, last - 1, 3).getValues();
       for (let i = 0; i < data.length; i++) {
         if (normalizeHebrew(data[i][0]) === curD &&
-            normalizeHebrew(data[i][2]) === curF) {
+          normalizeHebrew(data[i][2]) === curF) {
           tr = i + 2;
           target.getRange(tr, 12).setValue('שולם');
           break;
@@ -324,8 +325,8 @@ function processPaymentRow(sh, r, ss) {
       data = target.getRange(2, 2, last - 1, 5).getValues();
       for (let i = 0; i < data.length; i++) {
         if (normalizeHebrew(data[i][0]) === curD &&      // target col B
-            normalizeHebrew(data[i][2]) === curF &&      // target col D (existing)
-            normalizeHebrew(data[i][4]) === curG) {      // target col F (new)
+          normalizeHebrew(data[i][2]) === curF &&      // target col D (existing)
+          normalizeHebrew(data[i][4]) === curG) {      // target col F (new)
           tr = i + 2;
           target.getRange(tr, 10).setValue('שולם');
           break;
