@@ -117,6 +117,9 @@ function getBodyDetails(bodyName) {
 
 function getTicketData(abcDays) {
   try {
+    console.log("Server: getTicketData called with " + abcDays);
+    Logger.log("Server: getTicketData called with " + abcDays);
+
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName('דוחות');
 
