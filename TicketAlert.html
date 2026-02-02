@@ -15,7 +15,6 @@
       color: #333;
       box-sizing: border-box;
       overflow: hidden;
-      /* Prevent body scroll, handle inside tables */
     }
 
     #content {
@@ -24,7 +23,6 @@
       height: 100%;
       padding: 24px;
       gap: 20px;
-      /* Space between sections */
       box-sizing: border-box;
     }
 
@@ -41,7 +39,7 @@
       flex: 0 0 auto;
     }
 
-    /* --- COLLAPSIBLE HEADERS --- */
+    /* --- HEADERS --- */
     .collapsible-header {
       display: flex;
       justify-content: space-between;
@@ -51,7 +49,6 @@
       border-radius: 6px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
       border: 1px solid #e2e8f0;
-      transition: background-color 0.2s;
       flex-shrink: 0;
     }
 
@@ -74,8 +71,6 @@
 
     .collapsible-header h2 {
       margin: 0;
-      padding: 0;
-      border: none;
       font-size: 1.05rem;
       font-weight: 600;
       color: #2d3748;
@@ -84,15 +79,15 @@
     .toggle-icon {
       font-size: 0.9rem;
       color: #a0aec0;
-      transition: transform 0.3s ease;
       display: none;
+      transition: transform 0.3s ease;
     }
 
     .icon-collapsed {
       transform: rotate(90deg);
     }
 
-    /* --- CONTENT AREA --- */
+    /* --- CONTENT --- */
     .section-content {
       display: flex;
       flex-direction: column;
@@ -104,18 +99,6 @@
 
     .hidden-content {
       display: none !important;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(-5px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
     }
 
     .section-desc {
@@ -135,7 +118,19 @@
       border-color: #fed7d7;
     }
 
-    /* --- TABLE CONTAINER --- */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-5px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* --- TABLE --- */
     .table-container {
       flex: 1;
       overflow-y: auto;
@@ -195,10 +190,9 @@
 
     tbody tr:hover {
       background-color: #ebf8ff;
-      transition: background-color 0.1s;
     }
 
-    /* --- COLUMN WIDTHS --- */
+    /* --- COLUMNS --- */
     th:nth-child(1) {
       width: 9%;
     }
@@ -258,6 +252,25 @@
       opacity: 0.8;
     }
 
+    .sort-header::after {
+      content: '';
+      font-size: 0.8em;
+      margin-right: 5px;
+      opacity: 0.5;
+    }
+
+    .sort-header.sort-asc::after {
+      content: ' \2193';
+      color: #ecc94b;
+      opacity: 1;
+    }
+
+    .sort-header.sort-desc::after {
+      content: ' \2191';
+      color: #ecc94b;
+      opacity: 1;
+    }
+
     .filter-input {
       width: 100%;
       padding: 4px;
@@ -267,6 +280,7 @@
       box-sizing: border-box;
     }
 
+    /* --- COMPONENTS --- */
     .action-wrapper {
       display: flex;
       flex-direction: column;
@@ -318,7 +332,6 @@
       font-size: 0.85em;
     }
 
-    /* --- TICKET BODY LINK STYLE --- */
     .body-link {
       color: #3182ce;
       text-decoration: none;
@@ -332,37 +345,7 @@
       border-bottom: 1px solid #2c5282;
     }
 
-    /* --- INFO MODAL STYLES --- */
-    .info-row {
-      display: flex;
-      padding: 12px 0;
-      border-bottom: 1px solid #eee;
-    }
-
-    .info-label {
-      font-weight: 600;
-      width: 110px;
-      flex-shrink: 0;
-      color: #718096;
-      padding-left: 10px;
-    }
-
-    .info-value {
-      color: #2d3748;
-      word-break: break-word;
-      white-space: pre-wrap;
-      /* Preserves newlines and wraps text */
-      flex: 1;
-      font-size: 1rem;
-      line-height: 1.5;
-    }
-
-    .info-value a {
-      color: #3182ce;
-      text-decoration: underline;
-    }
-
-    /* --- GENERAL MODAL STYLES --- */
+    /* --- MODALS --- */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -421,12 +404,14 @@
       background-color: #3182ce;
       padding: 8px 20px;
       font-size: 1em;
+      width: auto;
     }
 
     .btn-cancel {
       background-color: #a0aec0;
       padding: 8px 20px;
       font-size: 1em;
+      width: auto;
     }
 
     .btn-close {
@@ -460,77 +445,79 @@
       color: #718096;
     }
 
-    .sort-header::after {
-      content: '';
-      font-size: 0.8em;
-      margin-right: 5px;
-      opacity: 0.5;
+    .info-row {
+      display: flex;
+      padding: 12px 0;
+      border-bottom: 1px solid #eee;
     }
 
-    .sort-header.sort-asc::after {
-      content: ' \2193';
-      color: #ecc94b;
-      opacity: 1;
+    .info-label {
+      font-weight: 600;
+      width: 110px;
+      flex-shrink: 0;
+      color: #718096;
+      padding-left: 10px;
     }
 
-    .sort-header.sort-desc::after {
-      content: ' \2191';
-      color: #ecc94b;
-      opacity: 1;
+    .info-value {
+      color: #2d3748;
+      word-break: break-word;
+      white-space: pre-wrap;
+      flex: 1;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    .info-value a {
+      color: #3182ce;
+      text-decoration: underline;
     }
   </style>
 </head>
 
 <body>
 
+  <!-- LOADING -->
   <div id="loader" class="loading">טוען נתונים...</div>
 
+  <!-- MAIN CONTENT -->
   <div id="content" style="display:none;">
+    <div id="no-alerts" class="empty-state" style="display:none;">הכל תקין! אין דוחות הדורשים התייחסות.</div>
 
-    <div id="no-alerts" class="empty-state" style="display:none;">
-      הכל תקין! אין דוחות הדורשים התייחסות.
-    </div>
-
+    <!-- URGENT SECTION -->
     <div id="wrapper-urgent" class="section-wrapper section-urgent" style="display:none;">
-
       <div id="header-urgent" class="collapsible-header header-urgent" onclick="toggleSection('urgent')">
-        <h2>התיישנות קרובה</h2>
-        <span id="icon-urgent" class="toggle-icon">▼</span>
+        <h2>התיישנות קרובה</h2><span id="icon-urgent" class="toggle-icon">▼</span>
       </div>
-
       <div id="content-urgent" class="section-content">
         <div class="section-desc">דוחות שהתיישנות קרובה (15 יום).</div>
         <div class="table-container">
           <table id="table2">
-            <thead>
-            </thead>
+            <thead></thead>
             <tbody></tbody>
           </table>
         </div>
       </div>
     </div>
 
+    <!-- STALE SECTION -->
     <div id="wrapper-stale" class="section-wrapper" style="display:none;">
-
       <div id="header-stale" class="collapsible-header header-stale" onclick="toggleSection('stale')">
-        <h2>בדיקת סטטוס נדרשת (חלוף זמן)</h2>
-        <span id="icon-stale" class="toggle-icon">▼</span>
+        <h2>בדיקת סטטוס נדרשת (חלוף זמן)</h2><span id="icon-stale" class="toggle-icon">▼</span>
       </div>
-
       <div id="content-stale" class="section-content">
         <div class="section-desc">דוחות שבהם עבר זמן רב מתאריך הבקשה, ולא בוצעה בדיקה לאחרונה.</div>
         <div class="table-container">
           <table id="table1">
-            <thead>
-            </thead>
+            <thead></thead>
             <tbody></tbody>
           </table>
         </div>
       </div>
     </div>
-
   </div>
 
+  <!-- EDIT NOTE MODAL -->
   <div id="editModal" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-title">עריכת הערה</div>
@@ -542,8 +529,7 @@
     </div>
   </div>
 
-
-
+  <!-- BODY INFO MODAL -->
   <div id="infoModal" class="modal-overlay">
     <div class="modal-content" style="width: 500px;">
       <div class="modal-title" id="infoTitle">פרטי גוף דוח</div>
@@ -553,32 +539,23 @@
   </div>
 
   <script>
-    // SAFETY SCRIPT - Runs before main logic
-    window.onerror = function (message, source, lineno, colno, error) {
-      window.alert("CRITICAL ERROR: " + message + "\nLine: " + lineno);
-    };
-    window.alert("DEBUG: 1. Safety Script Loaded");
-  </script>
-
-  <script>
+    // --- GLOBAL VARIABLES ---
     let currentEditRowIndex = null;
     let currentNoteElement = null;
     let isCollapsible = false;
-
-    // HARDCODED TO PREVENT CRASH
     var ABC_DAYS = 14;
 
-    // DEBUG ALERTS - TO CONFIRM EXECUTION
-    window.alert("DEBUG: 2. Main Script Start. ABC_DAYS: " + ABC_DAYS);
-    console.log("Client: Final ABC_DAYS using: ", ABC_DAYS);
+    // --- SAFETY CHECK ---
+    window.onerror = function (msg, url, line) {
+      alert("Client Error: " + msg + "\nLine: " + line);
+    };
 
+    // --- INIT ---
     window.onload = function () {
-      console.log("Client: window.onload started");
-      window.alert("DEBUG: 3. window.onload running");
+      console.log("Client: Loaded with ABC_DAYS=" + ABC_DAYS);
 
-      try {
-        // Generate Headers Dynamically
-        const headersHTML = `<tr>
+      // Render Headers
+      const headersHTML = `<tr>
             <th><div class="th-inner"><div class="sort-header" onclick="sortTable(0, 'THIS_ID')">שם שוכר</div><input type="text" class="filter-input" onkeyup="filterTable(0, 'THIS_ID')" placeholder="..."></div></th>
             <th><div class="th-inner"><div class="sort-header" onclick="sortTable(1, 'THIS_ID')">גוף הדוח</div><input type="text" class="filter-input" onkeyup="filterTable(1, 'THIS_ID')" placeholder="..."></div></th>
             <th><div class="th-inner"><div class="sort-header" onclick="sortTable(2, 'THIS_ID')">פרטי הרכב</div><input type="text" class="filter-input" onkeyup="filterTable(2, 'THIS_ID')" placeholder="..."></div></th>
@@ -591,36 +568,28 @@
             <th>פעולה</th>
         </tr>`;
 
-        document.querySelector('#table1 thead').innerHTML = headersHTML.replace(/THIS_ID/g, 'table1');
-        document.querySelector('#table2 thead').innerHTML = headersHTML.replace(/THIS_ID/g, 'table2');
+      document.querySelector('#table1 thead').innerHTML = headersHTML.replace(/THIS_ID/g, 'table1');
+      document.querySelector('#table2 thead').innerHTML = headersHTML.replace(/THIS_ID/g, 'table2');
 
-        console.log("Client: Calling google.script.run.getTicketData with abcDays:", ABC_DAYS);
-
-        google.script.run
-          .withSuccessHandler((data) => {
-            console.log("Client: getTicketData success", data);
-            renderTables(data);
-          })
-          .withFailureHandler((err) => {
-            console.error("Client: getTicketData failed", err);
-            window.alert("DEBUG: failure handler called! " + err.message);
-            showError(err);
-          })
-          .getTicketData(ABC_DAYS);
-      } catch (e) {
-        console.error("Client: Exception in window.onload", e);
-        window.alert("DEBUG: Exception! " + e.message);
-        showError(e);
-      }
+      // Fetch Data
+      google.script.run
+        .withSuccessHandler(renderTables)
+        .withFailureHandler(showError)
+        .getTicketData(ABC_DAYS);
     };
 
+    function showError(err) {
+      document.getElementById('loader').innerText = 'שגיאה בטעינה: ' + err.message;
+      document.getElementById('loader').style.color = 'red';
+    }
+
     function renderTables(data) {
+      console.log("Client: Data received", data);
       document.getElementById('loader').style.display = 'none';
       document.getElementById('content').style.display = 'flex';
 
       let hasUrgent = data.section2 && data.section2.length > 0;
       let hasStale = data.section1 && data.section1.length > 0;
-
       isCollapsible = hasUrgent && hasStale;
 
       if (hasUrgent) {
@@ -643,7 +612,6 @@
     function setupHeader(headerId, iconId) {
       const header = document.getElementById(headerId);
       const icon = document.getElementById(iconId);
-
       if (isCollapsible) {
         header.classList.add('can-collapse');
         icon.style.display = 'block';
@@ -653,9 +621,180 @@
       }
     }
 
+    function populateTable(tableId, rowsData) {
+      const tbody = document.querySelector('#' + tableId + ' tbody');
+      tbody.innerHTML = '';
+
+      rowsData.forEach(function (item) {
+        const tr = document.createElement('tr');
+
+        // 1. Renter
+        const tdName = document.createElement('td');
+        tdName.textContent = item.renter || '';
+        tr.appendChild(tdName);
+
+        // 2. Body (FEATURE SENSITIVE)
+        const tdOrigin = document.createElement('td');
+        if (item.origin && item.origin.trim() !== '') {
+          const link = document.createElement('span');
+          link.className = 'body-link';
+          link.textContent = item.origin;
+          link.addEventListener('click', function () {
+            showBodyInfo(item.origin);
+          });
+          tdOrigin.appendChild(link);
+        } else {
+          tdOrigin.textContent = '';
+        }
+        tr.appendChild(tdOrigin);
+
+        // 3. Car
+        const tdCar = document.createElement('td');
+        tdCar.textContent = item.car || '';
+        tr.appendChild(tdCar);
+
+        // 4. Details
+        const tdOffense = document.createElement('td');
+        tdOffense.innerHTML = '<div style="font-weight:600; color:#2d3748;">' + (item.ticketNo || '') + '</div><div style="color:#718096; font-size:0.85em; margin-top:2px;">' + (item.offenseDate || '') + '</div>';
+        tr.appendChild(tdOffense);
+
+        // 5-8: Simple fields
+        [item.expDate, item.amount, item.status, item.reqDetails].forEach(function (txt) {
+          const td = document.createElement('td');
+          td.textContent = txt || '';
+          tr.appendChild(td);
+        });
+
+        // 9. Notes
+        const tdNote = document.createElement('td');
+        tdNote.className = 'note-cell';
+        tdNote.title = 'לחץ לעריכה';
+        tdNote.innerHTML = '<div class="note-text">' + (item.notes || '') + '</div>';
+        tdNote.onclick = function () {
+          openEditNote(item.rowIndex, item.notes || '', tdNote.querySelector('.note-text'));
+        };
+        tr.appendChild(tdNote);
+
+        // 10. Actions
+        const tdAction = document.createElement('td');
+        const wrapper = document.createElement('div');
+        wrapper.className = 'action-wrapper';
+
+        const btnCheck = document.createElement('button');
+        btnCheck.className = 'btn-update';
+        btnCheck.innerText = 'עדכן בדיקה';
+        btnCheck.onclick = function () {
+          btnCheck.disabled = true; btnCheck.innerText = '...';
+          google.script.run.withSuccessHandler(function () {
+            btnCheck.innerText = 'V';
+            btnCheck.style.backgroundColor = '#cbd5e0';
+          }).updateLastChecked(item.rowIndex);
+        };
+
+        const btnApprove = document.createElement('button');
+        btnApprove.className = 'btn-approve';
+        btnApprove.innerText = 'אושרה הסבה';
+        btnApprove.onclick = function () {
+          btnApprove.disabled = true; btnApprove.innerText = '...';
+          google.script.run.withSuccessHandler(function (newStatus) {
+            btnApprove.innerText = 'בוצע';
+            btnApprove.style.backgroundColor = '#cbd5e0';
+            tr.children[6].textContent = newStatus;
+          }).withFailureHandler(function (err) {
+            alert('שגיאה: ' + err.message);
+            btnApprove.disabled = false;
+            btnApprove.innerText = 'אושרה הסבה';
+          }).updateTransferStatus(item.rowIndex);
+        };
+
+        wrapper.appendChild(btnCheck);
+        wrapper.appendChild(btnApprove);
+        tdAction.appendChild(wrapper);
+        tr.appendChild(tdAction);
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    // --- BODY INFO FEATURE ---
+    function showBodyInfo(bodyName) {
+      const modal = document.getElementById('infoModal');
+      const bodyDiv = document.getElementById('infoBody');
+      const titleDiv = document.getElementById('infoTitle');
+
+      titleDiv.textContent = bodyName;
+      bodyDiv.innerHTML = '<div class="modal-loading">טוען פרטים...</div>';
+      modal.style.display = 'flex';
+
+      google.script.run
+        .withSuccessHandler(function (data) {
+          if (!data) {
+            bodyDiv.innerHTML = '<div style="color:red; padding:10px;">לא נמצא מידע</div>';
+            return;
+          }
+          if (data.error) {
+            bodyDiv.innerHTML = '<div style="color:red; padding:10px;">' + data.error + '</div>';
+            return;
+          }
+
+          let html = '';
+          for (const [key, value] of Object.entries(data)) {
+            if (key === 'גוף' || String(value).trim() === '') continue;
+
+            let displayValue = String(value);
+            if (displayValue.match(/^https?:\/\//) || displayValue.includes('www.')) {
+              let url = displayValue.startsWith('http') ? displayValue : 'http://' + displayValue;
+              displayValue = '<a href="' + url + '" target="_blank">לחץ למעבר לאתר</a>';
+            } else if (displayValue.includes('@')) {
+              displayValue = '<a href="mailto:' + displayValue + '">' + displayValue + '</a>';
+            }
+
+            html += '<div class="info-row"><div class="info-label">' + key + ':</div><div class="info-value">' + displayValue + '</div></div>';
+          }
+          bodyDiv.innerHTML = html || 'אין מידע נוסף';
+        })
+        .withFailureHandler(function (err) {
+          bodyDiv.innerHTML = '<div style="color:red; padding:10px;">שגיאה: ' + err.message + '</div>';
+        })
+        .getBodyDetails(bodyName);
+    }
+
+    // --- NOTES FEATURE ---
+    function openEditNote(rowIndex, currentText, domElement) {
+      currentEditRowIndex = rowIndex;
+      currentNoteElement = domElement;
+      const modal = document.getElementById('editModal');
+      const textarea = document.getElementById('noteInput');
+      textarea.value = currentText;
+      modal.style.display = 'flex';
+      textarea.focus();
+    }
+
+    function closeEditNote() {
+      document.getElementById('editModal').style.display = 'none';
+      currentEditRowIndex = null;
+      currentNoteElement = null;
+    }
+
+    function saveEditNote() {
+      if (!currentEditRowIndex) return;
+      const newText = document.getElementById('noteInput').value;
+      const rowIndexToUpdate = currentEditRowIndex;
+      // Optimistic update
+      if (currentNoteElement) {
+        currentNoteElement.textContent = newText;
+        // Re-bind click
+        currentNoteElement.parentElement.onclick = function () {
+          openEditNote(rowIndexToUpdate, newText, currentNoteElement);
+        };
+      }
+      closeEditNote();
+      google.script.run.withFailureHandler(console.error).updateTicketNote(rowIndexToUpdate, newText);
+    }
+
+    // --- UI HELPERS ---
     function toggleSection(sectionId) {
       if (!isCollapsible) return;
-
       const wrapper = document.getElementById('wrapper-' + sectionId);
       const content = document.getElementById('content-' + sectionId);
       const icon = document.getElementById('icon-' + sectionId);
@@ -669,180 +808,6 @@
         wrapper.classList.add('collapsed');
         icon.classList.add('icon-collapsed');
       }
-    }
-
-    function populateTable(tableId, rowsData) {
-      const tbody = document.querySelector(`#${tableId} tbody`);
-      tbody.innerHTML = '';
-
-      rowsData.forEach(item => {
-        const tr = document.createElement('tr');
-
-        // 1. Renter Name
-        const tdName = document.createElement('td');
-        tdName.textContent = item.renter || '';
-        tr.appendChild(tdName);
-
-        // 2. Ticket Body (Clickable Link REVERTED FOR DEBUGGING)
-        const tdOrigin = document.createElement('td');
-        /*
-        if (item.origin) {
-          const link = document.createElement('span');
-          link.className = 'body-link';
-          link.textContent = item.origin;
-          link.onclick = function () { showBodyInfo(item.origin); };
-          tdOrigin.appendChild(link);
-        } else {
-          tdOrigin.textContent = '';
-        }
-        */
-        tdOrigin.textContent = item.origin || ''; // Reverted to simple text
-        tr.appendChild(tdOrigin);
-
-        // 3. Car
-        const tdCar = document.createElement('td');
-        tdCar.textContent = item.car || '';
-        tr.appendChild(tdCar);
-
-        // 4. Ticket Details (Number + Date)
-        const tdOffense = document.createElement('td');
-        tdOffense.innerHTML = `<div style="font-weight:600; color:#2d3748;">${item.ticketNo || ''}</div><div style="color:#718096; font-size:0.85em; margin-top:2px;">${item.offenseDate || ''}</div>`;
-        tr.appendChild(tdOffense);
-
-        // Remaining Fields
-        const remainingFields = [item.expDate, item.amount, item.status, item.reqDetails];
-        remainingFields.forEach(txt => {
-          const td = document.createElement('td');
-          td.textContent = txt || '';
-          tr.appendChild(td);
-        });
-
-        // Notes
-        const tdNote = document.createElement('td');
-        tdNote.className = 'note-cell';
-        tdNote.title = 'לחץ לעריכה';
-        tdNote.innerHTML = `<div class="note-text">${item.notes || ''}</div>`;
-        tdNote.onclick = function () {
-          openEditNote(item.rowIndex, item.notes || '', tdNote.querySelector('.note-text'));
-        };
-        tr.appendChild(tdNote);
-
-        // Actions
-        const tdAction = document.createElement('td');
-        const wrapper = document.createElement('div');
-        wrapper.className = 'action-wrapper';
-
-        const btnCheck = document.createElement('button');
-        btnCheck.className = 'btn-update';
-        btnCheck.innerText = 'עדכן בדיקה';
-        btnCheck.onclick = function () {
-          btnCheck.disabled = true; btnCheck.innerText = '...';
-          google.script.run.withSuccessHandler(() => {
-            btnCheck.innerText = 'V'; btnCheck.style.backgroundColor = '#cbd5e0';
-          }).updateLastChecked(item.rowIndex);
-        };
-
-        const btnApprove = document.createElement('button');
-        btnApprove.className = 'btn-approve';
-        btnApprove.innerText = 'אושרה הסבה';
-        btnApprove.onclick = function () {
-          btnApprove.disabled = true; btnApprove.innerText = '...';
-          google.script.run.withSuccessHandler((newStatus) => {
-            btnApprove.innerText = 'בוצע'; btnApprove.style.backgroundColor = '#cbd5e0';
-            tr.children[6].textContent = newStatus;
-          }).withFailureHandler((err) => {
-            alert('שגיאה: ' + err.message); btnApprove.disabled = false; btnApprove.innerText = 'אושרה הסבה';
-          }).updateTransferStatus(item.rowIndex);
-        };
-
-        wrapper.appendChild(btnCheck); wrapper.appendChild(btnApprove);
-        tdAction.appendChild(wrapper);
-        tr.appendChild(tdAction); tbody.appendChild(tr);
-      });
-    }
-
-
-    /*
-    // --- INFO MODAL LOGIC - COMMENTED OUT FOR DEBUGGING ---
-    function showBodyInfo(bodyName) {
-      const modal = document.getElementById('infoModal');
-      const bodyDiv = document.getElementById('infoBody');
-      const titleDiv = document.getElementById('infoTitle');
-
-      titleDiv.textContent = bodyName;
-      bodyDiv.innerHTML = '<div class="modal-loading">טוען פרטים...</div>';
-      modal.style.display = 'flex';
-
-      google.script.run
-        .withSuccessHandler((data) => {
-          if (!data) {
-            bodyDiv.innerHTML = '<div style="color:red; padding:10px;">לא נמצא מידע ברשימות</div>';
-            return;
-          }
-          if (data.error) {
-            bodyDiv.innerHTML = `<div style="color:red; padding:10px;">${data.error}</div>`;
-            return;
-          }
-
-          let html = '';
-          for (const [key, value] of Object.entries(data)) {
-            // Skip the body name itself if it's the same as the title, or if value is empty
-            if (key === 'גוף' || String(value).trim() === '') continue;
-
-            let displayValue = value;
-            if (String(value).match(/^https?:\/\//) || String(value).includes('www.')) {
-              let url = String(value).startsWith('http') ? value : 'http://' + value;
-              displayValue = `<a href="${url}" target="_blank">לחץ למעבר לאתר</a>`;
-            } else if (String(value).includes('@')) {
-              displayValue = `<a href="mailto:${value}">${value}</a>`;
-            }
-
-            html += `
-                <div class="info-row">
-                    <div class="info-label">${key}:</div>
-                    <div class="info-value">${displayValue}</div>
-                </div>`;
-          }
-          bodyDiv.innerHTML = html || 'אין מידע נוסף';
-        })
-        .withFailureHandler((err) => {
-          bodyDiv.innerHTML = `<div style="color:red; padding:10px;">שגיאה: ${err.message}</div>`;
-        })
-        .getBodyDetails(bodyName);
-    }
-    */
-
-    // --- EDIT NOTE LOGIC ---
-    function openEditNote(rowIndex, currentText, domElement) {
-      currentEditRowIndex = rowIndex; currentNoteElement = domElement;
-      const modal = document.getElementById('editModal');
-      const textarea = document.getElementById('noteInput');
-      textarea.value = currentText; modal.style.display = 'flex'; textarea.focus();
-    }
-
-    function closeEditNote() {
-      document.getElementById('editModal').style.display = 'none';
-      currentEditRowIndex = null; currentNoteElement = null;
-    }
-
-    function saveEditNote() {
-      if (!currentEditRowIndex) return;
-      const newText = document.getElementById('noteInput').value;
-      const rowIndexToUpdate = currentEditRowIndex;
-      if (currentNoteElement) {
-        currentNoteElement.textContent = newText;
-        currentNoteElement.parentElement.onclick = function () {
-          openEditNote(rowIndexToUpdate, newText, currentNoteElement);
-        };
-      }
-      closeEditNote();
-      google.script.run.withFailureHandler((err) => console.error(err))
-        .updateTicketNote(rowIndexToUpdate, newText);
-    }
-
-    function showError(err) {
-      document.getElementById('loader').innerText = 'שגיאה: ' + err.message;
-      document.getElementById('loader').style.color = 'red';
     }
 
     function filterTable(colIndex, tableId) {

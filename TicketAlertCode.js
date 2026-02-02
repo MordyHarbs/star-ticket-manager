@@ -7,12 +7,10 @@ function runTicketCheck() {
 }
 
 function showTicketWarnings(abcDays) {
-  // DEBUG MODE: Loading DebugProbe instead of TicketAlert
-  const html = HtmlService.createTemplateFromFile('DebugProbe');
-  // const html = HtmlService.createTemplateFromFile('TicketAlert');
+  const html = HtmlService.createTemplateFromFile('TicketAlert');
   html.abcDays = abcDays;
   const ui = SpreadsheetApp.getUi();
-  ui.showModalDialog(html.evaluate().setWidth(800).setHeight(600), 'DEBUG MODE - בדיקת מערכת');
+  ui.showModalDialog(html.evaluate().setWidth(1400).setHeight(800), 'דוח סטטוס דוחות - התראות');
 }
 
 function parseDate(val) {
