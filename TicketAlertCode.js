@@ -72,47 +72,7 @@ function updateTransferStatus(rowIndex) {
   return newStatus;
 }
 
-function getBodyDetails(bodyName) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName('רשימות');
-  
-  if (!sheet) return { error: "Sheet 'רשימות' not found" };
-  
-  const lastRow = sheet.getLastRow();
-  
-  // Headers are in Row 3. Data starts in Row 4.
-  // We need at least 3 rows to have headers.
-  if (lastRow < 3) return { error: "No data in lists sheet" };
 
-  // Start at Row 3 (Headers), Column 7 (G)
-  // Number of rows to fetch = lastRow - 2 (e.g. if lastRow is 10, we want rows 3 to 10, which is 8 rows)
-  // Width is 5 columns (G, H, I, J, K)
-  const range = sheet.getRange(3, 7, lastRow - 2, 5); 
-  const data = range.getValues();
-  
-  const headers = data[0]; // This is Row 3
-  const rows = data.slice(1); // This is Row 4+
-  
-  const searchStr = String(bodyName).trim();
-  
-  // Find the matching row (Index 0 is Column G - Body Name)
-  const foundRow = rows.find(r => String(r[0]).trim() === searchStr);
-  
-  if (!foundRow) return null; 
-  
-  const result = {};
-  headers.forEach((header, index) => {
-    if (header && String(header).trim() !== "") {
-      let val = foundRow[index];
-      if (val instanceof Date) {
-        val = Utilities.formatDate(val, Session.getScriptTimeZone(), "dd/MM/yyyy");
-      }
-      result[header] = val;
-    }
-  });
-  
-  return result;
-}
 
 function getTicketData(abcDays) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();

@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html dir="rtl">
+
 <head>
   <base target="_top">
   <style>
     /* --- LAYOUT & RESET --- */
-    html, body {
+    html,
+    body {
       height: 100%;
       margin: 0;
       padding: 0;
@@ -12,7 +14,8 @@
       background-color: #f7f9fc;
       color: #333;
       box-sizing: border-box;
-      overflow: hidden; /* Prevent body scroll, handle inside tables */
+      overflow: hidden;
+      /* Prevent body scroll, handle inside tables */
     }
 
     #content {
@@ -20,7 +23,8 @@
       flex-direction: column;
       height: 100%;
       padding: 24px;
-      gap: 20px; /* Space between sections */
+      gap: 20px;
+      /* Space between sections */
       box-sizing: border-box;
     }
 
@@ -28,187 +32,454 @@
     .section-wrapper {
       display: flex;
       flex-direction: column;
-      flex: 1; 
-      min-height: 0; 
+      flex: 1;
+      min-height: 0;
       transition: all 0.3s ease;
     }
 
     .section-wrapper.collapsed {
-      flex: 0 0 auto; 
+      flex: 0 0 auto;
     }
 
     /* --- COLLAPSIBLE HEADERS --- */
     .collapsible-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background-color: #fff;
-        padding: 10px 16px;
-        border-radius: 6px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        border: 1px solid #e2e8f0;
-        transition: background-color 0.2s;
-        flex-shrink: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #fff;
+      padding: 10px 16px;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
+      transition: background-color 0.2s;
+      flex-shrink: 0;
     }
 
-    .can-collapse { cursor: pointer; user-select: none; }
-    .can-collapse:hover { background-color: #f8fafc; }
+    .can-collapse {
+      cursor: pointer;
+      user-select: none;
+    }
 
-    .header-urgent { border-right: 4px solid #c53030; }
-    .header-stale { border-right: 4px solid #3182ce; }
+    .can-collapse:hover {
+      background-color: #f8fafc;
+    }
+
+    .header-urgent {
+      border-right: 4px solid #c53030;
+    }
+
+    .header-stale {
+      border-right: 4px solid #3182ce;
+    }
 
     .collapsible-header h2 {
-      margin: 0; padding: 0; border: none;
-      font-size: 1.05rem; font-weight: 600; color: #2d3748;
+      margin: 0;
+      padding: 0;
+      border: none;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #2d3748;
     }
 
     .toggle-icon {
-        font-size: 0.9rem; color: #a0aec0;
-        transition: transform 0.3s ease;
-        display: none; 
+      font-size: 0.9rem;
+      color: #a0aec0;
+      transition: transform 0.3s ease;
+      display: none;
     }
-    .icon-collapsed { transform: rotate(90deg); }
+
+    .icon-collapsed {
+      transform: rotate(90deg);
+    }
 
     /* --- CONTENT AREA --- */
     .section-content {
-        display: flex;
-        flex-direction: column;
-        flex: 1; 
-        min-height: 0; 
-        margin-top: 10px;
-        animation: fadeIn 0.3s ease-in-out;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      margin-top: 10px;
+      animation: fadeIn 0.3s ease-in-out;
     }
-    
-    .hidden-content { display: none !important; }
+
+    .hidden-content {
+      display: none !important;
+    }
 
     @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-5px); }
-        to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(-5px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .section-desc {
-      background-color: #e6fffa; color: #2c7a7b; padding: 10px;
-      border-radius: 6px; font-size: 0.85em; margin-bottom: 10px; 
+      background-color: #e6fffa;
+      color: #2c7a7b;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 0.85em;
+      margin-bottom: 10px;
       border: 1px solid #b2f5ea;
       flex-shrink: 0;
     }
-    .section-urgent .section-desc { background-color: #fff5f5; color: #c53030; border-color: #fed7d7; }
+
+    .section-urgent .section-desc {
+      background-color: #fff5f5;
+      color: #c53030;
+      border-color: #fed7d7;
+    }
 
     /* --- TABLE CONTAINER --- */
     .table-container {
-      flex: 1; 
-      overflow-y: auto; 
+      flex: 1;
+      overflow-y: auto;
       border-radius: 6px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
       background: white;
       border: 1px solid #edf2f7;
     }
 
     table {
-      width: 100%; border-collapse: separate; border-spacing: 0;
-      background: white; table-layout: fixed;
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: white;
+      table-layout: fixed;
     }
 
-    thead { position: sticky; top: 0; z-index: 10; }
-    
+    thead {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
     th {
-      background-color: #2c3e50; color: #ffffff; padding: 10px;
-      text-align: right; font-weight: 600; font-size: 0.85rem;
-      border-bottom: 2px solid #1a252f; border-right: 1px solid #34495e; 
+      background-color: #2c3e50;
+      color: #ffffff;
+      padding: 10px;
+      text-align: right;
+      font-weight: 600;
+      font-size: 0.85rem;
+      border-bottom: 2px solid #1a252f;
+      border-right: 1px solid #34495e;
       vertical-align: top;
     }
-    th:last-child { border-right: none; }
+
+    th:last-child {
+      border-right: none;
+    }
 
     td {
-      padding: 8px 10px; border-bottom: 1px solid #edf2f7;
-      border-right: 1px solid #edf2f7; color: #4a5568;
-      font-size: 0.85rem; vertical-align: top; line-height: 1.4;
+      padding: 8px 10px;
+      border-bottom: 1px solid #edf2f7;
+      border-right: 1px solid #edf2f7;
+      color: #4a5568;
+      font-size: 0.85rem;
+      vertical-align: top;
+      line-height: 1.4;
     }
-    td:last-child { border-right: none; }
 
-    tbody tr:nth-child(even) { background-color: #f7fafc; }
-    tbody tr:hover { background-color: #ebf8ff; transition: background-color 0.1s; }
+    td:last-child {
+      border-right: none;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: #f7fafc;
+    }
+
+    tbody tr:hover {
+      background-color: #ebf8ff;
+      transition: background-color 0.1s;
+    }
 
     /* --- COLUMN WIDTHS --- */
-    th:nth-child(1) { width: 9%; } 
-    th:nth-child(2) { width: 6%; } 
-    th:nth-child(3) { width: 8%; } 
-    th:nth-child(4) { width: 11%; } 
-    th:nth-child(5) { width: 7%; } 
-    th:nth-child(6) { width: 6%; } 
-    th:nth-child(7) { width: 9%; } 
-    th:nth-child(8) { width: 10%; } 
-    th:nth-child(9) { width: 22%; } 
-    th:nth-child(10) { width: 12%; } 
+    th:nth-child(1) {
+      width: 9%;
+    }
 
-    .th-inner { display: flex; flex-direction: column; justify-content: space-between; height: 100%; gap: 6px; }
-    .sort-header { cursor: pointer; user-select: none; display: block; transition: opacity 0.2s; }
-    .sort-header:hover { opacity: 0.8; }
-    .filter-input { width: 100%; padding: 4px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 0.85em; box-sizing: border-box; }
-    
-    .action-wrapper { display: flex; flex-direction: column; gap: 4px; }
-    button { font-family: inherit; font-weight: 500; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8em; width: 100%; padding: 5px; color: white; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-    .btn-update { background-color: #38a169; }
-    .btn-approve { background-color: #805ad5; }
-    button:disabled { background-color: #cbd5e0 !important; cursor: not-allowed; }
+    th:nth-child(2) {
+      width: 6%;
+    }
 
-    .note-cell { cursor: pointer; }
-    .note-cell:hover .note-text { color: #2b6cb0; }
-    .note-text { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; max-height: 4.5em; font-size: 0.85em; }
+    th:nth-child(3) {
+      width: 8%;
+    }
+
+    th:nth-child(4) {
+      width: 11%;
+    }
+
+    th:nth-child(5) {
+      width: 7%;
+    }
+
+    th:nth-child(6) {
+      width: 6%;
+    }
+
+    th:nth-child(7) {
+      width: 9%;
+    }
+
+    th:nth-child(8) {
+      width: 10%;
+    }
+
+    th:nth-child(9) {
+      width: 22%;
+    }
+
+    th:nth-child(10) {
+      width: 12%;
+    }
+
+    .th-inner {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+      gap: 6px;
+    }
+
+    .sort-header {
+      cursor: pointer;
+      user-select: none;
+      display: block;
+      transition: opacity 0.2s;
+    }
+
+    .sort-header:hover {
+      opacity: 0.8;
+    }
+
+    .filter-input {
+      width: 100%;
+      padding: 4px;
+      border: 1px solid #cbd5e0;
+      border-radius: 4px;
+      font-size: 0.85em;
+      box-sizing: border-box;
+    }
+
+    .action-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    button {
+      font-family: inherit;
+      font-weight: 500;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8em;
+      width: 100%;
+      padding: 5px;
+      color: white;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-update {
+      background-color: #38a169;
+    }
+
+    .btn-approve {
+      background-color: #805ad5;
+    }
+
+    button:disabled {
+      background-color: #cbd5e0 !important;
+      cursor: not-allowed;
+    }
+
+    .note-cell {
+      cursor: pointer;
+    }
+
+    .note-cell:hover .note-text {
+      color: #2b6cb0;
+    }
+
+    .note-text {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-height: 4.5em;
+      font-size: 0.85em;
+    }
 
     /* --- TICKET BODY LINK STYLE --- */
     .body-link {
-        color: #3182ce;
-        text-decoration: none;
-        font-weight: 600;
-        cursor: pointer;
-        border-bottom: 1px dotted #3182ce;
+      color: #3182ce;
+      text-decoration: none;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 1px dotted #3182ce;
     }
-    .body-link:hover { color: #2c5282; border-bottom: 1px solid #2c5282; }
+
+    .body-link:hover {
+      color: #2c5282;
+      border-bottom: 1px solid #2c5282;
+    }
 
     /* --- INFO MODAL STYLES --- */
     .info-row {
-        display: flex;
-        padding: 12px 0; 
-        border-bottom: 1px solid #eee;
+      display: flex;
+      padding: 12px 0;
+      border-bottom: 1px solid #eee;
     }
+
     .info-label {
-        font-weight: 600;
-        width: 110px;    
-        flex-shrink: 0;  
-        color: #718096;
-        padding-left: 10px;
+      font-weight: 600;
+      width: 110px;
+      flex-shrink: 0;
+      color: #718096;
+      padding-left: 10px;
     }
+
     .info-value {
-        color: #2d3748;
-        word-break: break-word;
-        white-space: pre-wrap; /* Preserves newlines and wraps text */
-        flex: 1;         
-        font-size: 1rem; 
-        line-height: 1.5;
+      color: #2d3748;
+      word-break: break-word;
+      white-space: pre-wrap;
+      /* Preserves newlines and wraps text */
+      flex: 1;
+      font-size: 1rem;
+      line-height: 1.5;
     }
-    .info-value a { color: #3182ce; text-decoration: underline; }
+
+    .info-value a {
+      color: #3182ce;
+      text-decoration: underline;
+    }
 
     /* --- GENERAL MODAL STYLES --- */
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(2px); }
-    .modal-content { background-color: #fff; padding: 25px; border-radius: 12px; width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: right; display: flex; flex-direction: column; gap: 15px; max-height: 85vh; overflow-y: auto; }
-    .modal-title { font-size: 1.2em; font-weight: bold; color: #2d3748; border-bottom: 2px solid #3182ce; padding-bottom: 10px; }
-    
-    textarea.modal-input { width: 100%; height: 140px; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-family: inherit; resize: vertical; box-sizing: border-box; font-size: 1rem; }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
-    .btn-save { background-color: #3182ce; padding: 8px 20px; font-size: 1em; }
-    .btn-cancel { background-color: #a0aec0; padding: 8px 20px; font-size: 1em; }
-    .btn-close { background-color: #a0aec0; align-self: flex-end; width: auto; padding: 8px 20px; font-size: 1em; margin-top: 10px; }
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      backdrop-filter: blur(2px);
+    }
 
-    .loading { text-align: center; color: #718096; padding: 40px; font-weight: 500; margin-top: 100px; }
-    .empty-state { text-align: center; color: #38a169; padding: 60px; font-size: 1.2em; margin-top: 50px; }
-    .modal-loading { text-align: center; padding: 20px; color: #718096; }
+    .modal-content {
+      background-color: #fff;
+      padding: 25px;
+      border-radius: 12px;
+      width: 450px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
 
-    .sort-header::after { content: ''; font-size: 0.8em; margin-right: 5px; opacity: 0.5; }
-    .sort-header.sort-asc::after { content: ' \2193'; color: #ecc94b; opacity: 1; }
-    .sort-header.sort-desc::after { content: ' \2191'; color: #ecc94b; opacity: 1; }
+    .modal-title {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #2d3748;
+      border-bottom: 2px solid #3182ce;
+      padding-bottom: 10px;
+    }
+
+    textarea.modal-input {
+      width: 100%;
+      height: 140px;
+      padding: 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-family: inherit;
+      resize: vertical;
+      box-sizing: border-box;
+      font-size: 1rem;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .btn-save {
+      background-color: #3182ce;
+      padding: 8px 20px;
+      font-size: 1em;
+    }
+
+    .btn-cancel {
+      background-color: #a0aec0;
+      padding: 8px 20px;
+      font-size: 1em;
+    }
+
+    .btn-close {
+      background-color: #a0aec0;
+      align-self: flex-end;
+      width: auto;
+      padding: 8px 20px;
+      font-size: 1em;
+      margin-top: 10px;
+    }
+
+    .loading {
+      text-align: center;
+      color: #718096;
+      padding: 40px;
+      font-weight: 500;
+      margin-top: 100px;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: #38a169;
+      padding: 60px;
+      font-size: 1.2em;
+      margin-top: 50px;
+    }
+
+    .modal-loading {
+      text-align: center;
+      padding: 20px;
+      color: #718096;
+    }
+
+    .sort-header::after {
+      content: '';
+      font-size: 0.8em;
+      margin-right: 5px;
+      opacity: 0.5;
+    }
+
+    .sort-header.sort-asc::after {
+      content: ' \2193';
+      color: #ecc94b;
+      opacity: 1;
+    }
+
+    .sort-header.sort-desc::after {
+      content: ' \2191';
+      color: #ecc94b;
+      opacity: 1;
+    }
   </style>
 </head>
+
 <body>
 
   <div id="loader" class="loading">טוען נתונים...</div>
@@ -220,7 +491,7 @@
     </div>
 
     <div id="wrapper-urgent" class="section-wrapper section-urgent" style="display:none;">
-      
+
       <div id="header-urgent" class="collapsible-header header-urgent" onclick="toggleSection('urgent')">
         <h2>התיישנות קרובה</h2>
         <span id="icon-urgent" class="toggle-icon">▼</span>
@@ -231,7 +502,7 @@
         <div class="table-container">
           <table id="table2">
             <thead>
-              </thead>
+            </thead>
             <tbody></tbody>
           </table>
         </div>
@@ -239,7 +510,7 @@
     </div>
 
     <div id="wrapper-stale" class="section-wrapper" style="display:none;">
-      
+
       <div id="header-stale" class="collapsible-header header-stale" onclick="toggleSection('stale')">
         <h2>בדיקת סטטוס נדרשת (חלוף זמן)</h2>
         <span id="icon-stale" class="toggle-icon">▼</span>
@@ -250,7 +521,7 @@
         <div class="table-container">
           <table id="table1">
             <thead>
-              </thead>
+            </thead>
             <tbody></tbody>
           </table>
         </div>
@@ -261,31 +532,25 @@
 
   <div id="editModal" class="modal-overlay">
     <div class="modal-content">
-        <div class="modal-title">עריכת הערה</div>
-        <textarea id="noteInput" class="modal-input"></textarea>
-        <div class="modal-actions">
-            <button class="btn-cancel" onclick="closeEditNote()">ביטול</button>
-            <button class="btn-save" onclick="saveEditNote()">שמור</button>
-        </div>
+      <div class="modal-title">עריכת הערה</div>
+      <textarea id="noteInput" class="modal-input"></textarea>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeEditNote()">ביטול</button>
+        <button class="btn-save" onclick="saveEditNote()">שמור</button>
+      </div>
     </div>
   </div>
 
-  <div id="infoModal" class="modal-overlay">
-    <div class="modal-content" style="width: 500px;">
-        <div class="modal-title" id="infoTitle">פרטי גוף דוח</div>
-        <div id="infoBody"></div>
-        <button class="btn-close" onclick="document.getElementById('infoModal').style.display='none'">סגור</button>
-    </div>
-  </div>
 
-<script>
-  let currentEditRowIndex = null;
-  let currentNoteElement = null;
-  let isCollapsible = false;
 
-  window.onload = function() {
-    // Generate Headers Dynamically
-    const headersHTML = `<tr>
+  <script>
+    let currentEditRowIndex = null;
+    let currentNoteElement = null;
+    let isCollapsible = false;
+
+    window.onload = function () {
+      // Generate Headers Dynamically
+      const headersHTML = `<tr>
         <th><div class="th-inner"><div class="sort-header" onclick="sortTable(0, 'THIS_ID')">שם שוכר</div><input type="text" class="filter-input" onkeyup="filterTable(0, 'THIS_ID')" placeholder="..."></div></th>
         <th><div class="th-inner"><div class="sort-header" onclick="sortTable(1, 'THIS_ID')">גוף הדוח</div><input type="text" class="filter-input" onkeyup="filterTable(1, 'THIS_ID')" placeholder="..."></div></th>
         <th><div class="th-inner"><div class="sort-header" onclick="sortTable(2, 'THIS_ID')">פרטי הרכב</div><input type="text" class="filter-input" onkeyup="filterTable(2, 'THIS_ID')" placeholder="..."></div></th>
@@ -297,292 +562,244 @@
         <th><div class="th-inner"><div class="sort-header" onclick="sortTable(8, 'THIS_ID')">הערות</div><input type="text" class="filter-input" onkeyup="filterTable(8, 'THIS_ID')" placeholder="..."></div></th>
         <th>פעולה</th>
     </tr>`;
-    
-    document.querySelector('#table1 thead').innerHTML = headersHTML.replace(/THIS_ID/g, 'table1');
-    document.querySelector('#table2 thead').innerHTML = headersHTML.replace(/THIS_ID/g, 'table2');
 
-    google.script.run
-      .withSuccessHandler(renderTables)
-      .withFailureHandler(showError)
-      .getTicketData(<?!= abcDays ?>);
-  };
+      document.querySelector('#table1 thead').innerHTML = headersHTML.replace(/THIS_ID/g, 'table1');
+      document.querySelector('#table2 thead').innerHTML = headersHTML.replace(/THIS_ID/g, 'table2');
 
-  function renderTables(data) {
-    document.getElementById('loader').style.display = 'none';
-    document.getElementById('content').style.display = 'flex';
+      google.script.run
+        .withSuccessHandler(renderTables)
+        .withFailureHandler(showError)
+        .getTicketData(<?!= abcDays ?>);
+    };
 
-    let hasUrgent = data.section2 && data.section2.length > 0;
-    let hasStale = data.section1 && data.section1.length > 0;
+    function renderTables(data) {
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('content').style.display = 'flex';
 
-    isCollapsible = hasUrgent && hasStale;
+      let hasUrgent = data.section2 && data.section2.length > 0;
+      let hasStale = data.section1 && data.section1.length > 0;
 
-    if (hasUrgent) {
-      document.getElementById('wrapper-urgent').style.display = 'flex';
-      setupHeader('header-urgent', 'icon-urgent');
-      populateTable('table2', data.section2);
+      isCollapsible = hasUrgent && hasStale;
+
+      if (hasUrgent) {
+        document.getElementById('wrapper-urgent').style.display = 'flex';
+        setupHeader('header-urgent', 'icon-urgent');
+        populateTable('table2', data.section2);
+      }
+
+      if (hasStale) {
+        document.getElementById('wrapper-stale').style.display = 'flex';
+        setupHeader('header-stale', 'icon-stale');
+        populateTable('table1', data.section1);
+      }
+
+      if (!hasUrgent && !hasStale) {
+        document.getElementById('no-alerts').style.display = 'block';
+      }
     }
 
-    if (hasStale) {
-      document.getElementById('wrapper-stale').style.display = 'flex';
-      setupHeader('header-stale', 'icon-stale');
-      populateTable('table1', data.section1);
-    }
-
-    if (!hasUrgent && !hasStale) {
-      document.getElementById('no-alerts').style.display = 'block';
-    }
-  }
-
-  function setupHeader(headerId, iconId) {
+    function setupHeader(headerId, iconId) {
       const header = document.getElementById(headerId);
       const icon = document.getElementById(iconId);
 
       if (isCollapsible) {
-          header.classList.add('can-collapse');
-          icon.style.display = 'block';
+        header.classList.add('can-collapse');
+        icon.style.display = 'block';
       } else {
-          header.classList.remove('can-collapse');
-          icon.style.display = 'none';
+        header.classList.remove('can-collapse');
+        icon.style.display = 'none';
       }
-  }
+    }
 
-  function toggleSection(sectionId) {
-    if (!isCollapsible) return;
+    function toggleSection(sectionId) {
+      if (!isCollapsible) return;
 
-    const wrapper = document.getElementById('wrapper-' + sectionId);
-    const content = document.getElementById('content-' + sectionId);
-    const icon = document.getElementById('icon-' + sectionId);
-    
-    if (content.classList.contains('hidden-content')) {
+      const wrapper = document.getElementById('wrapper-' + sectionId);
+      const content = document.getElementById('content-' + sectionId);
+      const icon = document.getElementById('icon-' + sectionId);
+
+      if (content.classList.contains('hidden-content')) {
         content.classList.remove('hidden-content');
         wrapper.classList.remove('collapsed');
         icon.classList.remove('icon-collapsed');
-    } else {
+      } else {
         content.classList.add('hidden-content');
         wrapper.classList.add('collapsed');
         icon.classList.add('icon-collapsed');
-    }
-  }
-
-  function populateTable(tableId, rowsData) {
-    const tbody = document.querySelector(`#${tableId} tbody`);
-    tbody.innerHTML = '';
-
-    rowsData.forEach(item => {
-      const tr = document.createElement('tr');
-
-      // 1. Renter Name
-      const tdName = document.createElement('td');
-      tdName.textContent = item.renter || '';
-      tr.appendChild(tdName);
-
-      // 2. Ticket Body (Clickable Link)
-      const tdOrigin = document.createElement('td');
-      if (item.origin) {
-          const link = document.createElement('span');
-          link.className = 'body-link';
-          link.textContent = item.origin;
-          link.onclick = function() { showBodyInfo(item.origin); };
-          tdOrigin.appendChild(link);
       }
-      tr.appendChild(tdOrigin);
+    }
 
-      // 3. Car
-      const tdCar = document.createElement('td');
-      tdCar.textContent = item.car || '';
-      tr.appendChild(tdCar);
+    function populateTable(tableId, rowsData) {
+      const tbody = document.querySelector(`#${tableId} tbody`);
+      tbody.innerHTML = '';
 
-      // 4. Ticket Details (Number + Date)
-      const tdOffense = document.createElement('td');
-      tdOffense.innerHTML = `<div style="font-weight:600; color:#2d3748;">${item.ticketNo || ''}</div><div style="color:#718096; font-size:0.85em; margin-top:2px;">${item.offenseDate || ''}</div>`;
-      tr.appendChild(tdOffense);
+      rowsData.forEach(item => {
+        const tr = document.createElement('tr');
 
-      // Remaining Fields
-      const remainingFields = [item.expDate, item.amount, item.status, item.reqDetails];
-      remainingFields.forEach(txt => {
-        const td = document.createElement('td');
-        td.textContent = txt || '';
-        tr.appendChild(td);
-      });
+        // 1. Renter Name
+        const tdName = document.createElement('td');
+        tdName.textContent = item.renter || '';
+        tr.appendChild(tdName);
 
-      // Notes
-      const tdNote = document.createElement('td');
-      tdNote.className = 'note-cell';
-      tdNote.title = 'לחץ לעריכה';
-      tdNote.innerHTML = `<div class="note-text">${item.notes || ''}</div>`;
-      tdNote.onclick = function() {
+        // 2. Ticket Body (Plain Text)
+        const tdOrigin = document.createElement('td');
+        tdOrigin.textContent = item.origin || '';
+        tr.appendChild(tdOrigin);
+
+        // 3. Car
+        const tdCar = document.createElement('td');
+        tdCar.textContent = item.car || '';
+        tr.appendChild(tdCar);
+
+        // 4. Ticket Details (Number + Date)
+        const tdOffense = document.createElement('td');
+        tdOffense.innerHTML = `<div style="font-weight:600; color:#2d3748;">${item.ticketNo || ''}</div><div style="color:#718096; font-size:0.85em; margin-top:2px;">${item.offenseDate || ''}</div>`;
+        tr.appendChild(tdOffense);
+
+        // Remaining Fields
+        const remainingFields = [item.expDate, item.amount, item.status, item.reqDetails];
+        remainingFields.forEach(txt => {
+          const td = document.createElement('td');
+          td.textContent = txt || '';
+          tr.appendChild(td);
+        });
+
+        // Notes
+        const tdNote = document.createElement('td');
+        tdNote.className = 'note-cell';
+        tdNote.title = 'לחץ לעריכה';
+        tdNote.innerHTML = `<div class="note-text">${item.notes || ''}</div>`;
+        tdNote.onclick = function () {
           openEditNote(item.rowIndex, item.notes || '', tdNote.querySelector('.note-text'));
-      };
-      tr.appendChild(tdNote);
+        };
+        tr.appendChild(tdNote);
 
-      // Actions
-      const tdAction = document.createElement('td');
-      const wrapper = document.createElement('div');
-      wrapper.className = 'action-wrapper';
+        // Actions
+        const tdAction = document.createElement('td');
+        const wrapper = document.createElement('div');
+        wrapper.className = 'action-wrapper';
 
-      const btnCheck = document.createElement('button');
-      btnCheck.className = 'btn-update';
-      btnCheck.innerText = 'עדכן בדיקה';
-      btnCheck.onclick = function() {
-        btnCheck.disabled = true; btnCheck.innerText = '...';
-        google.script.run.withSuccessHandler(() => {
-          btnCheck.innerText = 'V'; btnCheck.style.backgroundColor = '#cbd5e0';
-        }).updateLastChecked(item.rowIndex);
-      };
+        const btnCheck = document.createElement('button');
+        btnCheck.className = 'btn-update';
+        btnCheck.innerText = 'עדכן בדיקה';
+        btnCheck.onclick = function () {
+          btnCheck.disabled = true; btnCheck.innerText = '...';
+          google.script.run.withSuccessHandler(() => {
+            btnCheck.innerText = 'V'; btnCheck.style.backgroundColor = '#cbd5e0';
+          }).updateLastChecked(item.rowIndex);
+        };
 
-      const btnApprove = document.createElement('button');
-      btnApprove.className = 'btn-approve';
-      btnApprove.innerText = 'אושרה הסבה';
-      btnApprove.onclick = function() {
-        btnApprove.disabled = true; btnApprove.innerText = '...';
-        google.script.run.withSuccessHandler((newStatus) => {
+        const btnApprove = document.createElement('button');
+        btnApprove.className = 'btn-approve';
+        btnApprove.innerText = 'אושרה הסבה';
+        btnApprove.onclick = function () {
+          btnApprove.disabled = true; btnApprove.innerText = '...';
+          google.script.run.withSuccessHandler((newStatus) => {
             btnApprove.innerText = 'בוצע'; btnApprove.style.backgroundColor = '#cbd5e0';
             tr.children[6].textContent = newStatus;
-        }).withFailureHandler((err) => {
+          }).withFailureHandler((err) => {
             alert('שגיאה: ' + err.message); btnApprove.disabled = false; btnApprove.innerText = 'אושרה הסבה';
-        }).updateTransferStatus(item.rowIndex);
-      };
+          }).updateTransferStatus(item.rowIndex);
+        };
 
-      wrapper.appendChild(btnCheck); wrapper.appendChild(btnApprove);
-      tdAction.appendChild(wrapper);
-      tr.appendChild(tdAction); tbody.appendChild(tr);
-    });
-  }
+        wrapper.appendChild(btnCheck); wrapper.appendChild(btnApprove);
+        tdAction.appendChild(wrapper);
+        tr.appendChild(tdAction); tbody.appendChild(tr);
+      });
+    }
 
-  // --- INFO MODAL LOGIC ---
-  function showBodyInfo(bodyName) {
-      const modal = document.getElementById('infoModal');
-      const bodyDiv = document.getElementById('infoBody');
-      const titleDiv = document.getElementById('infoTitle');
-      
-      titleDiv.textContent = bodyName;
-      bodyDiv.innerHTML = '<div class="modal-loading">טוען פרטים...</div>';
-      modal.style.display = 'flex';
 
-      google.script.run
-        .withSuccessHandler((data) => {
-            if (!data) {
-                bodyDiv.innerHTML = '<div style="color:red; padding:10px;">לא נמצא מידע ברשימות</div>';
-                return;
-            }
-            if (data.error) {
-                bodyDiv.innerHTML = `<div style="color:red; padding:10px;">${data.error}</div>`;
-                return;
-            }
 
-            let html = '';
-            for (const [key, value] of Object.entries(data)) {
-                if (String(value).trim() === String(bodyName).trim()) continue;
-                
-                let displayValue = value;
-                if (String(value).match(/^https?:\/\//) || String(value).includes('www.')) {
-                     let url = String(value).startsWith('http') ? value : 'http://' + value;
-                     displayValue = `<a href="${url}" target="_blank">לחץ למעבר לאתר</a>`;
-                }
-
-                html += `
-                <div class="info-row">
-                    <div class="info-label">${key}:</div>
-                    <div class="info-value">${displayValue}</div>
-                </div>`;
-            }
-            bodyDiv.innerHTML = html || 'אין מידע נוסף';
-        })
-        .withFailureHandler((err) => {
-            bodyDiv.innerHTML = `<div style="color:red; padding:10px;">שגיאה: ${err.message}</div>`;
-        })
-        .getBodyDetails(bodyName);
-  }
-
-  // --- EDIT NOTE LOGIC ---
-  function openEditNote(rowIndex, currentText, domElement) {
+    // --- EDIT NOTE LOGIC ---
+    function openEditNote(rowIndex, currentText, domElement) {
       currentEditRowIndex = rowIndex; currentNoteElement = domElement;
       const modal = document.getElementById('editModal');
       const textarea = document.getElementById('noteInput');
       textarea.value = currentText; modal.style.display = 'flex'; textarea.focus();
-  }
+    }
 
-  function closeEditNote() {
+    function closeEditNote() {
       document.getElementById('editModal').style.display = 'none';
       currentEditRowIndex = null; currentNoteElement = null;
-  }
+    }
 
-  function saveEditNote() {
+    function saveEditNote() {
       if (!currentEditRowIndex) return;
       const newText = document.getElementById('noteInput').value;
       const rowIndexToUpdate = currentEditRowIndex;
       if (currentNoteElement) {
-          currentNoteElement.textContent = newText;
-          currentNoteElement.parentElement.onclick = function() {
-              openEditNote(rowIndexToUpdate, newText, currentNoteElement);
-          };
+        currentNoteElement.textContent = newText;
+        currentNoteElement.parentElement.onclick = function () {
+          openEditNote(rowIndexToUpdate, newText, currentNoteElement);
+        };
       }
       closeEditNote();
       google.script.run.withFailureHandler((err) => console.error(err))
-          .updateTicketNote(rowIndexToUpdate, newText);
-  }
+        .updateTicketNote(rowIndexToUpdate, newText);
+    }
 
-  function showError(err) {
-    document.getElementById('loader').innerText = 'שגיאה: ' + err.message;
-    document.getElementById('loader').style.color = 'red';
-  }
+    function showError(err) {
+      document.getElementById('loader').innerText = 'שגיאה: ' + err.message;
+      document.getElementById('loader').style.color = 'red';
+    }
 
-  function filterTable(colIndex, tableId) {
-    const table = document.getElementById(tableId);
-    const input = table.getElementsByTagName("th")[colIndex].querySelector("input");
-    const filter = input.value.toUpperCase();
-    const tr = table.getElementsByTagName("tr");
-    for (let i = 1; i < tr.length; i++) {
-      const td = tr[i].getElementsByTagName("td")[colIndex];
-      if (td) {
-        const txtValue = td.textContent || td.innerText;
-        tr[i].style.display = txtValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+    function filterTable(colIndex, tableId) {
+      const table = document.getElementById(tableId);
+      const input = table.getElementsByTagName("th")[colIndex].querySelector("input");
+      const filter = input.value.toUpperCase();
+      const tr = table.getElementsByTagName("tr");
+      for (let i = 1; i < tr.length; i++) {
+        const td = tr[i].getElementsByTagName("td")[colIndex];
+        if (td) {
+          const txtValue = td.textContent || td.innerText;
+          tr[i].style.display = txtValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+        }
       }
     }
-  }
 
-  function sortTable(n, tableId) {
-    var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-    table = document.getElementById(tableId);
-    const headers = table.getElementsByTagName("th");
-    for (let h of headers) {
+    function sortTable(n, tableId) {
+      var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+      table = document.getElementById(tableId);
+      const headers = table.getElementsByTagName("th");
+      for (let h of headers) {
         const titleDiv = h.querySelector('.sort-header');
         if (titleDiv && h !== headers[n]) titleDiv.classList.remove('sort-asc', 'sort-desc');
-    }
-    const clickedHeader = headers[n].querySelector('.sort-header');
-    switching = true; dir = "asc"; 
-    if (clickedHeader.classList.contains('sort-asc')) dir = "desc";
+      }
+      const clickedHeader = headers[n].querySelector('.sort-header');
+      switching = true; dir = "asc";
+      if (clickedHeader.classList.contains('sort-asc')) dir = "desc";
 
-    while (switching) {
-      switching = false; rows = table.rows;
-      for (i = 1; i < (rows.length - 1); i++) {
-        shouldSwitch = false;
-        if (rows[i].style.display === 'none') continue; 
-        let nextRowIndex = i + 1;
-        while (nextRowIndex < rows.length && rows[nextRowIndex].style.display === 'none') nextRowIndex++;
-        if (nextRowIndex >= rows.length) break;
+      while (switching) {
+        switching = false; rows = table.rows;
+        for (i = 1; i < (rows.length - 1); i++) {
+          shouldSwitch = false;
+          if (rows[i].style.display === 'none') continue;
+          let nextRowIndex = i + 1;
+          while (nextRowIndex < rows.length && rows[nextRowIndex].style.display === 'none') nextRowIndex++;
+          if (nextRowIndex >= rows.length) break;
 
-        x = rows[i].getElementsByTagName("TD")[n];
-        y = rows[nextRowIndex].getElementsByTagName("TD")[n];
-        let xVal = x.textContent.toLowerCase(), yVal = y.textContent.toLowerCase();
-        const dateRegex = /(\d{2})\/(\d{2})\/(\d{4})/; 
-        if (dateRegex.test(xVal) && dateRegex.test(yVal)) {
-           let xDate = xVal.match(dateRegex), yDate = yVal.match(dateRegex);
-           if(xDate && yDate) {
+          x = rows[i].getElementsByTagName("TD")[n];
+          y = rows[nextRowIndex].getElementsByTagName("TD")[n];
+          let xVal = x.textContent.toLowerCase(), yVal = y.textContent.toLowerCase();
+          const dateRegex = /(\d{2})\/(\d{2})\/(\d{4})/;
+          if (dateRegex.test(xVal) && dateRegex.test(yVal)) {
+            let xDate = xVal.match(dateRegex), yDate = yVal.match(dateRegex);
+            if (xDate && yDate) {
               xVal = xDate[3] + xDate[2] + xDate[1];
               yVal = yDate[3] + yDate[2] + yDate[1];
-           }
-        }
-        if (dir == "asc") {
-          if (xVal > yVal) { rows[i].parentNode.insertBefore(rows[nextRowIndex], rows[i]); switching = true; switchcount++; break; }
-        } else if (dir == "desc") {
-          if (xVal < yVal) { rows[i].parentNode.insertBefore(rows[nextRowIndex], rows[i]); switching = true; switchcount++; break; }
+            }
+          }
+          if (dir == "asc") {
+            if (xVal > yVal) { rows[i].parentNode.insertBefore(rows[nextRowIndex], rows[i]); switching = true; switchcount++; break; }
+          } else if (dir == "desc") {
+            if (xVal < yVal) { rows[i].parentNode.insertBefore(rows[nextRowIndex], rows[i]); switching = true; switchcount++; break; }
+          }
         }
       }
+      clickedHeader.classList.remove('sort-asc', 'sort-desc');
+      clickedHeader.classList.add(dir === "asc" ? 'sort-asc' : 'sort-desc');
     }
-    clickedHeader.classList.remove('sort-asc', 'sort-desc');
-    clickedHeader.classList.add(dir === "asc" ? 'sort-asc' : 'sort-desc');
-  }
-</script>
+  </script>
 </body>
+
 </html>
