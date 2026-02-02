@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <base target="_top">
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 style="color:red;">DEBUG MODE ACTIVE</h1>
+    <p>This is a minimal test to verify that the Apps Script modal system is working.</p>
+    <div id="status" style="padding: 20px; background: #eee; margin: 20px;">Waiting for script...</div>
+
+    <script>
+        console.log("DebugProbe: Script started");
+        document.getElementById('status').innerText = "✅ SCRIPT IS RUNNING";
+        document.getElementById('status').style.background = "#d4edda";
+        document.getElementById('status').style.color = "#155724";
+
+        // Force an alert to prove capability
+        window.alert("DEBUG PROBE: If you see this, the system is working!");
+    </script>
+</body>
+
+</html>
