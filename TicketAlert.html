@@ -310,6 +310,7 @@
     .note-text {
       display: -webkit-box;
       -webkit-line-clamp: 3;
+      line-clamp: 3;
       -webkit-box-orient: vertical;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -569,7 +570,7 @@
       google.script.run
         .withSuccessHandler(renderTables)
         .withFailureHandler(showError)
-        .getTicketData(<?!= abcDays ?>);
+        .getTicketData(Number('<?!= abcDays ?>'));
     };
 
     function renderTables(data) {
