@@ -1,9 +1,33 @@
 
 function runOnce_createOnOpenTrigger() {
+  const triggers = ScriptApp.getProjectTriggers();
+  for (const trigger of triggers) {
+    if (trigger.getHandlerFunction() === 'onOpenWithUi') {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  }
+
   ScriptApp.newTrigger('onOpenWithUi')
     .forSpreadsheet(SpreadsheetApp.getActive())
     .onOpen()
     .create();
+}
+
+function removeDuplicateTriggers() {
+  const triggers = ScriptApp.getProjectTriggers();
+  let found = false;
+  let count = 0;
+
+  for (const trigger of triggers) {
+    if (trigger.getHandlerFunction() === 'onOpenWithUi') {
+      if (found) {
+        ScriptApp.deleteTrigger(trigger);
+        count++;
+      }
+      found = true;
+    }
+  }
+  return `Removed ${count} duplicate triggers.`;
 }
 
 function onOpenWithUi(e) {
