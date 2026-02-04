@@ -2,8 +2,24 @@
  * Main function to trigger the check.
  */
 function runTicketCheck() {
-  const ABC = 14; // Days threshold
-  showTicketWarnings(ABC);
+  try {
+    const LOCK_duration_ms = 10000; // 10 seconds
+    const props = PropertiesService.getScriptProperties();
+    const lastRun = parseInt(props.getProperty('LAST_TICKET_CHECK_RUN') || '0', 10);
+    const now = new Date().getTime();
+
+    if (now - lastRun < LOCK_duration_ms) {
+      console.log(`[Debounce] runTicketCheck skipped. Last run was ${(now - lastRun) / 1000}s ago.`);
+      return;
+    }
+
+    props.setProperty('LAST_TICKET_CHECK_RUN', now.toString());
+
+    const ABC = 14; // Days threshold
+    showTicketWarnings(ABC);
+  } catch (e) {
+    console.error(`Error in runTicketCheck: ${e.toString()}`);
+  }
 }
 
 function showTicketWarnings(abcDays) {
