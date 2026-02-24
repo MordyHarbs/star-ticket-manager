@@ -226,10 +226,14 @@
     }
 
     th:nth-child(9) {
-      width: 22%;
+      width: 7%;
     }
 
     th:nth-child(10) {
+      width: 15%;
+    }
+
+    th:nth-child(11) {
       width: 12%;
     }
 
@@ -564,7 +568,8 @@
             <th><div class="th-inner"><div class="sort-header" onclick="sortTable(5, 'THIS_ID')">סכום הדוח</div><input type="text" class="filter-input" onkeyup="filterTable(5, 'THIS_ID')" placeholder="..."></div></th>
             <th><div class="th-inner"><div class="sort-header" onclick="sortTable(6, 'THIS_ID')">סטטוס</div><input type="text" class="filter-input" onkeyup="filterTable(6, 'THIS_ID')" placeholder="..."></div></th>
             <th><div class="th-inner"><div class="sort-header" onclick="sortTable(7, 'THIS_ID')">פרטי בקשה</div><input type="text" class="filter-input" onkeyup="filterTable(7, 'THIS_ID')" placeholder="..."></div></th>
-            <th><div class="th-inner"><div class="sort-header" onclick="sortTable(8, 'THIS_ID')">הערות</div><input type="text" class="filter-input" onkeyup="filterTable(8, 'THIS_ID')" placeholder="..."></div></th>
+            <th><div class="th-inner"><div class="sort-header" onclick="sortTable(8, 'THIS_ID')">בדיקה אחרונה</div><input type="text" class="filter-input" onkeyup="filterTable(8, 'THIS_ID')" placeholder="..."></div></th>
+            <th><div class="th-inner"><div class="sort-header" onclick="sortTable(9, 'THIS_ID')">הערות</div><input type="text" class="filter-input" onkeyup="filterTable(9, 'THIS_ID')" placeholder="..."></div></th>
             <th>פעולה</th>
         </tr>`;
 
@@ -658,14 +663,14 @@
         tdOffense.innerHTML = '<div style="font-weight:600; color:#2d3748;">' + (item.ticketNo || '') + '</div><div style="color:#718096; font-size:0.85em; margin-top:2px;">' + (item.offenseDate || '') + '</div>';
         tr.appendChild(tdOffense);
 
-        // 5-8: Simple fields
-        [item.expDate, item.amount, item.status, item.reqDetails].forEach(function (txt) {
+        // 5-9: Simple fields
+        [item.expDate, item.amount, item.status, item.reqDetails, item.lastChecked].forEach(function (txt) {
           const td = document.createElement('td');
           td.textContent = txt || '';
           tr.appendChild(td);
         });
 
-        // 9. Notes
+        // 10. Notes
         const tdNote = document.createElement('td');
         tdNote.className = 'note-cell';
         tdNote.title = 'לחץ לעריכה';

@@ -240,6 +240,7 @@ function getTicketData(abcDays) {
           amount: ticketAmount,
           status: ticketStatus,
           reqDetails: reqDetails,
+          lastChecked: fmt(lastChecked || rawLastChecked),
           notes: notes
         };
 
