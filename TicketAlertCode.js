@@ -131,10 +131,12 @@ function getBodyDetails(bodyName) {
 
 
 
-function getTicketData(abcDays) {
+function getTicketData(abcDays, countOnly = false) {
   try {
-    console.log("Server: getTicketData called with " + abcDays);
-    Logger.log("Server: getTicketData called with " + abcDays);
+    if (!countOnly) {
+      console.log("Server: getTicketData called with " + abcDays);
+      Logger.log("Server: getTicketData called with " + abcDays);
+    }
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName('דוחות');
@@ -143,6 +145,7 @@ function getTicketData(abcDays) {
     if (!sheet) throw new Error("Sheet 'דוחות' not found.");
 
     const lastRow = sheet.getLastRow();
+    if (countOnly && lastRow < 2) return 0;
     if (lastRow < 2) return { section1: [], section2: [] };
 
     const range = sheet.getRange(2, 1, lastRow - 1, 23);
@@ -262,7 +265,11 @@ function getTicketData(abcDays) {
         }
 
         if (isRequestOld && !isRecentlyChecked) {
-          section1.push(rowObj);
+          if (countOnly) {
+            section1.push(1); // Use array length as counter
+          } else {
+            section1.push(rowObj);
+          }
           addedToSection = true;
         }
 
@@ -271,7 +278,11 @@ function getTicketData(abcDays) {
           if (expDate) {
             const diff = (expDate.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24);
             if (diff <= 15) {
-              section2.push(rowObj);
+              if (countOnly) {
+                section2.push(1);
+              } else {
+                section2.push(rowObj);
+              }
             }
           }
         }
@@ -279,6 +290,10 @@ function getTicketData(abcDays) {
         console.error("Error processing row " + (index + 2) + ": " + rowError.message);
       }
     });
+
+    if (countOnly) {
+      return section1.length + section2.length;
+    }
 
     return { section1: section1, section2: section2 };
 

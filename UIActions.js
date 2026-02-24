@@ -32,8 +32,32 @@ function removeDuplicateTriggers() {
 
 function onOpenWithUi(e) {
   buildCustomMenu();
-  runTicketCheck();
-  // checkFollowUpReminders();
+
+  // --- DEBOUNCE PROTECTION: Prevent duplicate triggers from firing multiple popups ---
+  const props = PropertiesService.getScriptProperties();
+  const lastRun = parseInt(props.getProperty('LAST_ONOPEN_POPUP_TIME') || '0', 10);
+  const now = new Date().getTime();
+  if (now - lastRun < 2000) return; // If script was triggered less than 2 seconds ago, ignore this run
+  props.setProperty('LAST_ONOPEN_POPUP_TIME', now.toString());
+
+  try {
+    const ticketCount = getTicketData(28, true); // Fast count only
+
+    if (ticketCount > 0) {
+      const ui = SpreadsheetApp.getUi();
+      const response = ui.alert(
+        "התראת דוחות 🚨",
+        "ישנם " + ticketCount + " דוחות הממתינים לבדיקה או שמתקרבים להתיישנות.\nהאם להציג אותם כעת?",
+        ui.ButtonSet.YES_NO
+      );
+
+      if (response === ui.Button.YES) {
+        runTicketCheck();
+      }
+    }
+  } catch (err) {
+    console.error("Error fetching fast ticket count on open: " + err);
+  }
 }
 
 function onOpen(e) {
