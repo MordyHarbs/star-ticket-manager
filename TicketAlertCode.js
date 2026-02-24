@@ -15,7 +15,7 @@ function runTicketCheck() {
 
     props.setProperty('LAST_TICKET_CHECK_RUN', now.toString());
 
-    const ABC = 14; // Days threshold
+    const ABC = 28; // Days threshold
     showTicketWarnings(ABC);
   } catch (e) {
     console.error(`Error in runTicketCheck: ${e.toString()}`);

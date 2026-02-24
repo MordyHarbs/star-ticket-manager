@@ -547,7 +547,7 @@
     let currentEditRowIndex = null;
     let currentNoteElement = null;
     let isCollapsible = false;
-    var ABC_DAYS = 14;
+    var ABC_DAYS = parseInt("<?= abcDays || 28 ?>", 10);
 
     // --- SAFETY CHECK ---
     window.onerror = function (msg, url, line) {
