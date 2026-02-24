@@ -22,6 +22,27 @@ function runTicketCheck() {
   }
 }
 
+function runTicketCheckWithPrompt() {
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.prompt(
+    "בדיקת סטטוס דוחות",
+    "הזן את מספר הימים לבדיקת התיישנות דוחות (ברירת מחדל: 28):",
+    ui.ButtonSet.OK_CANCEL
+  );
+
+  if (response.getSelectedButton() === ui.Button.OK) {
+    const input = response.getResponseText().trim();
+    let days = 28;
+    if (input !== "" && !isNaN(input)) {
+      days = parseInt(input, 10);
+    }
+
+    // Update the run timestamp so onOpen doesn't trigger immediately after this
+    PropertiesService.getScriptProperties().setProperty('LAST_TICKET_CHECK_RUN', new Date().getTime().toString());
+    showTicketWarnings(days);
+  }
+}
+
 function showTicketWarnings(abcDays) {
   const html = HtmlService.createTemplateFromFile('TicketAlert');
   html.abcDays = abcDays;

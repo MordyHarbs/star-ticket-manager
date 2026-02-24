@@ -71,6 +71,7 @@ function buildCustomMenu() {
     .addItem('הצג כל הלקוחות הממתינים לטיפול', 'ShowAllFollowUpReminders')
     .addItem('הוסף תאריך לטיפול', 'updateDateMenu')
     .addItem('הצג דוחות לבדיקת סטטוס', 'runTicketCheck')
+    .addItem('הצג דוחות לבדיקת סטטוס (התאמה אישית)', 'runTicketCheckWithPrompt')
     .addSeparator()
     .addItem('הצג טבלת רשויות לדוחות', 'showSourcesDialog')
     .addSeparator()
