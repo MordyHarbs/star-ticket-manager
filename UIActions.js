@@ -65,21 +65,33 @@ function onOpen(e) {
 }
 
 function buildCustomMenu() {
-  SpreadsheetApp.getUi()
-    .createMenu('🔍 כלים מותאמים')
-    .addItem('הצג לקוחות ממתינים לטיפול תאריך עבר', 'checkFollowUpReminders')
-    .addItem('הצג כל הלקוחות הממתינים לטיפול', 'ShowAllFollowUpReminders')
-    .addItem('הוסף תאריך לטיפול', 'updateDateMenu')
+  const ui = SpreadsheetApp.getUi();
+  const mainMenu = ui.createMenu('🔍 כלים מותאמים');
+
+  // Sub-menu for Tickets and Reports
+  const ticketsMenu = ui.createMenu('דוחות והתראות')
     .addItem('הצג דוחות לבדיקת סטטוס', 'runTicketCheck')
     .addItem('הצג דוחות לבדיקת סטטוס (התאמה אישית)', 'runTicketCheckWithPrompt')
-    .addSeparator()
-    .addItem('הצג טבלת רשויות לדוחות', 'showSourcesDialog')
-    .addSeparator()
+    .addItem('הצג טבלת רשויות לדוחות', 'showSourcesDialog');
+
+  // Sub-menu for Follow-ups and Reminders
+  const followUpMenu = ui.createMenu('מעקב ותזכורות')
+    .addItem('הצג לקוחות ממתינים לטיפול תאריך עבר', 'checkFollowUpReminders')
+    .addItem('הצג כל הלקוחות הממתינים לטיפול', 'ShowAllFollowUpReminders')
+    .addItem('הוסף תאריך לטיפול', 'updateDateMenu');
+
+  // Sub-menu for General Management
+  const manageMenu = ui.createMenu('ניהול שוטף')
     .addItem('סמן הכול כשולם', 'markAllAsPaid')
-    .addSeparator()
     .addItem('ביצוע חיפוש בפירוט לפי לקוח', 'updateSearchInfo')
+    .addItem('סנכרן לקוחות', 'syncCustomerSheet');
+
+  // Assemble the main menu
+  mainMenu
+    .addSubMenu(ticketsMenu)
+    .addSubMenu(followUpMenu)
     .addSeparator()
-    .addItem('סנכרן לקוחות', 'syncCustomerSheet')
+    .addSubMenu(manageMenu)
     .addToUi();
 }
 
