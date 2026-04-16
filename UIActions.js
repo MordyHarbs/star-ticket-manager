@@ -83,7 +83,6 @@ function buildCustomMenu() {
   // Sub-menu for General Management
   const manageMenu = ui.createMenu('ניהול שוטף')
     .addItem('סמן הכול כשולם', 'markAllAsPaid')
-    .addItem('ביצוע חיפוש בפירוט לפי לקוח', 'updateSearchInfo')
     .addItem('סנכרן לקוחות', 'syncCustomerSheet');
 
   // Assemble the main menu
@@ -92,6 +91,11 @@ function buildCustomMenu() {
     .addSubMenu(followUpMenu)
     .addSeparator()
     .addSubMenu(manageMenu)
+    .addToUi();
+
+  // Create separate menu for Office Use
+  ui.createMenu('🏢 לשימוש המשרד')
+    .addItem('ביצוע חיפוש בפירוט לפי לקוח', 'updateSearchInfo')
     .addToUi();
 }
 
