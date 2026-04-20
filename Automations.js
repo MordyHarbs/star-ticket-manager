@@ -17,7 +17,7 @@ function normalizeHebrew(str) {
  * getSourcesTable: return rich values from named range “reprot_table”
  */
 function getSourcesTable() {
-  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
   const range = ss.getRangeByName('reprot_table');
   return range.getRichTextValues().map(row =>
     row.map(cell => {
@@ -71,10 +71,10 @@ function updateFollowUpDate(key, val) {
 
 // on edit auto trigger
 function onEdit(e) {
-  const ss  = e.source;
-  const sh  = e.range.getSheet();
-  const r   = e.range.getRow();
-  const c   = e.range.getColumn();
+  const ss = e.source;
+  const sh = e.range.getSheet();
+  const r = e.range.getRow();
+  const c = e.range.getColumn();
   const val = e.range.getValue();
 
   // Log basic trigger info
@@ -85,11 +85,11 @@ function onEdit(e) {
   //================================================================================
   // name added in C5
   if (sh.getName() === 'פירוט נסיעות לפי לקוח' && r === 5 && c === 3) {
-    
+
     // 2. Define the ranges to check and clear
     const targetRanges = ['A1:B1', 'B5', 'E5:R5'];
     const rangeList = sh.getRangeList(targetRanges);
-    
+
     // 3. Check if ANY of these cells have a value
     const ranges = rangeList.getRanges();
     let hasValue = ranges.some(range => {
@@ -101,7 +101,7 @@ function onEdit(e) {
     if (hasValue) {
       const ui = SpreadsheetApp.getUi();
       const response = ui.alert(
-        'ישנם סינונים נוספים מלבד השם שנוסף עכשיו,\nהאם לנקות נתוני סינון נוספים מלבד השם?', 
+        'ישנם סינונים נוספים מלבד השם שנוסף עכשיו,\nהאם לנקות נתוני סינון נוספים מלבד השם?',
         ui.ButtonSet.YES_NO
       );
 
@@ -109,7 +109,7 @@ function onEdit(e) {
       if (response == ui.Button.YES) {
         // Clear values only (keeps formatting and validation)
         rangeList.clearContent();
-        
+
         // Update I1
         sh.getRange("I1").setValue("כולל שולם");
       }
@@ -124,14 +124,14 @@ function onEdit(e) {
     e.range.setValue('=LET(erorMessage, "אין תאריך לטיפול",lookupFuncion, VLOOKUP(C6,follow_up_date!A:B,2,FALSE),IFNA(IF(lookupFuncion="",erorMessage,lookupFuncion),erorMessage))')
   }
 
-    // general comment for costomer added in R3
+  // general comment for costomer added in R3
   if (sh.getName() === 'פירוט נסיעות לפי לקוח' && r === 3 && c === 14) {
     Logger.log('N3 edited')
     const key = sh.getRange('C6').getValue();
     Logger.log(`Processing key: ${key}`);
 
     const followSheet = ss.getSheetByName('follow_up_date');
-    const data        = followSheet.getRange('A:A').getValues();
+    const data = followSheet.getRange('A:A').getValues();
 
     let found = false;
     for (let i = 0; i < data.length; i++) {
@@ -149,7 +149,7 @@ function onEdit(e) {
       followSheet.getRange(lastRow, 1).setValue(key);
       followSheet.getRange(lastRow, 4).setValue(val);
     }
-    
+
     // If R3 is cleared → delete logic based on whether column C has value
     if (val === '') {
       for (let i = 0; i < data.length; i++) {
@@ -176,7 +176,7 @@ function onEdit(e) {
   }
 
   // comment added in Q3
-  if (sh.getName() === 'פירוט נסיעות לפי לקוח' && r === 3 && c === 17) { 
+  if (sh.getName() === 'פירוט נסיעות לפי לקוח' && r === 3 && c === 17) {
     Logger.log('Q3 edited');
 
     const key = sh.getRange('C6').getValue();
@@ -191,7 +191,7 @@ function onEdit(e) {
     if (val === '') {
       for (let i = 0; i < data.length; i++) {
         if (data[i][0] === key) {
-          
+
           const col_b = followSheet.getRange(i + 1, 2).getValue(); // Column B
           const col_d = followSheet.getRange(i + 1, 4).getValue(); // Column D
           const hasValueInBOrD = (col_b || col_d); // true if either is non-empty
@@ -243,7 +243,7 @@ function onEdit(e) {
           data = target.getRange(2, 6, last - 1, 2).getValues();
           for (let i = 0; i < data.length; i++) {
             if (normalizeHebrew(data[i][1]) === curF &&
-                normalizeHebrew(data[i][0]) === curI) {
+              normalizeHebrew(data[i][0]) === curI) {
               tr = i + 2;
               target.getRange(tr, 12).setValue(true);
               const colNVal = target.getRange(tr, 14).getValue();
@@ -263,7 +263,7 @@ function onEdit(e) {
           data = target.getRange(2, 2, last - 1, 3).getValues();
           for (let i = 0; i < data.length; i++) {
             if (normalizeHebrew(data[i][0]) === curD &&
-                normalizeHebrew(data[i][2]) === curF) {
+              normalizeHebrew(data[i][2]) === curF) {
               tr = i + 2;
               target.getRange(tr, 12).setValue('שולם');
               break;
@@ -281,8 +281,8 @@ function onEdit(e) {
           data = target.getRange(2, 2, last - 1, 5).getValues();
           for (let i = 0; i < data.length; i++) {
             if (normalizeHebrew(data[i][0]) === curD &&      // target col B
-                normalizeHebrew(data[i][2]) === curF &&      // target col D (existing)
-                normalizeHebrew(data[i][4]) === curG) {      // target col F (new)
+              normalizeHebrew(data[i][2]) === curF &&      // target col D (existing)
+              normalizeHebrew(data[i][4]) === curG) {      // target col F (new)
               tr = i + 2;
               target.getRange(tr, 10).setValue('שולם');
               break;
@@ -305,9 +305,9 @@ function onEdit(e) {
     Utilities.sleep(500);
     const key = normalizeHebrew(sh.getRange(r, 2).getValue());
     let target, writeCol;
-    if (key === 'דוחות')       { target = ss.getSheetByName('דוחות');           writeCol = 14; }
-    else if (key === 'כביש 6')  { target = ss.getSheetByName('כביש 6/מנהרות');   writeCol = 12; }
-    else if (key === 'חוצה צפון'){ target = ss.getSheetByName('חוצה צפון/נתיב מהיר'); writeCol = 10; }
+    if (key === 'דוחות') { target = ss.getSheetByName('דוחות'); writeCol = 14; }
+    else if (key === 'כביש 6') { target = ss.getSheetByName('כביש 6/מנהרות'); writeCol = 12; }
+    else if (key === 'חוצה צפון') { target = ss.getSheetByName('חוצה צפון/נתיב מהיר'); writeCol = 10; }
     else return;
     const last = target.getLastRow(); if (last < 2) return;
     if (key === 'דוחות') {
@@ -316,7 +316,7 @@ function onEdit(e) {
       const data = target.getRange(2, 6, last - 1, 2).getValues();
       for (let i = 0; i < data.length; i++) {
         if (normalizeHebrew(data[i][1]) === curF &&
-            normalizeHebrew(data[i][0]) === curI) {
+          normalizeHebrew(data[i][0]) === curI) {
           target.getRange(i + 2, writeCol).setValue(newVal);
           break;
         }
@@ -328,8 +328,8 @@ function onEdit(e) {
       const data = target.getRange(2, 2, last - 1, 5).getValues();
       for (let i = 0; i < data.length; i++) {
         if (normalizeHebrew(data[i][0]) === curD &&
-            normalizeHebrew(data[i][2]) === curF &&
-            normalizeHebrew(data[i][4]) === curG) {
+          normalizeHebrew(data[i][2]) === curF &&
+          normalizeHebrew(data[i][4]) === curG) {
           target.getRange(i + 2, writeCol).setValue(newVal);
           break;
         }
@@ -346,9 +346,9 @@ function onEdit(e) {
     Utilities.sleep(500);
     const key = normalizeHebrew(sh.getRange(r, 2).getValue());
     let target, writeCol;
-    if (key === 'דוחות')       { target = ss.getSheetByName('דוחות');           writeCol = 14; }
-    else if (key === 'כביש 6')  { target = ss.getSheetByName('כביש 6/מנהרות');   writeCol = 10; }
-    else if (key === 'חוצה צפון'){ target = ss.getSheetByName('חוצה צפון/נתיב מהיר'); writeCol = 8; }
+    if (key === 'דוחות') { target = ss.getSheetByName('דוחות'); writeCol = 14; }
+    else if (key === 'כביש 6') { target = ss.getSheetByName('כביש 6/מנהרות'); writeCol = 10; }
+    else if (key === 'חוצה צפון') { target = ss.getSheetByName('חוצה צפון/נתיב מהיר'); writeCol = 8; }
     else return;
     const last = target.getLastRow(); if (last < 2) return;
     if (key === 'דוחות') {
@@ -357,7 +357,7 @@ function onEdit(e) {
       const data = target.getRange(2, 6, last - 1, 2).getValues();
       for (let i = 0; i < data.length; i++) {
         if (normalizeHebrew(data[i][1]) === curF &&
-            normalizeHebrew(data[i][0]) === curI) {
+          normalizeHebrew(data[i][0]) === curI) {
           target.getRange(i + 2, writeCol).clearContent();
           break;
         }
@@ -369,8 +369,8 @@ function onEdit(e) {
       const data = target.getRange(2, 2, last - 1, 5).getValues();
       for (let i = 0; i < data.length; i++) {
         if (normalizeHebrew(data[i][0]) === curD &&
-            normalizeHebrew(data[i][2]) === curF &&
-            normalizeHebrew(data[i][4]) === curG) {
+          normalizeHebrew(data[i][2]) === curF &&
+          normalizeHebrew(data[i][4]) === curG) {
           target.getRange(i + 2, writeCol).setValue(newVal);
           break;
         }
@@ -384,7 +384,7 @@ function onEdit(e) {
     const newVal = val;
     e.range.clearContent();
     Utilities.sleep(500);
-    const key    = normalizeHebrew(sh.getRange(r, 2).getValue());
+    const key = normalizeHebrew(sh.getRange(r, 2).getValue());
     const target = ss.getSheetByName('דוחות');
     if (!target) return;
     const last = target.getLastRow(); if (last < 2) return;
@@ -393,7 +393,7 @@ function onEdit(e) {
     const data = target.getRange(2, 6, last - 1, 2).getValues();
     for (let i = 0; i < data.length; i++) {
       if (normalizeHebrew(data[i][1]) === curF &&
-          normalizeHebrew(data[i][0]) === curI) {
+        normalizeHebrew(data[i][0]) === curI) {
         const tr = i + 2;
         if (key === 'דוחות') {
           target.getRange(tr, 15).setValue(newVal);
@@ -413,16 +413,16 @@ function onEdit(e) {
     const qVal = val;
     e.range.clearContent();
     Utilities.sleep(500);
-    const key  = normalizeHebrew(sh.getRange(r, 2).getValue());
+    const key = normalizeHebrew(sh.getRange(r, 2).getValue());
     let target, writeCol;
     if (key === 'דוחות') {
-      target   = ss.getSheetByName('דוחות');
+      target = ss.getSheetByName('דוחות');
       writeCol = 17;
     } else if (key === 'כביש 6') {
-      target   = ss.getSheetByName('כביש 6/מנהרות');
+      target = ss.getSheetByName('כביש 6/מנהרות');
       writeCol = 13;
     } else if (key === 'חוצה צפון') {
-      target   = ss.getSheetByName('חוצה צפון/נתיב מהיר');
+      target = ss.getSheetByName('חוצה צפון/נתיב מהיר');
       writeCol = 11;
     } else {
       return;
@@ -433,7 +433,7 @@ function onEdit(e) {
       const data = target.getRange(2, 6, last - 1, 2).getValues();
       for (let i = 0; i < data.length; i++) {
         if (normalizeHebrew(data[i][1]) === normalizeHebrew(sh.getRange(r, 6).getValue()) &&
-            normalizeHebrew(data[i][0]) === curI) {
+          normalizeHebrew(data[i][0]) === curI) {
           target.getRange(i + 2, writeCol).setValue(qVal);
           break;
         }
@@ -443,8 +443,8 @@ function onEdit(e) {
       const data = target.getRange(2, 2, last - 1, 5).getValues();
       for (let i = 0; i < data.length; i++) {
         if (normalizeHebrew(data[i][0]) === normalizeHebrew(sh.getRange(r, 4).getValue()) &&
-            normalizeHebrew(data[i][2]) === normalizeHebrew(sh.getRange(r, 6).getValue()) &&
-            normalizeHebrew(data[i][4]) === curG) {
+          normalizeHebrew(data[i][2]) === normalizeHebrew(sh.getRange(r, 6).getValue()) &&
+          normalizeHebrew(data[i][4]) === curG) {
           target.getRange(i + 2, writeCol).setValue(qVal);
           break;
         }
@@ -458,11 +458,11 @@ function onEdit(e) {
     let date = new Date();
     let formattedDate = Utilities.formatDate(date, Session.getScriptTimeZone(), "dd/MM/yy");
 
-    // for case of marking "טופל נשלח לשטריקר"
-        if (c === 12 && typeof val === 'string' && val.includes('טופל נשלח לשטריקר')) {
+    // for case of marking "טופל נשלח בקבוצה"
+    if (c === 12 && typeof val === 'string' && val.includes('טופל נשלח בקבוצה')) {
       sh.getRange(r, 10).setValue("פטור");
       var oldComment = sh.getRange(r, 13).getValue()
-      var newComment = oldComment ? `${oldComment}\n נשלח לאבי ${formattedDate}`: `נשלח לאבי ${formattedDate}`;
+      var newComment = oldComment ? `${oldComment}\n נשלח בקבוצה ${formattedDate}` : `נשלח בקבוצה ${formattedDate}`;
       sh.getRange(r, 13).setValue(newComment)
     }
   }
@@ -473,31 +473,31 @@ function onEdit(e) {
     let date = new Date();
     let formattedDate = Utilities.formatDate(date, Session.getScriptTimeZone(), "dd/MM/yy");
 
-    // for case of marking "טופל נשלח לשטריקר"
-        if (c === 10 && typeof val === 'string' && val.includes('טופל נשלח לשטריקר')) {
+    // for case of marking "טופל נשלח בקבוצה"
+    if (c === 10 && typeof val === 'string' && val.includes('טופל נשלח בקבוצה')) {
       sh.getRange(r, 8).setValue("פטור");
       var oldComment = sh.getRange(r, 11).getValue()
-      var newComment = oldComment ? `${oldComment}\n נשלח לאבי ${formattedDate}`: `נשלח לאבי ${formattedDate}`;
+      var newComment = oldComment ? `${oldComment}\n נשלח בקבוצה ${formattedDate}` : `נשלח בקבוצה ${formattedDate}`;
       sh.getRange(r, 11).setValue(newComment)
     }
   }
 
   // ===== Edits in 'דוחות' =====
   if (sh.getName() === 'דוחות') {
-    
+
     let date = new Date();
     let formattedDate = Utilities.formatDate(date, Session.getScriptTimeZone(), "dd/MM/yy");
-    
+
     // hyperlink links pasted in column A
     if (c === 1 && typeof val === 'string' && val.startsWith('http')) {
       sh.getRange(r, 1).setFormula(`=HYPERLINK("${val}","AA")`);
     }
-    // for case of marking "טופל נשלח לשטריקר"
-    if (c === 14 && typeof val === 'string' && val.includes('טופל נשלח לשטריקר')) {
-      sh.getRange(r, 15).setValue("נשלח לשטריקר");
+    // for case of marking "טופל נשלח בקבוצה"
+    if (c === 14 && typeof val === 'string' && val.includes('טופל נשלח בקבוצה')) {
+      sh.getRange(r, 15).setValue("נשלח בקבוצה");
       sh.getRange(r, 16).setValue(new Date());
       var oldComment = sh.getRange(r, 17).getValue()
-      var newComment = oldComment ? `${oldComment}\n נשלח לאבי ${formattedDate}`: `נשלח לאבי ${formattedDate}`;
+      var newComment = oldComment ? `${oldComment}\n נשלח בקבוצה ${formattedDate}` : `נשלח בקבוצה ${formattedDate}`;
       sh.getRange(r, 17).setValue(newComment)
       sh.getRange(r, 12).setValue(true)
       sh.getRange(r, 11).setValue(0)
@@ -518,9 +518,9 @@ function onEdit(e) {
       }
     }
     // for case of marking שולם in column L - if סטטוס is אושרה הסבה switch it to סיום טיפול הוסב
-    if(c === 12 && val === true){
+    if (c === 12 && val === true) {
       col14Value = sh.getRange(r, 14).getValue()
-      if (col14Value === 'אושרה הסבה'){
+      if (col14Value === 'אושרה הסבה') {
         sh.getRange(r, 14).setValue('סיום טיפול הוסב')
       }
 
