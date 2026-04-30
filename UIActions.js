@@ -275,7 +275,7 @@ function markAllForName(name, ss) {
       const rowName = normalizeHebrew(data[i][0]); // col B
       const total = Number(data[i][11]); // col M
       const colN = data[i][13 - 1]; // col N (index 12)
-      if (rowName === normName && total > 0) {
+      if (rowName === normName && total != 0) {
         const tr = i + 2;
         sh.getRange(tr, 12).setValue(true); // L = true
 
@@ -295,7 +295,7 @@ function markAllForName(name, ss) {
     for (let i = 0; i < data.length; i++) {
       const rowName = normalizeHebrew(data[i][0]); // E
       const total = Number(data[i][6]); // K (index 6 in this slice)
-      if (rowName === normName && total > 0) {
+      if (rowName === normName && total != 0) {
         const tr = i + 2;
         sh.getRange(tr, 12).setValue('שולם'); // L
       }
@@ -311,7 +311,7 @@ function markAllForName(name, ss) {
     for (let i = 0; i < data.length; i++) {
       const rowName = normalizeHebrew(data[i][0]); // E
       const total = Number(data[i][4]); // I (index 4)
-      if (rowName === normName && total > 0) {
+      if (rowName === normName && total != 0) {
         const tr = i + 2;
         sh.getRange(tr, 10).setValue('שולם'); // J
       }
@@ -330,7 +330,28 @@ function markAllForName(name, ss) {
         const rowName = normalizeHebrew(data[i][0]); // Column A (index 0)
         const total = Number(data[i][4]);          // Column E (index 4)
 
-        if (rowName === normName && total > 0) {
+        if (rowName === normName && total != 0) {
+          const tr = i + 2; // Real row index in the sheet
+          sh.getRange(tr, 4).setValue(true); // Column D (4) = true
+        }
+      }
+    }
+  }
+
+  // -------- תשלומים --------
+  sh = ss.getSheetByName('תשלומים');
+  if (sh) {
+    last = sh.getLastRow();
+    if (last >= 2) {
+      // Get columns A through D
+      // Column A (1) = Name, Column C (3) = Amount
+      const data = sh.getRange(2, 1, last - 1, 4).getValues();
+
+      for (let i = 0; i < data.length; i++) {
+        const rowName = normalizeHebrew(data[i][0]); // Column A (index 0)
+        const total = Number(data[i][2]);          // Column C (index 2)
+
+        if (rowName === normName && total != 0) {
           const tr = i + 2; // Real row index in the sheet
           sh.getRange(tr, 4).setValue(true); // Column D (4) = true
         }
