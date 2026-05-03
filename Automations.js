@@ -97,8 +97,10 @@ function onEdit(e) {
       return range.getValues().flat().some(cellValue => cellValue !== "");
     });
 
-    // 4. If there is data, ask the user
-    if (hasValue) {
+    const isI1NotPaid = sh.getRange("I1").getValue() === "לא שולם";
+
+    // 4. If there is data or I1 is not paid, ask the user
+    if (hasValue || isI1NotPaid) {
       const ui = SpreadsheetApp.getUi();
       const response = ui.alert(
         'ישנם סינונים נוספים מלבד השם שנוסף עכשיו,\nהאם לנקות נתוני סינון נוספים מלבד השם?',
