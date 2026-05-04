@@ -44,7 +44,8 @@ function updateFollowUpDate(key, val) {
         // Clearing logic
         const cod_d = followSheet.getRange(i + 1, 4).getValue(); // Column D
         const col_c = followSheet.getRange(i + 1, 3).getValue(); // Column C
-        const keepRow = (cod_d || col_c);
+        const col_e = followSheet.getRange(i + 1, 5).getValue(); // Column E
+        const keepRow = (cod_d || col_c || col_e);
 
         if (keepRow) {
           followSheet.getRange(i + 1, 2).clearContent();
@@ -159,7 +160,8 @@ function onEdit(e) {
           // Get values from columns B and C (1 row, 2 columns)
           const col_b = followSheet.getRange(i + 1, 2).getValue(); // Column B
           const col_c = followSheet.getRange(i + 1, 3).getValue(); // Column C
-          const hasValueInBOrC = (col_b || col_c); // true if either is non-empty
+          const col_e = followSheet.getRange(i + 1, 5).getValue(); // Column E
+          const hasValueInBOrC = (col_b || col_c || col_e); // true if any is non-empty
 
           if (hasValueInBOrC) {
             // Clear only column D
@@ -196,7 +198,8 @@ function onEdit(e) {
 
           const col_b = followSheet.getRange(i + 1, 2).getValue(); // Column B
           const col_d = followSheet.getRange(i + 1, 4).getValue(); // Column D
-          const hasValueInBOrD = (col_b || col_d); // true if either is non-empty
+          const col_e = followSheet.getRange(i + 1, 5).getValue(); // Column E
+          const hasValueInBOrD = (col_b || col_d || col_e); // true if any is non-empty
 
           if (hasValueInBOrD) {
             // Clear only column C
@@ -228,6 +231,54 @@ function onEdit(e) {
       followSheet.getRange(lastRow, 1).setValue(key); // Column A
       followSheet.getRange(lastRow, 3).setValue(val); // Column C
     }
+  }
+
+  // M3 cell logic for column E (col 13)
+  if (sh.getName() === 'פירוט נסיעות לפי לקוח' && r === 3 && c === 13) {
+    Logger.log('M3 edited');
+    const key = sh.getRange('C6').getValue();
+    Logger.log(`Processing key: ${key}`);
+
+    const followSheet = ss.getSheetByName('follow_up_date');
+    const data = followSheet.getRange('A:A').getValues();
+
+    let found = false;
+    for (let i = 0; i < data.length; i++) {
+      if (data[i][0] === key) {
+        Logger.log(`Key found in follow_up_date at row ${i + 1}. Updating column E to ${val}`);
+        followSheet.getRange(i + 1, 5).setValue(val);
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) {
+      const lastRow = followSheet.getLastRow() + 1;
+      Logger.log(`Key not found. Appending new row ${lastRow} with (A: ${key}, E: ${val})`);
+      followSheet.getRange(lastRow, 1).setValue(key);
+      followSheet.getRange(lastRow, 5).setValue(val);
+    }
+
+    // If M3 is cleared → delete logic based on whether column B, C, or D has value
+    if (val === '') {
+      for (let i = 0; i < data.length; i++) {
+        if (data[i][0] === key) {
+          const col_b = followSheet.getRange(i + 1, 2).getValue(); // Column B
+          const col_c = followSheet.getRange(i + 1, 3).getValue(); // Column C
+          const col_d = followSheet.getRange(i + 1, 4).getValue(); // Column D
+          const keepRow = (col_b || col_c || col_d); // true if any is non-empty
+
+          if (keepRow) {
+            followSheet.getRange(i + 1, 5).clearContent();
+          } else {
+            followSheet.deleteRow(i + 1);
+          }
+          break;
+        }
+      }
+    }
+
+    e.range.setValue('=LET(erorMessage, "",lookupFuncion, VLOOKUP(C6,follow_up_date!A:E,5,FALSE),IFNA(IF(lookupFuncion="",erorMessage,lookupFuncion),erorMessage))');
   }
 
   // ===== A-column logic (col 1) =====
