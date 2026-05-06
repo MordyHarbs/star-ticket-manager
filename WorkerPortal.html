@@ -214,6 +214,16 @@
     let pendingPaymentsMap = {};
     let expandedCustomers = new Set();
     
+    function escapeHTML(str) {
+      if (!str) return '';
+      return str.toString()
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+    
     // On Mount
     document.addEventListener('DOMContentLoaded', () => {
       fetchTasks();
@@ -331,11 +341,11 @@
         
         header.innerHTML = `
           <div class="flex items-center gap-4">
-            <div class="h-12 w-12 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center text-blue-700 font-bold text-xl shadow-inner">
+            <div class="h-12 w-12 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center text-blue-700 font-bold text-xl shadow-inner flex-shrink-0">
               ${initial}
             </div>
-            <div>
-              <h3 class="text-lg font-bold text-gray-900">${customer || 'ללא שם'}</h3>
+            <div class="min-w-0">
+              <h3 class="text-lg font-bold text-gray-900 truncate max-w-[200px] sm:max-w-sm" title="${escapeHTML(customer)}">${escapeHTML(customer) || 'ללא שם'}</h3>
               <p class="text-sm text-gray-500">${data.items.length} חובות פתוחים מסינון זה</p>
             </div>
           </div>
@@ -372,18 +382,24 @@
           `;
           
           data.items.forEach(item => {
+            const safeCarNumber = escapeHTML(item.carNumber);
+            const safeCarModel = escapeHTML(item.carModel);
+            const safeDebtSource = escapeHTML(item.debtSource);
+            const safeDebtInfo = escapeHTML(item.debtInfo);
+            const safeNotes = escapeHTML(item.notes);
+            
             tableHTML += `
               <tr class="hover:bg-blue-50/30 transition-colors">
-                <td class="px-6 py-4 font-medium text-gray-900"><span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-1 rounded-md border border-gray-200">${item.carNumber || '-'}</span></td>
-                <td class="px-6 py-4 whitespace-nowrap text-gray-700">${item.carModel || '-'}</td>
-                <td class="px-6 py-4">
-                  <span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">
-                    ${item.debtSource || '-'}
+                <td class="px-6 py-4 font-medium text-gray-900 max-w-[120px]"><span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-1 rounded-md border border-gray-200 truncate block" title="${safeCarNumber}">${safeCarNumber || '-'}</span></td>
+                <td class="px-6 py-4 text-gray-700 max-w-[120px] truncate" title="${safeCarModel}">${safeCarModel || '-'}</td>
+                <td class="px-6 py-4 max-w-[120px]">
+                  <span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 truncate block" title="${safeDebtSource}">
+                    ${safeDebtSource || '-'}
                   </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-gray-500">${item.date || '-'}</td>
-                <td class="px-6 py-4 max-w-xs"><div class="line-clamp-2" title="${item.debtInfo}">${item.debtInfo || '-'}</div></td>
-                <td class="px-6 py-4 text-xs text-gray-500 max-w-xs"><div class="line-clamp-2" title="${item.notes}">${item.notes || '-'}</div></td>
+                <td class="px-6 py-4 max-w-[200px]"><div class="line-clamp-2" title="${safeDebtInfo}">${safeDebtInfo || '-'}</div></td>
+                <td class="px-6 py-4 text-xs text-gray-500 max-w-[200px]"><div class="line-clamp-2" title="${safeNotes}">${safeNotes || '-'}</div></td>
                 <td class="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">₪ ${item.amount.toLocaleString('he-IL', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
               </tr>
             `;
