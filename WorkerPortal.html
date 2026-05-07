@@ -944,6 +944,13 @@
 
           closePaymentModal();
           showToast('התשלום נוסף בהצלחה!');
+          
+          // Update local state instantly and re-render
+          if (!pendingPaymentsMap[paymentData.customerName]) {
+            pendingPaymentsMap[paymentData.customerName] = 0;
+          }
+          pendingPaymentsMap[paymentData.customerName] += Number(paymentData.amount);
+          render();
         })
         .catch(error => {
           console.error(error);
