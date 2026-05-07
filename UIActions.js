@@ -83,6 +83,7 @@ function buildCustomMenu() {
   // Sub-menu for General Management
   const manageMenu = ui.createMenu('ניהול שוטף')
     .addItem('סמן הכול כשולם', 'markAllAsPaid')
+    .addItem('העבר חובות לטיפול המשרד', 'transferToOfficeCare')
     .addItem('סנכרן לקוחות', 'syncCustomerSheet');
 
   // Assemble the main menu
@@ -419,5 +420,221 @@ function processPaymentRow(sh, r, ss) {
         }
       }
     }
+  }
+}
+
+// =======================================================================
+// העברת חובות לטיפול המשרד
+// =======================================================================
+
+function transferToOfficeCare() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ss.getSheetByName('פירוט נסיעות לפי לקוח');
+  const defaultName = sh.getRange(6, 3).getValue();
+
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.alert(
+    "אישור העברה לטיפול המשרד",
+    "האם הנך בטוח שברצונך להעביר לטיפול המשרד את כל החובות של:\n\n" +
+    "            ------ " + defaultName + " ------\n\n" +
+    "ללקוח אחר לחץ 'לא'.",
+    ui.ButtonSet.YES_NO_CANCEL
+  );
+
+  if (response == ui.Button.NO) {
+    const html = HtmlService.createTemplateFromFile("namePicker");
+    html.defaultName = defaultName;
+    html.action = 'transfer';
+    const dialog = html.evaluate()
+      .setWidth(450)
+      .setHeight(420)
+      .setTitle("בחירת שם להעברה למשרד");
+
+    ss.show(dialog);
+  }
+  else if (response == ui.Button.YES) {
+    runTransferForName(defaultName);
+  }
+  else {
+    ui.alert("הפעולה בוטלה.");
+  }
+}
+
+function runTransferForName(selectedName) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  Logger.log("🟢 Running transferToOfficeCare...");
+
+  // Normalize input: always treat as array
+  const names = Array.isArray(selectedName) ? selectedName : [selectedName];
+
+  names.forEach(name => {
+    ss.toast(`מעביר כעת לטיפול המשרד את כל החובות של:  ⭐ ⭐ ${name} ⭐ ⭐ `, "העברה לטיפול המשרד");
+    processTransferToOffice(name, ss);
+    ss.toast(`כל החובות של הלקוח הבא: ⭐ ⭐ ${name} ⭐ ⭐ הועברו לטיפול המשרד`, "העברה לטיפול המשרד");
+  });
+  ss.toast(`כל הלקוחות שנבחרו הועברו לטיפול המשרד`, "העברה לטיפול המשרד");
+}
+
+function processTransferToOffice(name, ss) {
+  const normName = normalizeHebrew(name);
+  const targetSheet = ss.getSheetByName('לטיפול המשרד');
+  if (!targetSheet) {
+    SpreadsheetApp.getUi().alert("שגיאה: הגיליון 'לטיפול המשרד' לא נמצא.");
+    return;
+  }
+
+  const todayStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy');
+  const newRows = [];
+
+  // -------- דוחות --------
+  let sh = ss.getSheetByName('דוחות');
+  let last = sh.getLastRow();
+  if (last >= 2) {
+    const dataRange = sh.getRange(2, 1, last - 1, 24); // A to X (24 columns)
+    const data = dataRange.getValues();
+    for (let i = 0; i < data.length; i++) {
+      const rowName = normalizeHebrew(data[i][1]); // Col B
+      const amount = Number(data[i][10]); // Col K
+      const isProcessed = data[i][23] === true; // Col X
+      if (rowName === normName && amount !== 0 && !isProcessed) {
+        const sourceCity = data[i][2]; // Col C
+        const plate = data[i][4]; // Col E
+        const reportNumber = data[i][5]; // Col F
+        const rawReportDate = data[i][6]; // Col G
+        const reportDate = (rawReportDate instanceof Date) ? Utilities.formatDate(rawReportDate, Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm') : rawReportDate;
+        const reportAmount = data[i][9]; // Col J
+        const formattedReportAmount = !isNaN(Number(reportAmount)) && reportAmount !== "" ? Number(reportAmount).toFixed(2) : reportAmount;
+        const comments = data[i][16]; // Col Q
+
+        const details = `דוח מ${sourceCity}, מספר דוח: ${reportNumber}, תאריך ושעת דוח: ${reportDate}, סכום הדוח: ${formattedReportAmount}.`;
+
+        newRows.push([
+          data[i][1], // Customer name (original Col B)
+          plate,
+          "",
+          "דוחות",
+          details,
+          todayStr,
+          amount,
+          comments,
+          ""
+        ]);
+
+        sh.getRange(i + 2, 24).setValue(true);
+      }
+    }
+  }
+
+  // -------- כביש 6 / מנהרות --------
+  sh = ss.getSheetByName('כביש 6/מנהרות');
+  last = sh.getLastRow();
+  if (last >= 2) {
+    const dataRange = sh.getRange(2, 1, last - 1, 13); // A to M (13 columns)
+    const data = dataRange.getValues();
+    for (let i = 0; i < data.length; i++) {
+      const rowName = normalizeHebrew(data[i][4]); // Col E
+      const amount = Number(data[i][10]); // Col K
+      const isProcessed = data[i][11] === "טופל הועבר לטיפול המשרד"; // Col L
+      if (rowName === normName && amount !== 0 && !isProcessed) {
+        const plate = data[i][1]; // Col B
+        const rawDateStr = data[i][3]; // Col D
+        const dateStr = (rawDateStr instanceof Date) ? Utilities.formatDate(rawDateStr, Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm') : rawDateStr;
+        const sourceVal = String(data[i][5] || ""); // Col F
+        const entrySegment = data[i][5]; // Col F
+        const exitSegment = data[i][6]; // Col G
+        const totalWithVat = Number(data[i][8]); // Col I
+        const comments = data[i][12]; // Col M
+
+        const source = sourceVal.includes("מנהרה") ? "מנהרות הכרמל" : "כביש 6";
+        const commission = (amount - totalWithVat).toFixed(2);
+        const formattedTotalWithVat = totalWithVat.toFixed(2);
+        const details = `נסיעה בתאריך ושעה: ${dateStr}, מקטע כניסה: ${entrySegment}, מקטע יציאה: ${exitSegment}, סכום נסיעה כולל מע"מ (לפני עמלה): ${formattedTotalWithVat}, עמלה עבור נסיעה זו: ${commission}.`;
+
+        newRows.push([
+          data[i][4], // Customer name (original Col E)
+          plate,
+          "",
+          source,
+          details,
+          todayStr,
+          amount,
+          comments,
+          ""
+        ]);
+
+        sh.getRange(i + 2, 12).setValue("טופל הועבר לטיפול המשרד");
+      }
+    }
+  }
+
+  // -------- חוצה צפון / נתיב מהיר --------
+  sh = ss.getSheetByName('חוצה צפון/נתיב מהיר');
+  last = sh.getLastRow();
+  if (last >= 2) {
+    const dataRange = sh.getRange(2, 1, last - 1, 11); // A to K (11 columns)
+    const data = dataRange.getValues();
+    for (let i = 0; i < data.length; i++) {
+      const rowName = normalizeHebrew(data[i][4]); // Col E
+      const amount = Number(data[i][8]); // Col I
+      const isProcessed = data[i][9] === "טופל הועבר לטיפול המשרד"; // Col J
+      if (rowName === normName && amount !== 0 && !isProcessed) {
+        const plate = data[i][1]; // Col B
+        const rawDateStr = data[i][3]; // Col D
+        const dateStr = (rawDateStr instanceof Date) ? Utilities.formatDate(rawDateStr, Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm') : rawDateStr;
+        const sourceVal = String(data[i][5] || ""); // Col F
+        const segment = data[i][5]; // Col F
+        const totalWithVat = Number(data[i][6]); // Col G
+        const comments = data[i][10]; // Col K
+
+        const source = sourceVal.includes("נתיב המהיר") ? "נתיב המהיר" : "חוצה צפון";
+        const commission = (amount - totalWithVat).toFixed(2);
+        const formattedTotalWithVat = totalWithVat.toFixed(2);
+        const details = `נסיעה בתאריך ושעה: ${dateStr}, מקטע נסיעה: ${segment}, סכום נסיעה כולל מע"מ (לפני עמלה): ${formattedTotalWithVat}, עמלה עבור נסיעה זו: ${commission}.`;
+
+        newRows.push([
+          data[i][4], // Customer name (original Col E)
+          plate,
+          "",
+          source,
+          details,
+          todayStr,
+          amount,
+          comments,
+          ""
+        ]);
+
+        sh.getRange(i + 2, 10).setValue("טופל הועבר לטיפול המשרד");
+      }
+    }
+  }
+
+  // Append new rows to destination sheet
+  if (newRows.length > 0) {
+    let appendRow = targetSheet.getLastRow() + 1;
+    const targetLast = targetSheet.getLastRow();
+    if (targetLast > 0) {
+      // Fetch columns A to H (8 columns)
+      const targetData = targetSheet.getRange(1, 1, targetLast, 8).getValues();
+      let found = false;
+      for (let i = targetLast - 1; i >= 0; i--) {
+        const row = targetData[i];
+        const isEmpty = !String(row[0]).trim() && !String(row[1]).trim() && 
+                        !String(row[3]).trim() && !String(row[4]).trim() && 
+                        !String(row[5]).trim() && !String(row[6]).trim() && 
+                        !String(row[7]).trim();
+        if (!isEmpty) {
+          appendRow = i + 2;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        appendRow = 2; // Assuming row 1 is a header
+      }
+    } else {
+      appendRow = 1;
+    }
+    targetSheet.getRange(appendRow, 1, newRows.length, newRows[0].length).setValues(newRows);
   }
 }

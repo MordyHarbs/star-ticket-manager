@@ -191,9 +191,16 @@
         });
       }
 
+      // Allow overriding the server function
+      const action = "<?= typeof action !== 'undefined' ? action : 'markPaid' ?>";
+
       function submit() {
   // Start the server call
-  google.script.run.runMarkAllForName(selectedNames);
+  if (action === 'transfer') {
+    google.script.run.runTransferForName(selectedNames);
+  } else {
+    google.script.run.runMarkAllForName(selectedNames);
+  }
 
   // Close the dialog after the call is safely queued
   setTimeout(() => {
