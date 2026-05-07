@@ -1,3 +1,5 @@
+const WORKER_PASSWORD = "x7#M9$kL2@pQ5&vN8*wZ";
+
 function doGet(e) {
   Logger.log("doGet triggered");
   return HtmlService.createHtmlOutputFromFile('WorkerPortal')
@@ -6,8 +8,13 @@ function doGet(e) {
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
-function getPendingTasks() {
+function getPendingTasks(password) {
   Logger.log("getPendingTasks triggered");
+  if (password !== WORKER_PASSWORD) {
+    Logger.log("Unauthorized access attempt to getPendingTasks");
+    return { error: 'Unauthorized' };
+  }
+  
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('לטיפול המשרד');
   if (!sheet) return { tasks: [], pendingPayments: {} };
@@ -72,8 +79,13 @@ function getPendingTasks() {
   return { tasks: tasks, pendingPayments: pendingPaymentsMap };
 }
 
-function addPaymentToSheet(paymentData) {
+function addPaymentToSheet(paymentData, password) {
   Logger.log("addPaymentToSheet triggered with data: " + JSON.stringify(paymentData));
+  if (password !== WORKER_PASSWORD) {
+    Logger.log("Unauthorized access attempt to addPaymentToSheet");
+    return { error: 'Unauthorized' };
+  }
+  
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('תשלומים');
   if (!sheet) throw new Error("Sheet 'תשלומים' not found.");

@@ -78,7 +78,32 @@
     }
   </style>
 </head>
-<body class="text-gray-800 antialiased min-h-screen flex flex-col">
+<body class="text-gray-800 antialiased min-h-screen flex flex-col bg-gray-50">
+
+  <!-- Login Screen -->
+  <div id="loginScreen" class="fixed inset-0 bg-gray-50 z-[100] flex flex-col items-center justify-center p-4 transition-opacity duration-300">
+    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md text-center border border-gray-100">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-6">
+        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+      </div>
+      <h2 class="text-2xl font-bold text-gray-900 mb-2">ברוכים הבאים</h2>
+      <p class="text-gray-500 mb-8">אנא הזן את סיסמת הכניסה למערכת</p>
+      
+      <form onsubmit="handleLogin(event)" class="space-y-4" action="javascript:void(0);" method="POST">
+        <div>
+          <label for="password" class="sr-only">סיסמה</label>
+          <input type="password" name="password" id="password" autocomplete="current-password" class="w-full text-center text-2xl tracking-[0.2em] border border-gray-300 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow" placeholder="••••••••" required>
+        </div>
+        <div id="loginError" class="text-red-500 text-sm hidden font-medium">סיסמה שגויה, נסה שנית</div>
+        <button type="submit" id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl shadow-md transition-all flex justify-center items-center gap-2">
+          <span>כניסה</span>
+          <div id="loginLoader" class="hidden w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div id="appContainer" class="hidden flex-col flex-grow w-full">
 
   <!-- Header -->
   <header class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white shadow-lg sticky top-0 z-50">
@@ -89,9 +114,14 @@
         </div>
         <h1 class="text-2xl font-bold tracking-tight">מערכת טיפול בלקוחות</h1>
       </div>
-      <button onclick="fetchTasks()" class="p-2 hover:bg-white/10 rounded-full transition-colors tooltip" data-tooltip="רענן נתונים">
-        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-      </button>
+      <div class="flex items-center gap-1">
+        <button onclick="fetchTasks()" class="p-2 hover:bg-white/10 rounded-full transition-colors tooltip" data-tooltip="רענן נתונים">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+        </button>
+        <button onclick="handleLogout()" class="p-2 hover:bg-white/10 rounded-full transition-colors text-white/90 hover:text-white tooltip" data-tooltip="התנתק">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -167,6 +197,8 @@
   <button id="scrollToTopBtn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="fixed bottom-20 right-6 z-40 bg-blue-600 text-white p-3.5 rounded-full shadow-lg opacity-0 pointer-events-none transition-all duration-300 hover:bg-blue-700 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-300 transform translate-y-4" data-tooltip="חזור למעלה">
     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
   </button>
+  
+  </div> <!-- End App Container -->
 
   <!-- Payment Modal -->
   <div id="paymentModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -269,6 +301,7 @@
     let selectedCategories = new Set();
     
     let allCategoriesList = [];
+    let workerPin = localStorage.getItem('workerPin') || '';
     
     // Multi-select dropdown handling
     function toggleCategoryDropdown() {
@@ -339,7 +372,12 @@
     
     // On Mount
     document.addEventListener('DOMContentLoaded', () => {
-      fetchTasks();
+      if (workerPin) {
+        showApp();
+        fetchTasks();
+      } else {
+        document.getElementById('loginScreen').classList.remove('hidden');
+      }
       
       // Set default date to today in timezone-safe way
       const today = new Date();
@@ -360,7 +398,72 @@
       }, { passive: true });
     });
     
+    // Authentication
+    function handleLogin(e) {
+      e.preventDefault();
+      const pin = document.getElementById('password').value;
+      if (!pin) return;
+      
+      const btn = document.getElementById('loginBtn');
+      const loader = document.getElementById('loginLoader');
+      btn.disabled = true;
+      loader.classList.remove('hidden');
+      document.getElementById('loginError').classList.add('hidden');
+      
+      workerPin = pin;
+      
+      google.script.run
+        .withSuccessHandler(data => {
+          btn.disabled = false;
+          loader.classList.add('hidden');
+          
+          if (data && data.error === 'Unauthorized') {
+            document.getElementById('loginError').classList.remove('hidden');
+            workerPin = '';
+          } else {
+            localStorage.setItem('workerPin', pin);
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('password').value = '';
+            showApp();
+            processTasksData(data);
+          }
+        })
+        .withFailureHandler(err => {
+          console.error(err);
+          btn.disabled = false;
+          loader.classList.add('hidden');
+          showToast('שגיאת תקשורת, נסה שוב', true);
+        })
+        .getPendingTasks(workerPin);
+    }
+    
+    function handleUnauthorized() {
+      localStorage.removeItem('workerPin');
+      workerPin = '';
+      document.getElementById('appContainer').classList.add('hidden');
+      document.getElementById('appContainer').classList.remove('flex');
+      document.getElementById('loginScreen').classList.remove('hidden');
+      document.getElementById('loginError').classList.remove('hidden');
+      document.getElementById('loadingState').classList.add('hidden');
+    }
+    
+    function handleLogout() {
+      localStorage.removeItem('workerPin');
+      workerPin = '';
+      document.getElementById('appContainer').classList.add('hidden');
+      document.getElementById('appContainer').classList.remove('flex');
+      document.getElementById('loginScreen').classList.remove('hidden');
+      document.getElementById('loginError').classList.add('hidden');
+      document.getElementById('password').value = '';
+    }
+    
+    function showApp() {
+      document.getElementById('appContainer').classList.remove('hidden');
+      document.getElementById('appContainer').classList.add('flex');
+    }
+    
     function fetchTasks() {
+      if (!workerPin) return;
       document.getElementById('loadingState').classList.remove('hidden');
       document.getElementById('customerList').classList.add('hidden');
       document.getElementById('emptyState').classList.add('hidden');
@@ -370,64 +473,72 @@
       
       google.script.run
         .withSuccessHandler(data => {
-          if (data && !Array.isArray(data)) {
-            allTasks = data.tasks || [];
-            pendingPaymentsMap = data.pendingPayments || {};
-          } else {
-            allTasks = data || [];
-            pendingPaymentsMap = {};
+          if (data && data.error === 'Unauthorized') {
+             handleUnauthorized();
+             return;
           }
-          // Populate category filter checkboxes
-          const categories = new Set();
-          allTasks.forEach(t => {
-            if (t.debtSource) categories.add(t.debtSource);
-          });
-          
-          allCategoriesList = Array.from(categories).sort();
-          const dropdown = document.getElementById('categoryDropdown');
-          dropdown.innerHTML = '';
-          
-          // Clear invalid selected categories
-          const validCategories = new Set(categories);
-          for (let cat of selectedCategories) {
-            if (!validCategories.has(cat)) selectedCategories.delete(cat);
-          }
-          
-          updateCategoryFilterText();
-          
-          const isAllSelected = selectedCategories.size === allCategoriesList.length || selectedCategories.size === 0;
-          
-          if (isAllSelected) {
-            allCategoriesList.forEach(c => selectedCategories.add(c));
-          }
-          
-          // "Select All" option
-          dropdown.innerHTML += `
-            <label class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 bg-gray-50/50 transition-colors">
-              <input type="checkbox" id="selectAllCategoriesBtn" ${isAllSelected ? 'checked' : ''} class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" onchange="toggleAllCategories(this.checked)">
-              <span class="text-sm font-medium text-gray-800">בחר הכל</span>
-            </label>
-          `;
-          
-          allCategoriesList.forEach(cat => {
-            const isChecked = selectedCategories.has(cat) ? 'checked' : '';
-            dropdown.innerHTML += `
-              <label class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-0 transition-colors">
-                <input type="checkbox" value="${cat}" ${isChecked} class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" onchange="toggleCategory('${cat}')">
-                <span class="text-sm text-gray-700">${cat}</span>
-              </label>
-            `;
-          });
-          
-          document.getElementById('loadingState').classList.add('hidden');
-          render();
+          processTasksData(data);
         })
         .withFailureHandler(error => {
           console.error(error);
           document.getElementById('loadingState').classList.add('hidden');
           showToast('שגיאה בטעינת הנתונים', true);
         })
-        .getPendingTasks();
+        .getPendingTasks(workerPin);
+    }
+    
+    function processTasksData(data) {
+      if (data && !Array.isArray(data)) {
+        allTasks = data.tasks || [];
+        pendingPaymentsMap = data.pendingPayments || {};
+      } else {
+        allTasks = data || [];
+        pendingPaymentsMap = {};
+      }
+      
+      // Populate category filter checkboxes
+      const categories = new Set();
+      allTasks.forEach(t => {
+        if (t.debtSource) categories.add(t.debtSource);
+      });
+      allCategoriesList = Array.from(categories).sort();
+      const dropdown = document.getElementById('categoryDropdown');
+      dropdown.innerHTML = '';
+      
+      // Clear invalid selected categories
+      const validCategories = new Set(categories);
+      for (let cat of selectedCategories) {
+        if (!validCategories.has(cat)) selectedCategories.delete(cat);
+      }
+      
+      updateCategoryFilterText();
+      
+      const isAllSelected = selectedCategories.size === allCategoriesList.length || selectedCategories.size === 0;
+      
+      if (isAllSelected) {
+        allCategoriesList.forEach(c => selectedCategories.add(c));
+      }
+      
+      // "Select All" option
+      dropdown.innerHTML += `
+        <label class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 bg-gray-50/50 transition-colors">
+          <input type="checkbox" id="selectAllCategoriesBtn" ${isAllSelected ? 'checked' : ''} class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" onchange="toggleAllCategories(this.checked)">
+          <span class="text-sm font-medium text-gray-800">בחר הכל</span>
+        </label>
+      `;
+      
+      allCategoriesList.forEach(cat => {
+        const isChecked = selectedCategories.has(cat) ? 'checked' : '';
+        dropdown.innerHTML += `
+          <label class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-0 transition-colors">
+            <input type="checkbox" value="${cat}" ${isChecked} class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" onchange="toggleCategory('${cat}')">
+            <span class="text-sm text-gray-700">${cat}</span>
+          </label>
+        `;
+      });
+      
+      document.getElementById('loadingState').classList.add('hidden');
+      render();
     }
     
     function handleSearch() {
@@ -715,10 +826,15 @@
       submitLoader.classList.remove('hidden');
       
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandler((response) => {
           submitBtn.disabled = false;
           submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
           submitLoader.classList.add('hidden');
+          
+          if (response && response.error === 'Unauthorized') {
+             handleUnauthorized();
+             return;
+          }
           
           closePaymentModal();
           showToast('התשלום נוסף בהצלחה!');
@@ -733,7 +849,7 @@
           submitLoader.classList.add('hidden');
           showToast('שגיאה בשמירת התשלום', true);
         })
-        .addPaymentToSheet(paymentData);
+        .addPaymentToSheet(paymentData, workerPin);
     }
     
     function showToast(message, isError = false) {
