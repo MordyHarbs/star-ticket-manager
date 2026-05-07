@@ -265,7 +265,7 @@
     }
     
     function render() {
-      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      const query = document.getElementById('searchInput').value.toLowerCase().trim().replace(/"/g, '״').replace(/'/g, '׳');
       const listEl = document.getElementById('customerList');
       const emptyEl = document.getElementById('emptyState');
       

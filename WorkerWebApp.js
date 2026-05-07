@@ -33,14 +33,14 @@ function getPendingTasks() {
         
         tasks.push({
           rowIndex: i + 3,
-          customerName: row[0] ? normalizeHebrew(row[0]) : '',
-          carNumber: row[1] ? normalizeHebrew(row[1]) : '',
-          carModel: row[2] ? normalizeHebrew(row[2]) : '',
-          debtSource: row[3] ? normalizeHebrew(row[3]) : '',
-          debtInfo: row[4] ? row[4].toString() : '',
+          customerName: row[0] ? normalizeHebrew(row[0]).replace(/"/g, '״').replace(/'/g, '׳') : '',
+          carNumber: row[1] ? normalizeHebrew(row[1]).replace(/"/g, '״').replace(/'/g, '׳') : '',
+          carModel: row[2] ? normalizeHebrew(row[2]).replace(/"/g, '״').replace(/'/g, '׳') : '',
+          debtSource: row[3] ? normalizeHebrew(row[3]).replace(/"/g, '״').replace(/'/g, '׳') : '',
+          debtInfo: row[4] ? row[4].toString().replace(/"/g, '״').replace(/'/g, '׳') : '',
           date: formattedDate,
           amount: Number(row[6]) || 0,
-          notes: row[7] ? row[7].toString() : ''
+          notes: row[7] ? row[7].toString().replace(/"/g, '״').replace(/'/g, '׳') : ''
         });
       }
     }
