@@ -51,12 +51,37 @@
     ::-webkit-scrollbar-thumb:hover {
       background: #a8a8a8; 
     }
+    
+    /* Custom Tooltip */
+    #customTooltip {
+      position: fixed;
+      z-index: 9999;
+      background-color: #1f2937;
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 14.5px;
+      line-height: 1.5;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s ease-in-out, transform 0.15s ease-in-out;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+      max-width: 320px;
+      word-wrap: break-word;
+      white-space: pre-line;
+      transform: translateY(5px);
+      text-align: right;
+    }
+    #customTooltip.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
   </style>
 </head>
 <body class="text-gray-800 antialiased min-h-screen flex flex-col">
 
   <!-- Header -->
-  <header class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white shadow-lg sticky top-0 z-40">
+  <header class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white shadow-lg sticky top-0 z-50">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div class="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
@@ -64,17 +89,17 @@
         </div>
         <h1 class="text-2xl font-bold tracking-tight">מערכת טיפול בלקוחות</h1>
       </div>
-      <button onclick="fetchTasks()" class="p-2 hover:bg-white/10 rounded-full transition-colors tooltip" title="רענן נתונים">
+      <button onclick="fetchTasks()" class="p-2 hover:bg-white/10 rounded-full transition-colors tooltip" data-tooltip="רענן נתונים">
         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
       </button>
     </div>
   </header>
 
   <!-- Main Content -->
-  <main class="flex-grow max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+  <main class="flex-grow max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-8 pb-24">
     
     <!-- Top Dashboard Section -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 relative z-40">
       
       <!-- Summary Card -->
       <div class="col-span-1 md:col-span-1 glass bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-center relative overflow-hidden group">
@@ -86,13 +111,26 @@
       </div>
 
       <!-- Search & Filters -->
-      <div class="col-span-1 md:col-span-2 glass bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-center">
-        <p class="text-sm font-medium text-gray-500 mb-2">חיפוש וסינון</p>
-        <div class="relative w-full">
-          <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+      <div class="col-span-1 md:col-span-2 glass bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-center gap-3">
+        <p class="text-sm font-medium text-gray-500">חיפוש וסינון</p>
+        <div class="flex flex-col sm:flex-row gap-3 w-full">
+          <div class="relative w-full">
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+            <input type="text" id="searchInput" oninput="handleSearch()" class="block w-full p-3.5 pr-10 text-gray-900 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none" placeholder="חפש לפי שם, מספר רכב או דגם...">
           </div>
-          <input type="text" id="searchInput" oninput="handleSearch()" class="block w-full p-4 pr-10 text-gray-900 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none" placeholder="חפש לפי שם לקוח, מספר רכב או דגם...">
+          
+          <!-- Custom Multi-Select Dropdown -->
+          <div class="w-full sm:w-64 flex-shrink-0 relative">
+            <button id="categoryFilterBtn" type="button" class="flex justify-between items-center w-full p-3.5 text-gray-900 border border-gray-200 rounded-xl bg-gray-50 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 transition-all outline-none" onclick="toggleCategoryDropdown()">
+              <span id="categoryFilterText" class="truncate">כל מקורות החוב</span>
+              <svg class="w-4 h-4 text-gray-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            <div id="categoryDropdown" class="hidden absolute z-30 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl max-h-60 overflow-auto py-1">
+              <!-- Checkboxes injected here -->
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -111,9 +149,24 @@
     </div>
 
     <!-- List -->
-    <div id="customerList" class="space-y-4 hidden"></div>
+    <div id="customerList" class="space-y-4 hidden mb-4"></div>
 
   </main>
+  
+  <!-- Fixed Footer Tip -->
+  <footer class="fixed bottom-0 inset-x-0 bg-white/85 backdrop-blur-md border-t border-gray-200 z-30 py-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.03)]">
+    <div class="max-w-6xl mx-auto px-4 flex justify-center">
+      <p class="text-sm text-gray-500 flex items-center gap-2">
+        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span>טיפ: העבר את העכבר על טקסט שמוצג באופן חלקי (קטוע) כדי לקרוא את התוכן במלואו.</span>
+      </p>
+    </div>
+  </footer>
+  
+  <!-- Scroll to Top Button -->
+  <button id="scrollToTopBtn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="fixed bottom-20 right-6 z-40 bg-blue-600 text-white p-3.5 rounded-full shadow-lg opacity-0 pointer-events-none transition-all duration-300 hover:bg-blue-700 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-300 transform translate-y-4" data-tooltip="חזור למעלה">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+  </button>
 
   <!-- Payment Modal -->
   <div id="paymentModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -188,7 +241,7 @@
           </div>
           
           <!-- Actions -->
-          <div class="flex flex-row-reverse gap-3 pt-2 border-t border-gray-100">
+          <div class="flex gap-3 pt-2 border-t border-gray-100">
             <button type="submit" id="submitPaymentBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl shadow-md transition-colors flex justify-center items-center">
               <span>שמור תשלום</span>
               <div id="submitLoader" class="hidden ml-2 w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -213,6 +266,66 @@
     let allTasks = [];
     let pendingPaymentsMap = {};
     let expandedCustomers = new Set();
+    let selectedCategories = new Set();
+    
+    let allCategoriesList = [];
+    
+    // Multi-select dropdown handling
+    function toggleCategoryDropdown() {
+      document.getElementById('categoryDropdown').classList.toggle('hidden');
+    }
+    
+    document.addEventListener('click', (e) => {
+      const btn = document.getElementById('categoryFilterBtn');
+      const dropdown = document.getElementById('categoryDropdown');
+      if (btn && dropdown && !btn.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.classList.add('hidden');
+      }
+    });
+    
+    function updateCategoryFilterText() {
+      const btnText = document.getElementById('categoryFilterText');
+      if (selectedCategories.size === 0 || selectedCategories.size === allCategoriesList.length) {
+        btnText.textContent = 'כל מקורות החוב';
+      } else if (selectedCategories.size === 1) {
+        btnText.textContent = Array.from(selectedCategories)[0];
+      } else {
+        btnText.textContent = `${selectedCategories.size} מקורות נבחרו`;
+      }
+    }
+    
+    function toggleCategory(cat) {
+      if (selectedCategories.has(cat)) {
+        selectedCategories.delete(cat);
+        const selectAllBtn = document.getElementById('selectAllCategoriesBtn');
+        if (selectAllBtn) selectAllBtn.checked = false;
+      } else {
+        selectedCategories.add(cat);
+        if (selectedCategories.size === allCategoriesList.length) {
+          const selectAllBtn = document.getElementById('selectAllCategoriesBtn');
+          if (selectAllBtn) selectAllBtn.checked = true;
+        }
+      }
+      
+      updateCategoryFilterText();
+      handleSearch();
+    }
+    
+    function toggleAllCategories(isChecked) {
+      if (isChecked) {
+        allCategoriesList.forEach(c => selectedCategories.add(c));
+      } else {
+        selectedCategories.clear();
+      }
+      
+      const checkboxes = document.getElementById('categoryDropdown').querySelectorAll('input[type="checkbox"]');
+      checkboxes.forEach(cb => {
+        if (cb.id !== 'selectAllCategoriesBtn') cb.checked = isChecked;
+      });
+      
+      updateCategoryFilterText();
+      handleSearch();
+    }
     
     function escapeHTML(str) {
       if (!str) return '';
@@ -233,12 +346,27 @@
       const offset = today.getTimezoneOffset() * 60000;
       const localISOTime = (new Date(today - offset)).toISOString().split('T')[0];
       document.getElementById('payDate').value = localISOTime;
+      
+      // Scroll to Top Listener
+      window.addEventListener('scroll', () => {
+        const btn = document.getElementById('scrollToTopBtn');
+        if (window.scrollY > 300) {
+          btn.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+          btn.classList.add('opacity-100', 'translate-y-0');
+        } else {
+          btn.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+          btn.classList.remove('opacity-100', 'translate-y-0');
+        }
+      }, { passive: true });
     });
     
     function fetchTasks() {
       document.getElementById('loadingState').classList.remove('hidden');
       document.getElementById('customerList').classList.add('hidden');
       document.getElementById('emptyState').classList.add('hidden');
+      
+      // Reset total while loading
+      document.getElementById('totalOwedText').innerText = '₪ 0.00';
       
       google.script.run
         .withSuccessHandler(data => {
@@ -249,6 +377,48 @@
             allTasks = data || [];
             pendingPaymentsMap = {};
           }
+          // Populate category filter checkboxes
+          const categories = new Set();
+          allTasks.forEach(t => {
+            if (t.debtSource) categories.add(t.debtSource);
+          });
+          
+          allCategoriesList = Array.from(categories).sort();
+          const dropdown = document.getElementById('categoryDropdown');
+          dropdown.innerHTML = '';
+          
+          // Clear invalid selected categories
+          const validCategories = new Set(categories);
+          for (let cat of selectedCategories) {
+            if (!validCategories.has(cat)) selectedCategories.delete(cat);
+          }
+          
+          updateCategoryFilterText();
+          
+          const isAllSelected = selectedCategories.size === allCategoriesList.length || selectedCategories.size === 0;
+          
+          if (isAllSelected) {
+            allCategoriesList.forEach(c => selectedCategories.add(c));
+          }
+          
+          // "Select All" option
+          dropdown.innerHTML += `
+            <label class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 bg-gray-50/50 transition-colors">
+              <input type="checkbox" id="selectAllCategoriesBtn" ${isAllSelected ? 'checked' : ''} class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" onchange="toggleAllCategories(this.checked)">
+              <span class="text-sm font-medium text-gray-800">בחר הכל</span>
+            </label>
+          `;
+          
+          allCategoriesList.forEach(cat => {
+            const isChecked = selectedCategories.has(cat) ? 'checked' : '';
+            dropdown.innerHTML += `
+              <label class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-0 transition-colors">
+                <input type="checkbox" value="${cat}" ${isChecked} class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" onchange="toggleCategory('${cat}')">
+                <span class="text-sm text-gray-700">${cat}</span>
+              </label>
+            `;
+          });
+          
           document.getElementById('loadingState').classList.add('hidden');
           render();
         })
@@ -269,12 +439,24 @@
       const listEl = document.getElementById('customerList');
       const emptyEl = document.getElementById('emptyState');
       
+      const queryTerms = query.split(' ').filter(q => q.length > 0);
+      const isCatFiltered = selectedCategories.size > 0 && selectedCategories.size !== allCategoriesList.length;
+      const isFiltering = queryTerms.length > 0 || isCatFiltered;
+      
       // Filter
       const filteredTasks = allTasks.filter(t => {
-        const nameMatch = t.customerName.toLowerCase().includes(query);
-        const carMatch = t.carNumber.toLowerCase().includes(query);
-        const modelMatch = t.carModel ? t.carModel.toLowerCase().includes(query) : false;
-        return nameMatch || carMatch || modelMatch;
+        const textMatch = queryTerms.length === 0 || queryTerms.every(term => {
+          const nameMatch = t.customerName.toLowerCase().includes(term);
+          const carMatch = t.carNumber.toLowerCase().includes(term);
+          const modelMatch = t.carModel ? t.carModel.toLowerCase().includes(term) : false;
+          const sourceMatch = t.debtSource ? t.debtSource.toLowerCase().includes(term) : false;
+          return nameMatch || carMatch || modelMatch || sourceMatch;
+        });
+        
+        const isAllSelected = selectedCategories.size === 0 || selectedCategories.size === allCategoriesList.length;
+        const catMatch = isAllSelected || selectedCategories.has(t.debtSource);
+        
+        return textMatch && catMatch;
       });
       
       // Group
@@ -296,7 +478,7 @@
       // Calculate Effective Totals
       Object.keys(groupedTasks).forEach(customer => {
         const g = groupedTasks[customer];
-        g.effectiveTotal = g.total - g.pendingPayment;
+        g.effectiveTotal = Math.max(0, g.total - g.pendingPayment);
         totalOwed += g.effectiveTotal;
       });
       
@@ -345,8 +527,8 @@
               ${initial}
             </div>
             <div class="min-w-0">
-              <h3 class="text-lg font-bold text-gray-900 truncate max-w-[200px] sm:max-w-sm" title="${escapeHTML(customer)}">${escapeHTML(customer) || 'ללא שם'}</h3>
-              <p class="text-sm text-gray-500">${data.items.length} חובות פתוחים מסינון זה</p>
+              <h3 class="text-lg font-bold text-gray-900 truncate max-w-[200px] sm:max-w-sm" data-tooltip="${escapeHTML(customer)}">${escapeHTML(customer) || 'ללא שם'}</h3>
+              <p class="text-sm text-gray-500">${data.items.length} ${isFiltering ? 'חובות פתוחים מסינון זה' : 'חובות פתוחים ללקוח זה'}</p>
             </div>
           </div>
           <div class="flex items-center gap-5">
@@ -390,16 +572,16 @@
             
             tableHTML += `
               <tr class="hover:bg-blue-50/30 transition-colors">
-                <td class="px-6 py-4 font-medium text-gray-900 max-w-[120px]"><span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-1 rounded-md border border-gray-200 truncate block" title="${safeCarNumber}">${safeCarNumber || '-'}</span></td>
-                <td class="px-6 py-4 text-gray-700 max-w-[120px] truncate" title="${safeCarModel}">${safeCarModel || '-'}</td>
-                <td class="px-6 py-4 max-w-[120px]">
-                  <span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 truncate block" title="${safeDebtSource}">
+                <td class="px-6 py-4 font-medium text-gray-900 max-w-[120px]"><span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-1 rounded-md border border-gray-200 truncate inline-block max-w-full" data-tooltip="${safeCarNumber}">${safeCarNumber || '-'}</span></td>
+                <td class="px-6 py-4 text-gray-700 max-w-[120px] truncate" data-tooltip="${safeCarModel}">${safeCarModel || '-'}</td>
+                <td class="px-6 py-4 max-w-[200px]">
+                  <span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 truncate max-w-full" data-tooltip="${safeDebtSource}">
                     ${safeDebtSource || '-'}
                   </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-gray-500">${item.date || '-'}</td>
-                <td class="px-6 py-4 max-w-[200px]"><div class="line-clamp-2" title="${safeDebtInfo}">${safeDebtInfo || '-'}</div></td>
-                <td class="px-6 py-4 text-xs text-gray-500 max-w-[200px]"><div class="line-clamp-2" title="${safeNotes}">${safeNotes || '-'}</div></td>
+                <td class="px-6 py-4 max-w-[200px]"><div class="line-clamp-2" data-tooltip="${safeDebtInfo}">${safeDebtInfo || '-'}</div></td>
+                <td class="px-6 py-4 text-xs text-gray-500 max-w-[200px]"><div class="line-clamp-2" data-tooltip="${safeNotes}">${safeNotes || '-'}</div></td>
                 <td class="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">₪ ${item.amount.toLocaleString('he-IL', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
               </tr>
             `;
@@ -569,6 +751,55 @@
         toast.classList.add('opacity-0', 'translate-y-10');
       }, 3000);
     }
+    
+    // --- Custom Tooltip Logic ---
+    document.addEventListener('mouseover', (e) => {
+      const target = e.target.closest('[data-tooltip]');
+      if (target) {
+        const tooltip = document.getElementById('customTooltip');
+        const text = target.getAttribute('data-tooltip');
+        if (!text || text === '-') return;
+        
+        tooltip.innerHTML = text.replace(/\n/g, '<br>');
+        tooltip.classList.add('show');
+        
+        const rect = target.getBoundingClientRect();
+        const tooltipRect = tooltip.getBoundingClientRect();
+        
+        // Default position: above the element
+        let top = rect.top - tooltipRect.height - 8;
+        let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+        
+        // Flip to bottom if not enough space above
+        if (top < 10) {
+          top = rect.bottom + 8;
+        }
+        
+        // Constrain horizontally
+        if (left < 10) left = 10;
+        if (left + tooltipRect.width > window.innerWidth - 10) {
+          left = window.innerWidth - tooltipRect.width - 10;
+        }
+        
+        tooltip.style.top = top + 'px';
+        tooltip.style.left = left + 'px';
+      }
+    });
+    
+    document.addEventListener('mouseout', (e) => {
+      const target = e.target.closest('[data-tooltip]');
+      if (target) {
+        document.getElementById('customTooltip').classList.remove('show');
+      }
+    });
+    
+    document.addEventListener('scroll', () => {
+      document.getElementById('customTooltip').classList.remove('show');
+    }, { passive: true });
+    
   </script>
+  
+  <!-- Custom Tooltip Container -->
+  <div id="customTooltip"></div>
 </body>
 </html>
