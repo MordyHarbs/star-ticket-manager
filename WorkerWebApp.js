@@ -1,11 +1,32 @@
 const WORKER_PASSWORD = "x7#M9$kL2@pQ5&vN8*wZ";
 
 function doGet(e) {
-  Logger.log("doGet triggered");
-  return HtmlService.createHtmlOutputFromFile('WorkerPortal')
-    .setTitle('מערכת טיפול בלקוחות')
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
-    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  return ContentService.createTextOutput(JSON.stringify({ status: "Worker Portal API is running successfully." }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  try {
+    const requestData = JSON.parse(e.postData.contents);
+    const action = requestData.action;
+    const pin = requestData.pin;
+    
+    if (action === 'getTasks') {
+      const response = getPendingTasks(pin);
+      return ContentService.createTextOutput(JSON.stringify(response))
+        .setMimeType(ContentService.MimeType.JSON);
+    } else if (action === 'addPayment') {
+      const response = addPaymentToSheet(requestData.paymentData, pin);
+      return ContentService.createTextOutput(JSON.stringify(response))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({ error: "Unknown action" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ error: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
 }
 
 function getPendingTasks(password) {

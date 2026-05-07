@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html dir="rtl" lang="he">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>מערכת טיפול בלקוחות</title>
-  <link rel="icon" href="https://fonts.gstatic.com/s/i/short-term/release/googlesymbols/receipt_long/default/24px.svg">
+  <link rel="icon" type="image/png" href="icon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800&display=swap" rel="stylesheet">
   <style>
@@ -12,7 +13,7 @@
       font-family: 'Heebo', sans-serif;
       background-color: #f3f4f6;
     }
-    
+
     /* Loader Spinner */
     .loader {
       border: 4px solid #f3f3f3;
@@ -22,12 +23,17 @@
       height: 40px;
       animation: spin 1s linear infinite;
     }
-    
+
     @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
     }
-    
+
     /* Glass effect */
     .glass {
       background: rgba(255, 255, 255, 0.7);
@@ -35,23 +41,26 @@
       -webkit-backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.18);
     }
-    
+
     /* Scrollbar */
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
     }
+
     ::-webkit-scrollbar-track {
-      background: #f1f1f1; 
+      background: #f1f1f1;
     }
+
     ::-webkit-scrollbar-thumb {
-      background: #c1c1c1; 
+      background: #c1c1c1;
       border-radius: 10px;
     }
+
     ::-webkit-scrollbar-thumb:hover {
-      background: #a8a8a8; 
+      background: #a8a8a8;
     }
-    
+
     /* Custom Tooltip */
     #customTooltip {
       position: fixed;
@@ -72,32 +81,43 @@
       transform: translateY(5px);
       text-align: right;
     }
+
     #customTooltip.show {
       opacity: 1;
       transform: translateY(0);
     }
   </style>
 </head>
+
 <body class="text-gray-800 antialiased min-h-screen flex flex-col bg-gray-50">
 
   <!-- Login Screen -->
-  <div id="loginScreen" class="fixed inset-0 bg-gray-50 z-[100] flex flex-col items-center justify-center p-4 transition-opacity duration-300">
+  <div id="loginScreen"
+    class="fixed inset-0 bg-gray-50 z-[100] flex flex-col items-center justify-center p-4 transition-opacity duration-300">
     <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md text-center border border-gray-100">
       <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-6">
-        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+          </path>
+        </svg>
       </div>
       <h2 class="text-2xl font-bold text-gray-900 mb-2">ברוכים הבאים</h2>
       <p class="text-gray-500 mb-8">אנא הזן את סיסמת הכניסה למערכת</p>
-      
+
       <form onsubmit="handleLogin(event)" class="space-y-4" action="javascript:void(0);" method="POST">
         <div>
           <label for="password" class="sr-only">סיסמה</label>
-          <input type="password" name="password" id="password" autocomplete="current-password" class="w-full text-center text-2xl tracking-[0.2em] border border-gray-300 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow" placeholder="••••••••" required>
+          <input type="password" name="password" id="password" autocomplete="current-password"
+            class="w-full text-center text-2xl tracking-[0.2em] border border-gray-300 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow"
+            placeholder="••••••••" required>
         </div>
         <div id="loginError" class="text-red-500 text-sm hidden font-medium">סיסמה שגויה, נסה שנית</div>
-        <button type="submit" id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl shadow-md transition-all flex justify-center items-center gap-2">
+        <button type="submit" id="loginBtn"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl shadow-md transition-all flex justify-center items-center gap-2">
           <span>כניסה</span>
-          <div id="loginLoader" class="hidden w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          <div id="loginLoader"
+            class="hidden w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
         </button>
       </form>
     </div>
@@ -105,147 +125,200 @@
 
   <div id="appContainer" class="hidden flex-col flex-grow w-full">
 
-  <!-- Header -->
-  <header class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white shadow-lg sticky top-0 z-50">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-        </div>
-        <h1 class="text-2xl font-bold tracking-tight">מערכת טיפול בלקוחות</h1>
-      </div>
-      <div class="flex items-center gap-1">
-        <button onclick="fetchTasks()" class="p-2 hover:bg-white/10 rounded-full transition-colors tooltip" data-tooltip="רענן נתונים">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-        </button>
-        <button onclick="handleLogout()" class="p-2 hover:bg-white/10 rounded-full transition-colors text-white/90 hover:text-white tooltip" data-tooltip="התנתק">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <!-- Main Content -->
-  <main class="flex-grow max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-8 pb-24">
-    
-    <!-- Top Dashboard Section -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 relative z-40">
-      
-      <!-- Summary Card -->
-      <div class="col-span-1 md:col-span-1 glass bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-center relative overflow-hidden group">
-        <div class="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-10 -mt-10 transition-transform group-hover:scale-110 opacity-50"></div>
-        <div class="relative z-10">
-          <p class="text-sm font-medium text-gray-500 mb-1">סה״כ לתשלום (עבור הסינון הנוכחי)</p>
-          <h2 id="totalOwedText" class="text-4xl font-bold text-gray-900">₪ 0.00</h2>
-        </div>
-      </div>
-
-      <!-- Search & Filters -->
-      <div class="col-span-1 md:col-span-2 glass bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-center gap-3">
-        <p class="text-sm font-medium text-gray-500">חיפוש וסינון</p>
-        <div class="flex flex-col sm:flex-row gap-3 w-full">
-          <div class="relative w-full">
-            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            </div>
-            <input type="text" id="searchInput" oninput="handleSearch()" class="block w-full p-3.5 pr-10 text-gray-900 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none" placeholder="חפש לפי שם, מספר רכב או דגם...">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white shadow-lg sticky top-0 z-50">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+              </path>
+            </svg>
           </div>
-          
-          <!-- Custom Multi-Select Dropdown -->
-          <div class="w-full sm:w-64 flex-shrink-0 relative">
-            <button id="categoryFilterBtn" type="button" class="flex justify-between items-center w-full p-3.5 text-gray-900 border border-gray-200 rounded-xl bg-gray-50 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 transition-all outline-none" onclick="toggleCategoryDropdown()">
-              <span id="categoryFilterText" class="truncate">כל מקורות החוב</span>
-              <svg class="w-4 h-4 text-gray-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-            </button>
-            <div id="categoryDropdown" class="hidden absolute z-30 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl max-h-60 overflow-auto py-1">
-              <!-- Checkboxes injected here -->
-            </div>
+          <h1 class="text-2xl font-bold tracking-tight">מערכת טיפול בלקוחות</h1>
+        </div>
+        <div class="flex items-center gap-1">
+          <button onclick="fetchTasks()" class="p-2 hover:bg-white/10 rounded-full transition-colors tooltip"
+            data-tooltip="רענן נתונים">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+              </path>
+            </svg>
+          </button>
+          <button onclick="handleLogout()"
+            class="p-2 hover:bg-white/10 rounded-full transition-colors text-white/90 hover:text-white tooltip"
+            data-tooltip="התנתק">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-8 pb-24">
+
+      <!-- Top Dashboard Section -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 relative z-40">
+
+        <!-- Summary Card -->
+        <div
+          class="col-span-1 md:col-span-1 glass bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-center relative overflow-hidden group">
+          <div
+            class="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-10 -mt-10 transition-transform group-hover:scale-110 opacity-50">
+          </div>
+          <div class="relative z-10">
+            <p class="text-sm font-medium text-gray-500 mb-1">סה״כ לתשלום (עבור הסינון הנוכחי)</p>
+            <h2 id="totalOwedText" class="text-4xl font-bold text-gray-900">₪ 0.00</h2>
           </div>
         </div>
+
+        <!-- Search & Filters -->
+        <div
+          class="col-span-1 md:col-span-2 glass bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-center gap-3">
+          <p class="text-sm font-medium text-gray-500">חיפוש וסינון</p>
+          <div class="flex flex-col sm:flex-row gap-3 w-full">
+            <div class="relative w-full">
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+              </div>
+              <input type="text" id="searchInput" oninput="handleSearch()"
+                class="block w-full p-3.5 pr-10 text-gray-900 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                placeholder="חפש לפי שם, מספר רכב או דגם...">
+            </div>
+
+            <!-- Custom Multi-Select Dropdown -->
+            <div class="w-full sm:w-64 flex-shrink-0 relative">
+              <button id="categoryFilterBtn" type="button"
+                class="flex justify-between items-center w-full p-3.5 text-gray-900 border border-gray-200 rounded-xl bg-gray-50 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 transition-all outline-none"
+                onclick="toggleCategoryDropdown()">
+                <span id="categoryFilterText" class="truncate">כל מקורות החוב</span>
+                <svg class="w-4 h-4 text-gray-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </button>
+              <div id="categoryDropdown"
+                class="hidden absolute z-30 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl max-h-60 overflow-auto py-1">
+                <!-- Checkboxes injected here -->
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <!-- Loading State -->
-    <div id="loadingState" class="flex flex-col items-center justify-center py-20">
-      <div class="loader mb-4"></div>
-      <p class="text-gray-500 font-medium">טוען נתונים...</p>
-    </div>
+      <!-- Loading State -->
+      <div id="loadingState" class="flex flex-col items-center justify-center py-20">
+        <div class="loader mb-4"></div>
+        <p class="text-gray-500 font-medium">טוען נתונים...</p>
+      </div>
 
-    <!-- Empty State -->
-    <div id="emptyState" class="hidden flex-col items-center justify-center py-16 bg-white rounded-2xl border border-gray-100 border-dashed text-center">
-      <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-      <h3 class="text-lg font-medium text-gray-900 mb-1">לא נמצאו חובות</h3>
-      <p class="text-gray-500">נסה לשנות את מילות החיפוש או שאין חובות פתוחים כרגע.</p>
-    </div>
+      <!-- Empty State -->
+      <div id="emptyState"
+        class="hidden flex-col items-center justify-center py-16 bg-white rounded-2xl border border-gray-100 border-dashed text-center">
+        <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4">
+          </path>
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900 mb-1">לא נמצאו חובות</h3>
+        <p class="text-gray-500">נסה לשנות את מילות החיפוש או שאין חובות פתוחים כרגע.</p>
+      </div>
 
-    <!-- List -->
-    <div id="customerList" class="space-y-4 hidden mb-4"></div>
+      <!-- List -->
+      <div id="customerList" class="space-y-4 hidden mb-4"></div>
 
-  </main>
-  
-  <!-- Fixed Footer Tip -->
-  <footer class="fixed bottom-0 inset-x-0 bg-white/85 backdrop-blur-md border-t border-gray-200 z-30 py-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.03)]">
-    <div class="max-w-6xl mx-auto px-4 flex justify-center">
-      <p class="text-sm text-gray-500 flex items-center gap-2">
-        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-        <span>טיפ: העבר את העכבר על טקסט שמוצג באופן חלקי (קטוע) כדי לקרוא את התוכן במלואו.</span>
-      </p>
-    </div>
-  </footer>
-  
-  <!-- Scroll to Top Button -->
-  <button id="scrollToTopBtn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="fixed bottom-20 right-6 z-40 bg-blue-600 text-white p-3.5 rounded-full shadow-lg opacity-0 pointer-events-none transition-all duration-300 hover:bg-blue-700 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-300 transform translate-y-4" data-tooltip="חזור למעלה">
-    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
-  </button>
-  
+    </main>
+
+    <!-- Fixed Footer Tip -->
+    <footer
+      class="fixed bottom-0 inset-x-0 bg-white/85 backdrop-blur-md border-t border-gray-200 z-30 py-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.03)]">
+      <div class="max-w-6xl mx-auto px-4 flex justify-center">
+        <p class="text-sm text-gray-500 flex items-center gap-2">
+          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span>טיפ: העבר את העכבר על טקסט שמוצג באופן חלקי (קטוע) כדי לקרוא את התוכן במלואו.</span>
+        </p>
+      </div>
+    </footer>
+
+    <!-- Scroll to Top Button -->
+    <button id="scrollToTopBtn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
+      class="fixed bottom-20 right-6 z-40 bg-blue-600 text-white p-3.5 rounded-full shadow-lg opacity-0 pointer-events-none transition-all duration-300 hover:bg-blue-700 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-300 transform translate-y-4"
+      data-tooltip="חזור למעלה">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+      </svg>
+    </button>
+
   </div> <!-- End App Container -->
 
   <!-- Payment Modal -->
-  <div id="paymentModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <div id="paymentModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog"
+    aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-      
+
       <!-- Background backdrop -->
-      <div class="fixed inset-0 bg-gray-900 bg-opacity-50 transition-opacity backdrop-blur-sm" aria-hidden="true" onclick="closePaymentModal()"></div>
+      <div class="fixed inset-0 bg-gray-900 bg-opacity-50 transition-opacity backdrop-blur-sm" aria-hidden="true"
+        onclick="closePaymentModal()"></div>
       <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-      
+
       <!-- Modal panel -->
-      <div class="inline-block align-bottom bg-white rounded-2xl text-right overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
+      <div
+        class="inline-block align-bottom bg-white rounded-2xl text-right overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
         <div class="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-4">
           <div class="flex justify-between items-center text-white">
             <h3 class="text-xl font-bold" id="modal-title">הוסף תשלום</h3>
             <button onclick="closePaymentModal()" class="text-white/80 hover:text-white transition-colors">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
             </button>
           </div>
         </div>
-        
+
         <form id="paymentForm" onsubmit="submitPayment(event)" novalidate class="px-6 py-6">
           <input type="hidden" id="payCustomerName">
-          
+
           <!-- Readonly Customer Display -->
           <div class="mb-5">
             <label class="block text-sm font-medium text-gray-700 mb-1">לקוח</label>
-            <div id="payCustomerDisplay" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-gray-800 font-semibold"></div>
+            <div id="payCustomerDisplay"
+              class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-gray-800 font-semibold"></div>
           </div>
-          
+
           <div class="grid grid-cols-2 gap-4 mb-5">
             <!-- Date -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">תאריך פעולה</label>
-              <input type="date" id="payDate" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+              <input type="date" id="payDate"
+                class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
             </div>
-            
+
             <!-- Amount -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">סכום (₪)</label>
-              <input type="number" id="payAmount" step="0.01" min="0" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" placeholder="0.00">
+              <input type="number" id="payAmount" step="0.01" min="0"
+                class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                placeholder="0.00">
             </div>
           </div>
-          
+
           <!-- Method -->
           <div class="mb-5">
             <label class="block text-sm font-medium text-gray-700 mb-1">אמצעי תשלום</label>
-            <select id="payMethod" onchange="handleMethodChange()" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white">
+            <select id="payMethod" onchange="handleMethodChange()"
+              class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white">
               <option value="" disabled selected>בחר אמצעי תשלום</option>
               <option value="אשראי">אשראי</option>
               <option value="מזומן">מזומן</option>
@@ -253,32 +326,41 @@
               <option value="אחר - הערות">אחר - הערות</option>
             </select>
           </div>
-          
+
           <!-- Conditional: Credit Card -->
           <div id="creditCardField" class="mb-5 hidden">
             <label class="block text-sm font-medium text-gray-700 mb-1">4 ספרות אחרונות</label>
-            <input type="text" id="payLast4" maxlength="4" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" placeholder="1234">
+            <input type="text" id="payLast4" maxlength="4"
+              class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              placeholder="1234">
           </div>
-          
+
           <!-- Conditional: Bank Info -->
           <div id="bankField" class="mb-5 hidden">
             <label class="block text-sm font-medium text-gray-700 mb-1">פרטי חשבון בנק</label>
-            <input type="text" id="payBankInfo" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" placeholder='הזן בפורמט: "מספר בנק/ מספר סניף/ מספר חשבון"'>
+            <input type="text" id="payBankInfo"
+              class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              placeholder='הזן בפורמט: "מספר בנק/ מספר סניף/ מספר חשבון"'>
           </div>
-          
+
           <!-- Comments -->
           <div class="mb-6">
             <label class="block text-sm font-medium text-gray-700 mb-1">הערות</label>
-            <textarea id="payComments" rows="3" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none" placeholder="הערות נוספות..."></textarea>
+            <textarea id="payComments" rows="3"
+              class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+              placeholder="הערות נוספות..."></textarea>
           </div>
-          
+
           <!-- Actions -->
           <div class="flex gap-3 pt-2 border-t border-gray-100">
-            <button type="submit" id="submitPaymentBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl shadow-md transition-colors flex justify-center items-center">
+            <button type="submit" id="submitPaymentBtn"
+              class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl shadow-md transition-colors flex justify-center items-center">
               <span>שמור תשלום</span>
-              <div id="submitLoader" class="hidden ml-2 w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <div id="submitLoader"
+                class="hidden ml-2 w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             </button>
-            <button type="button" onclick="closePaymentModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-3 px-4 rounded-xl transition-colors">
+            <button type="button" onclick="closePaymentModal()"
+              class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-3 px-4 rounded-xl transition-colors">
               ביטול
             </button>
           </div>
@@ -288,26 +370,31 @@
   </div>
 
   <!-- Toast Notification -->
-  <div id="toast" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-xl shadow-xl transition-all duration-300 opacity-0 translate-y-10 pointer-events-none z-50 flex items-center gap-3">
-    <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+  <div id="toast"
+    class="fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-xl shadow-xl transition-all duration-300 opacity-0 translate-y-10 pointer-events-none z-50 flex items-center gap-3">
+    <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+    </svg>
     <span id="toastMsg" class="font-medium">הפעולה בוצעה בהצלחה!</span>
   </div>
 
   <script>
     // State
+    const API_URL = "https://script.google.com/macros/s/AKfycbwzlycpNVlQ12oCIYgaKaGqCUTfmAane48Mt7DRg5bOb9WBff3OugD9wMEM7vV7U9RD/exec"; // REPLACE THIS WITH YOUR DEPLOYED GOOGLE APPS SCRIPT WEB APP URL
+
     let allTasks = [];
     let pendingPaymentsMap = {};
     let expandedCustomers = new Set();
     let selectedCategories = new Set();
-    
+
     let allCategoriesList = [];
     let workerPin = localStorage.getItem('workerPin') || '';
-    
+
     // Multi-select dropdown handling
     function toggleCategoryDropdown() {
       document.getElementById('categoryDropdown').classList.toggle('hidden');
     }
-    
+
     document.addEventListener('click', (e) => {
       const btn = document.getElementById('categoryFilterBtn');
       const dropdown = document.getElementById('categoryDropdown');
@@ -315,7 +402,7 @@
         dropdown.classList.add('hidden');
       }
     });
-    
+
     function updateCategoryFilterText() {
       const btnText = document.getElementById('categoryFilterText');
       if (selectedCategories.size === 0 || selectedCategories.size === allCategoriesList.length) {
@@ -326,7 +413,7 @@
         btnText.textContent = `${selectedCategories.size} מקורות נבחרו`;
       }
     }
-    
+
     function toggleCategory(cat) {
       if (selectedCategories.has(cat)) {
         selectedCategories.delete(cat);
@@ -339,27 +426,27 @@
           if (selectAllBtn) selectAllBtn.checked = true;
         }
       }
-      
+
       updateCategoryFilterText();
       handleSearch();
     }
-    
+
     function toggleAllCategories(isChecked) {
       if (isChecked) {
         allCategoriesList.forEach(c => selectedCategories.add(c));
       } else {
         selectedCategories.clear();
       }
-      
+
       const checkboxes = document.getElementById('categoryDropdown').querySelectorAll('input[type="checkbox"]');
       checkboxes.forEach(cb => {
         if (cb.id !== 'selectAllCategoriesBtn') cb.checked = isChecked;
       });
-      
+
       updateCategoryFilterText();
       handleSearch();
     }
-    
+
     function escapeHTML(str) {
       if (!str) return '';
       return str.toString()
@@ -369,7 +456,7 @@
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
     }
-    
+
     // On Mount
     document.addEventListener('DOMContentLoaded', () => {
       if (workerPin) {
@@ -378,13 +465,13 @@
       } else {
         document.getElementById('loginScreen').classList.remove('hidden');
       }
-      
+
       // Set default date to today in timezone-safe way
       const today = new Date();
       const offset = today.getTimezoneOffset() * 60000;
       const localISOTime = (new Date(today - offset)).toISOString().split('T')[0];
       document.getElementById('payDate').value = localISOTime;
-      
+
       // Scroll to Top Listener
       window.addEventListener('scroll', () => {
         const btn = document.getElementById('scrollToTopBtn');
@@ -397,29 +484,36 @@
         }
       }, { passive: true });
     });
-    
+
     // Authentication
     function handleLogin(e) {
       e.preventDefault();
       const pin = document.getElementById('password').value;
       if (!pin) return;
-      
+
       const btn = document.getElementById('loginBtn');
       const loader = document.getElementById('loginLoader');
       btn.disabled = true;
       loader.classList.remove('hidden');
       document.getElementById('loginError').classList.add('hidden');
-      
+
       workerPin = pin;
-      
-      google.script.run
-        .withSuccessHandler(data => {
+
+      fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'getTasks', pin: workerPin })
+      })
+        .then(res => res.json())
+        .then(data => {
           btn.disabled = false;
           loader.classList.add('hidden');
-          
+
           if (data && data.error === 'Unauthorized') {
             document.getElementById('loginError').classList.remove('hidden');
             workerPin = '';
+          } else if (data && data.error) {
+            throw new Error(data.error);
           } else {
             localStorage.setItem('workerPin', pin);
             document.getElementById('loginScreen').classList.add('hidden');
@@ -428,15 +522,14 @@
             processTasksData(data);
           }
         })
-        .withFailureHandler(err => {
+        .catch(err => {
           console.error(err);
           btn.disabled = false;
           loader.classList.add('hidden');
           showToast('שגיאת תקשורת, נסה שוב', true);
-        })
-        .getPendingTasks(workerPin);
+        });
     }
-    
+
     function handleUnauthorized() {
       localStorage.removeItem('workerPin');
       workerPin = '';
@@ -446,7 +539,7 @@
       document.getElementById('loginError').classList.remove('hidden');
       document.getElementById('loadingState').classList.add('hidden');
     }
-    
+
     function handleLogout() {
       localStorage.removeItem('workerPin');
       workerPin = '';
@@ -456,37 +549,43 @@
       document.getElementById('loginError').classList.add('hidden');
       document.getElementById('password').value = '';
     }
-    
+
     function showApp() {
       document.getElementById('appContainer').classList.remove('hidden');
       document.getElementById('appContainer').classList.add('flex');
     }
-    
+
     function fetchTasks() {
       if (!workerPin) return;
       document.getElementById('loadingState').classList.remove('hidden');
       document.getElementById('customerList').classList.add('hidden');
       document.getElementById('emptyState').classList.add('hidden');
-      
+
       // Reset total while loading
       document.getElementById('totalOwedText').innerText = '₪ 0.00';
-      
-      google.script.run
-        .withSuccessHandler(data => {
+
+      fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'getTasks', pin: workerPin })
+      })
+        .then(res => res.json())
+        .then(data => {
           if (data && data.error === 'Unauthorized') {
-             handleUnauthorized();
-             return;
+            handleUnauthorized();
+            return;
+          } else if (data && data.error) {
+            throw new Error(data.error);
           }
           processTasksData(data);
         })
-        .withFailureHandler(error => {
+        .catch(error => {
           console.error(error);
           document.getElementById('loadingState').classList.add('hidden');
           showToast('שגיאה בטעינת הנתונים', true);
-        })
-        .getPendingTasks(workerPin);
+        });
     }
-    
+
     function processTasksData(data) {
       if (data && !Array.isArray(data)) {
         allTasks = data.tasks || [];
@@ -495,7 +594,7 @@
         allTasks = data || [];
         pendingPaymentsMap = {};
       }
-      
+
       // Populate category filter checkboxes
       const categories = new Set();
       allTasks.forEach(t => {
@@ -504,21 +603,21 @@
       allCategoriesList = Array.from(categories).sort();
       const dropdown = document.getElementById('categoryDropdown');
       dropdown.innerHTML = '';
-      
+
       // Clear invalid selected categories
       const validCategories = new Set(categories);
       for (let cat of selectedCategories) {
         if (!validCategories.has(cat)) selectedCategories.delete(cat);
       }
-      
+
       updateCategoryFilterText();
-      
+
       const isAllSelected = selectedCategories.size === allCategoriesList.length || selectedCategories.size === 0;
-      
+
       if (isAllSelected) {
         allCategoriesList.forEach(c => selectedCategories.add(c));
       }
-      
+
       // "Select All" option
       dropdown.innerHTML += `
         <label class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 bg-gray-50/50 transition-colors">
@@ -526,7 +625,7 @@
           <span class="text-sm font-medium text-gray-800">בחר הכל</span>
         </label>
       `;
-      
+
       allCategoriesList.forEach(cat => {
         const isChecked = selectedCategories.has(cat) ? 'checked' : '';
         dropdown.innerHTML += `
@@ -536,24 +635,24 @@
           </label>
         `;
       });
-      
+
       document.getElementById('loadingState').classList.add('hidden');
       render();
     }
-    
+
     function handleSearch() {
       render();
     }
-    
+
     function render() {
       const query = document.getElementById('searchInput').value.toLowerCase().trim().replace(/"/g, '״').replace(/'/g, '׳');
       const listEl = document.getElementById('customerList');
       const emptyEl = document.getElementById('emptyState');
-      
+
       const queryTerms = query.split(' ').filter(q => q.length > 0);
       const isCatFiltered = selectedCategories.size > 0 && selectedCategories.size !== allCategoriesList.length;
       const isFiltering = queryTerms.length > 0 || isCatFiltered;
-      
+
       // Filter
       const filteredTasks = allTasks.filter(t => {
         const textMatch = queryTerms.length === 0 || queryTerms.every(term => {
@@ -563,21 +662,21 @@
           const sourceMatch = t.debtSource ? t.debtSource.toLowerCase().includes(term) : false;
           return nameMatch || carMatch || modelMatch || sourceMatch;
         });
-        
+
         const isAllSelected = selectedCategories.size === 0 || selectedCategories.size === allCategoriesList.length;
         const catMatch = isAllSelected || selectedCategories.has(t.debtSource);
-        
+
         return textMatch && catMatch;
       });
-      
+
       // Group
       const groupedTasks = {};
       let totalOwed = 0;
-      
+
       filteredTasks.forEach(t => {
         if (!groupedTasks[t.customerName]) {
-          groupedTasks[t.customerName] = { 
-            total: 0, 
+          groupedTasks[t.customerName] = {
+            total: 0,
             items: [],
             pendingPayment: pendingPaymentsMap[t.customerName] || 0
           };
@@ -585,39 +684,39 @@
         groupedTasks[t.customerName].items.push(t);
         groupedTasks[t.customerName].total += t.amount;
       });
-      
+
       // Calculate Effective Totals
       Object.keys(groupedTasks).forEach(customer => {
         const g = groupedTasks[customer];
         g.effectiveTotal = Math.max(0, g.total - g.pendingPayment);
         totalOwed += g.effectiveTotal;
       });
-      
+
       // Update Total
-      document.getElementById('totalOwedText').innerText = '₪ ' + totalOwed.toLocaleString('he-IL', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-      
+      document.getElementById('totalOwedText').innerText = '₪ ' + totalOwed.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
       // Clear List
       listEl.innerHTML = '';
-      
+
       if (Object.keys(groupedTasks).length === 0) {
         listEl.classList.add('hidden');
         emptyEl.classList.remove('hidden');
         emptyEl.classList.add('flex');
         return;
       }
-      
+
       emptyEl.classList.add('hidden');
       emptyEl.classList.remove('flex');
       listEl.classList.remove('hidden');
-      
+
       // Render Groups
       for (const [customer, data] of Object.entries(groupedTasks)) {
         const isExpanded = expandedCustomers.has(customer);
-        
+
         const card = document.createElement('div');
         card.className = "bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 mb-4 hover:shadow-md";
         if (isExpanded) card.classList.add('ring-1', 'ring-blue-100', 'shadow-md');
-        
+
         // Header (Clickable)
         const header = document.createElement('div');
         header.className = "p-5 cursor-pointer flex justify-between items-center transition-colors hover:bg-gray-50 " + (isExpanded ? "bg-gray-50" : "bg-white");
@@ -629,9 +728,9 @@
           }
           render();
         };
-        
+
         const initial = customer ? customer.charAt(0) : '?';
-        
+
         header.innerHTML = `
           <div class="flex items-center gap-4">
             <div class="h-12 w-12 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center text-blue-700 font-bold text-xl shadow-inner flex-shrink-0">
@@ -643,20 +742,20 @@
             </div>
           </div>
           <div class="flex items-center gap-5">
-            <span class="text-xl font-bold text-gray-900">₪ ${data.effectiveTotal.toLocaleString('he-IL', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+            <span class="text-xl font-bold text-gray-900">₪ ${data.effectiveTotal.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center transition-transform duration-300 ${isExpanded ? 'rotate-180 bg-blue-100 text-blue-600' : 'text-gray-400'}">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
             </div>
           </div>
         `;
-        
+
         card.appendChild(header);
-        
+
         // Body (Expanded State)
         if (isExpanded) {
           const body = document.createElement('div');
           body.className = "p-0 border-t border-gray-100 bg-white animate-fade-in";
-          
+
           let tableHTML = `
             <div class="overflow-x-auto">
               <table class="w-full text-sm text-right text-gray-600">
@@ -673,14 +772,14 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100">
           `;
-          
+
           data.items.forEach(item => {
             const safeCarNumber = escapeHTML(item.carNumber);
             const safeCarModel = escapeHTML(item.carModel);
             const safeDebtSource = escapeHTML(item.debtSource);
             const safeDebtInfo = escapeHTML(item.debtInfo);
             const safeNotes = escapeHTML(item.notes);
-            
+
             tableHTML += `
               <tr class="hover:bg-blue-50/30 transition-colors">
                 <td class="px-6 py-4 font-medium text-gray-900 max-w-[120px]"><span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-1 rounded-md border border-gray-200 truncate inline-block max-w-full" data-tooltip="${safeCarNumber}">${safeCarNumber || '-'}</span></td>
@@ -693,77 +792,77 @@
                 <td class="px-6 py-4 whitespace-nowrap text-gray-500">${item.date || '-'}</td>
                 <td class="px-6 py-4 max-w-[200px]"><div class="line-clamp-2" data-tooltip="${safeDebtInfo}">${safeDebtInfo || '-'}</div></td>
                 <td class="px-6 py-4 text-xs text-gray-500 max-w-[200px]"><div class="line-clamp-2" data-tooltip="${safeNotes}">${safeNotes || '-'}</div></td>
-                <td class="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">₪ ${item.amount.toLocaleString('he-IL', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                <td class="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">₪ ${item.amount.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
               </tr>
             `;
           });
-          
+
           tableHTML += `
                 </tbody>
               </table>
             </div>
           `;
-          
+
           if (data.pendingPayment > 0) {
             tableHTML += `
               <div class="px-6 py-3 bg-emerald-50 text-emerald-800 border-t border-emerald-100 flex items-center justify-between text-sm">
                 <div class="flex items-center gap-2">
                   <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                   <span class="font-semibold">שים לב:</span>
-                  <span>יש ללקוח זה תשלומים שלא טופלו עדיין על סך ₪ ${data.pendingPayment.toLocaleString('he-IL', {minimumFractionDigits: 2})} (הסכום הופחת מהסה״כ).</span>
+                  <span>יש ללקוח זה תשלומים שלא טופלו עדיין על סך ₪ ${data.pendingPayment.toLocaleString('he-IL', { minimumFractionDigits: 2 })} (הסכום הופחת מהסה״כ).</span>
                 </div>
               </div>
             `;
           }
-          
+
           body.innerHTML = tableHTML;
-          
+
           // Add Button securely
           const tempContainer = document.createElement('div');
           tempContainer.className = "px-6 py-5 bg-gray-50/50 border-t border-gray-100 flex justify-end";
-          
+
           const btn = document.createElement('button');
           btn.className = "bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-100 text-white font-medium py-2.5 px-6 rounded-xl shadow-sm transition-all flex items-center gap-2";
           btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg> הוסף תשלום ללקוח`;
           btn.onclick = () => openPaymentModal(customer);
-          
+
           tempContainer.appendChild(btn);
           body.appendChild(tempContainer);
 
           card.appendChild(body);
         }
-        
+
         listEl.appendChild(card);
       }
     }
-    
+
     // Modal Logic
     function openPaymentModal(customerName) {
       document.getElementById('payCustomerName').value = customerName;
       document.getElementById('payCustomerDisplay').innerText = customerName;
-      
+
       // Reset form
       document.getElementById('payAmount').value = '';
       document.getElementById('payMethod').value = '';
       document.getElementById('payLast4').value = '';
       document.getElementById('payBankInfo').value = '';
       document.getElementById('payComments').value = '';
-      
+
       // Default date to today
       const today = new Date();
       const offset = today.getTimezoneOffset() * 60000;
       const localISOTime = (new Date(today - offset)).toISOString().split('T')[0];
       document.getElementById('payDate').value = localISOTime;
-      
+
       handleMethodChange();
-      
+
       document.getElementById('paymentModal').classList.remove('hidden');
     }
-    
+
     function closePaymentModal() {
       document.getElementById('paymentModal').classList.add('hidden');
     }
-    
+
     function handleMethodChange() {
       const method = document.getElementById('payMethod').value;
       const creditField = document.getElementById('creditCardField');
@@ -771,11 +870,11 @@
       const commentsInput = document.getElementById('payComments');
       const last4Input = document.getElementById('payLast4');
       const bankInput = document.getElementById('payBankInfo');
-      
+
       // Hide all conditional fields
       creditField.classList.add('hidden');
       bankField.classList.add('hidden');
-      
+
       // Remove required setting from handleMethodChange since we validate in submitPayment
       if (method === 'אשראי') {
         creditField.classList.remove('hidden');
@@ -783,13 +882,13 @@
         bankField.classList.remove('hidden');
       }
     }
-    
+
     function submitPayment(e) {
       e.preventDefault();
-      
+
       const submitBtn = document.getElementById('submitPaymentBtn');
       const submitLoader = document.getElementById('submitLoader');
-      
+
       const paymentData = {
         customerName: document.getElementById('payCustomerName').value,
         date: document.getElementById('payDate').value,
@@ -799,7 +898,7 @@
         bankInfo: document.getElementById('payBankInfo').value,
         comments: document.getElementById('payComments').value
       };
-      
+
       // Manual JS Validation
       if (!paymentData.date) {
         return showToast('נא להזין תאריך פעולה', true);
@@ -819,55 +918,58 @@
       if (paymentData.method === 'אחר - הערות' && !paymentData.comments.trim()) {
         return showToast('נא להזין הערות עבור אמצעי תשלום זה.', true);
       }
-      
+
       // UI Loading state
       submitBtn.disabled = true;
       submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
       submitLoader.classList.remove('hidden');
-      
-      google.script.run
-        .withSuccessHandler((response) => {
+
+      fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'addPayment', paymentData: paymentData, pin: workerPin })
+      })
+        .then(res => res.json())
+        .then(response => {
           submitBtn.disabled = false;
           submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
           submitLoader.classList.add('hidden');
-          
+
           if (response && response.error === 'Unauthorized') {
-             handleUnauthorized();
-             return;
+            handleUnauthorized();
+            return;
+          } else if (response && response.error) {
+            throw new Error(response.error);
           }
-          
+
           closePaymentModal();
           showToast('התשלום נוסף בהצלחה!');
-          
-          // Optionally refresh tasks to show updated state (if needed in future)
-          // fetchTasks();
         })
-        .withFailureHandler(error => {
+        .catch(error => {
           console.error(error);
           submitBtn.disabled = false;
           submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
           submitLoader.classList.add('hidden');
           showToast('שגיאה בשמירת התשלום', true);
-        })
-        .addPaymentToSheet(paymentData, workerPin);
+        });
     }
-    
+
     function showToast(message, isError = false) {
       const toast = document.getElementById('toast');
       const msgEl = document.getElementById('toastMsg');
-      const iconSVG = isError ? 
-        `<svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>` : 
+      const iconSVG = isError ?
+        `<svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>` :
         `<svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
-      
+
       toast.innerHTML = `${iconSVG} <span class="font-medium">${message}</span>`;
-      
+
       toast.classList.remove('opacity-0', 'translate-y-10');
-      
+
       setTimeout(() => {
         toast.classList.add('opacity-0', 'translate-y-10');
       }, 3000);
     }
-    
+
     // --- Custom Tooltip Logic ---
     document.addEventListener('mouseover', (e) => {
       const target = e.target.closest('[data-tooltip]');
@@ -875,47 +977,48 @@
         const tooltip = document.getElementById('customTooltip');
         const text = target.getAttribute('data-tooltip');
         if (!text || text === '-') return;
-        
+
         tooltip.innerHTML = text.replace(/\n/g, '<br>');
         tooltip.classList.add('show');
-        
+
         const rect = target.getBoundingClientRect();
         const tooltipRect = tooltip.getBoundingClientRect();
-        
+
         // Default position: above the element
         let top = rect.top - tooltipRect.height - 8;
         let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
-        
+
         // Flip to bottom if not enough space above
         if (top < 10) {
           top = rect.bottom + 8;
         }
-        
+
         // Constrain horizontally
         if (left < 10) left = 10;
         if (left + tooltipRect.width > window.innerWidth - 10) {
           left = window.innerWidth - tooltipRect.width - 10;
         }
-        
+
         tooltip.style.top = top + 'px';
         tooltip.style.left = left + 'px';
       }
     });
-    
+
     document.addEventListener('mouseout', (e) => {
       const target = e.target.closest('[data-tooltip]');
       if (target) {
         document.getElementById('customTooltip').classList.remove('show');
       }
     });
-    
+
     document.addEventListener('scroll', () => {
       document.getElementById('customTooltip').classList.remove('show');
     }, { passive: true });
-    
+
   </script>
-  
+
   <!-- Custom Tooltip Container -->
   <div id="customTooltip"></div>
 </body>
+
 </html>
