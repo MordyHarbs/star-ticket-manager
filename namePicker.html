@@ -195,17 +195,23 @@
       const action = "<?= typeof action !== 'undefined' ? action : 'markPaid' ?>";
 
       function submit() {
-  // Start the server call
   if (action === 'transfer') {
+    var namesText = selectedNames.join(', ');
+    var msg = 'הוספתי עכשיו לטיפול המשרד את ' + namesText;
+
+    // Use persistent off-screen textarea for reliable execCommand copy
+    var ta = document.getElementById('clipTarget');
+    ta.value = msg;
+    ta.focus();
+    ta.select();
+    document.execCommand('copy');
+
     google.script.run.runTransferForName(selectedNames);
+    setTimeout(function() { google.script.host.close(); }, 200);
   } else {
     google.script.run.runMarkAllForName(selectedNames);
+    setTimeout(function() { google.script.host.close(); }, 200);
   }
-
-  // Close the dialog after the call is safely queued
-  setTimeout(() => {
-    google.script.host.close();
-  }, 250);
 }
 
       function cancel() {
@@ -259,5 +265,8 @@
       <button class="btn-cancel" onclick="cancel()">בטל</button>
       <button class="btn-ok" onclick="submit()">אישור</button>
     </div>
+
+    <!-- Persistent off-screen textarea used for clipboard copy -->
+    <textarea id="clipTarget" style="position:absolute;left:-9999px;top:-9999px;"></textarea>
   </body>
 </html>

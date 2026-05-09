@@ -432,32 +432,26 @@ function transferToOfficeCare() {
   const sh = ss.getSheetByName('פירוט נסיעות לפי לקוח');
   const defaultName = sh.getRange(6, 3).getValue();
 
-  const ui = SpreadsheetApp.getUi();
-  const response = ui.alert(
-    "אישור העברה לטיפול המשרד",
-    "האם הנך בטוח שברצונך להעביר לטיפול המשרד את כל החובות של:\n\n" +
-    "            ------ " + defaultName + " ------\n\n" +
-    "ללקוח אחר לחץ 'לא'.",
-    ui.ButtonSet.YES_NO_CANCEL
-  );
+  const html = HtmlService.createTemplateFromFile('transferConfirm');
+  html.defaultName = defaultName;
+  const dialog = html.evaluate()
+    .setWidth(360)
+    .setHeight(170)
+    .setTitle('העברה לטיפול המשרד');
 
-  if (response == ui.Button.NO) {
-    const html = HtmlService.createTemplateFromFile("namePicker");
-    html.defaultName = defaultName;
-    html.action = 'transfer';
-    const dialog = html.evaluate()
-      .setWidth(450)
-      .setHeight(420)
-      .setTitle("בחירת שם להעברה למשרד");
+  SpreadsheetApp.getUi().showModalDialog(dialog, 'העברה לטיפול המשרד');
+}
 
-    ss.show(dialog);
-  }
-  else if (response == ui.Button.YES) {
-    runTransferForName(defaultName);
-  }
-  else {
-    ui.alert("הפעולה בוטלה.");
-  }
+function openNamePickerForTransfer(defaultName) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const html = HtmlService.createTemplateFromFile('namePicker');
+  html.defaultName = defaultName;
+  html.action = 'transfer';
+  const dialog = html.evaluate()
+    .setWidth(450)
+    .setHeight(420)
+    .setTitle('בחירת שם להעברה למשרד');
+  SpreadsheetApp.getUi().showModalDialog(dialog, 'בחירת שם להעברה למשרד');
 }
 
 function runTransferForName(selectedName) {
@@ -619,10 +613,10 @@ function processTransferToOffice(name, ss) {
       let found = false;
       for (let i = targetLast - 1; i >= 0; i--) {
         const row = targetData[i];
-        const isEmpty = !String(row[0]).trim() && !String(row[1]).trim() && 
-                        !String(row[3]).trim() && !String(row[4]).trim() && 
-                        !String(row[5]).trim() && !String(row[6]).trim() && 
-                        !String(row[7]).trim();
+        const isEmpty = !String(row[0]).trim() && !String(row[1]).trim() &&
+          !String(row[3]).trim() && !String(row[4]).trim() &&
+          !String(row[5]).trim() && !String(row[6]).trim() &&
+          !String(row[7]).trim();
         if (!isEmpty) {
           appendRow = i + 2;
           found = true;
