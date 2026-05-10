@@ -1,3 +1,10 @@
+// LEGACY — as of the Netlify migration the live portal calls
+//   /.netlify/functions/getTasks  and  /.netlify/functions/submitPayment
+// instead of this Apps Script Web App. The doPost handlers below are kept as
+// a fallback only. The PIN now lives in Netlify env var WORKER_PIN; the
+// constant below is left in place so the legacy endpoint still works during
+// rollout, but should be removed (and rotated) once the new endpoints are
+// confirmed stable.
 const WORKER_PASSWORD = "x7#M9$kL2@pQ5&vN8*wZ";
 
 function doGet(e) {
