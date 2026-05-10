@@ -339,26 +339,6 @@ function markAllForName(name, ss) {
     }
   }
 
-  // -------- תשלומים --------
-  sh = ss.getSheetByName('תשלומים');
-  if (sh) {
-    last = sh.getLastRow();
-    if (last >= 2) {
-      // Get columns A through D
-      // Column A (1) = Name, Column C (3) = Amount
-      const data = sh.getRange(2, 1, last - 1, 4).getValues();
-
-      for (let i = 0; i < data.length; i++) {
-        const rowName = normalizeHebrew(data[i][0]); // Column A (index 0)
-        const total = Number(data[i][2]);          // Column C (index 2)
-
-        if (rowName === normName && total != 0) {
-          const tr = i + 2; // Real row index in the sheet
-          sh.getRange(tr, 4).setValue(true); // Column D (4) = true
-        }
-      }
-    }
-  }
 }
 
 function processPaymentRow(sh, r, ss) {
