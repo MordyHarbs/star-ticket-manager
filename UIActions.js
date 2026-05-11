@@ -66,39 +66,37 @@ function onOpen(e) {
 
 function buildCustomMenu() {
   const ui = SpreadsheetApp.getUi();
-  const mainMenu = ui.createMenu('🔍 כלים מותאמים');
 
-  // Sub-menu for Tickets and Reports
-  const ticketsMenu = ui.createMenu('דוחות והתראות')
-    .addItem('הצג דוחות לבדיקת סטטוס', 'runTicketCheck')
-    .addItem('הצג דוחות לבדיקת סטטוס (התאמה אישית)', 'runTicketCheckWithPrompt')
-    .addItem('הצג טבלת רשויות לדוחות', 'showSourcesDialog');
+  // 1. תפריט דוחות
+  ui.createMenu('תפריט דוחות')
+    .addSubMenu(ui.createMenu('הצגת סטטוס דוחות')
+      .addItem('הצג דוחות לבדיקת סטטוס', 'runTicketCheck')
+      .addItem('הצג דוחות לבדיקת סטטוס (התאמה אישית)', 'runTicketCheckWithPrompt')
+    )
+    .addSubMenu(ui.createMenu('טבלת רשויות')
+      .addItem('הצג טבלת רשויות לדוחות', 'showSourcesDialog')
+    )
+    .addToUi();
 
-  // Sub-menu for Follow-ups and Reminders
-  const followUpMenu = ui.createMenu('מעקב ותזכורות')
-    .addItem('הצג לקוחות ממתינים לטיפול תאריך עבר', 'checkFollowUpReminders')
-    .addItem('הצג כל הלקוחות הממתינים לטיפול', 'ShowAllFollowUpReminders')
-    .addItem('הוסף תאריך לטיפול', 'updateDateMenu');
+  // 2. תפריט לקוחות
+  ui.createMenu('תפריט לקוחות')
+    .addSubMenu(ui.createMenu('ניהול תזכורות')
+      .addItem('הצג לקוחות ממתינים לטיפול תאריך עבר', 'checkFollowUpReminders')
+      .addItem('הצג כל הלקוחות הממתינים לטיפול', 'ShowAllFollowUpReminders')
+      .addItem('הוסף תאריך לטיפול', 'updateDateMenu')
+    )
+    .addItem('סנכרון לקוחות', 'syncCustomerSheet')
+    .addItem('חיפוש...', 'updateSearchInfo')
+    .addToUi();
 
-  // Sub-menu for General Management
-  const manageMenu = ui.createMenu('ניהול שוטף')
-    .addItem('סמן הכול כשולם', 'markAllAsPaid')
+  // 3. תפריט ראשי
+  ui.createMenu('⭐ תפריט ראשי')
+    .addItem('סמן הכל כשולם', 'markAllAsPaid')
     .addItem('העבר חובות לטיפול המשרד', 'transferToOfficeCare')
     .addItem('סמן חובות משרד כשולם', 'markOfficeAsPaid')
-    .addItem('סנכרן לקוחות', 'syncCustomerSheet');
-
-  // Assemble the main menu
-  mainMenu
-    .addSubMenu(ticketsMenu)
-    .addSubMenu(followUpMenu)
-    .addSeparator()
-    .addSubMenu(manageMenu)
     .addToUi();
 
-  // Create separate menu for Office Use
-  ui.createMenu('🏢 לשימוש המשרד')
-    .addItem('ביצוע חיפוש בפירוט לפי לקוח', 'updateSearchInfo')
-    .addToUi();
+
 }
 
 function syncCustomerSheet() {
