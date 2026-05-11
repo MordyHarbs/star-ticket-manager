@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <base target="_top">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      font-family: "Google Sans", Arial, sans-serif;
+      background: #fff;
+      color: #202124;
+      direction: rtl;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 20px;
+      gap: 8px;
+      text-align: center;
+    }
+
+    .icon { font-size: 26px; line-height: 1; }
+
+    .question {
+      font-size: 13px;
+      color: #5f6368;
+    }
+
+    .name {
+      font-size: 16px;
+      color: #1a73e8;
+      font-weight: 700;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding-top: 6px;
+    }
+
+    button {
+      padding: 6px 14px;
+      font-size: 13px;
+      border-radius: 20px;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+      font-weight: 500;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+
+    .btn-yes    { background: #1a73e8; color: #fff; }
+    .btn-yes:hover { background: #1558b0; }
+    .btn-other  { background: #e8f0fe; color: #1a73e8; border: 1px solid #c6dafc; }
+    .btn-other:hover { background: #d2e3fc; }
+    .btn-cancel { background: #f1f3f4; color: #5f6368; }
+    .btn-cancel:hover { background: #e2e3e4; }
+
+  </style>
+</head>
+<body>
+  <div class="icon">🏢</div>
+  <div class="question">לסמן את כל חובות המשרד כשולם עבור:</div>
+  <div class="name" id="nameDisplay"></div>
+
+  <div class="footer">
+    <button class="btn-cancel" onclick="doCancel()">ביטול</button>
+    <button class="btn-other"  onclick="doOther()">לקוח אחר</button>
+    <button class="btn-yes" id="btnYes" onclick="doYes()">✓ אישור</button>
+  </div>
+
+  <script>
+    var defaultName = "<?= defaultName ?>";
+    document.getElementById('nameDisplay').textContent = defaultName;
+
+    function doYes() {
+      google.script.run.runMarkOfficeForName(defaultName);
+      google.script.host.close();
+    }
+
+    function doOther() {
+      google.script.run.openNamePickerForOfficeMark(defaultName);
+      google.script.host.close();
+    }
+
+    function doCancel() {
+      google.script.host.close();
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') doYes();
+      if (e.key === 'Escape') doCancel();
+    });
+
+    window.onload = function() {
+      var btn = document.getElementById('btnYes');
+      var attempts = 0;
+      var focusInterval = setInterval(function() {
+        window.focus();
+        btn.focus();
+        attempts++;
+        if (document.activeElement === btn || attempts > 30) {
+          clearInterval(focusInterval);
+        }
+      }, 100);
+    };
+  </script>
+</body>
+</html>

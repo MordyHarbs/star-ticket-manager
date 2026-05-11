@@ -208,6 +208,9 @@
 
     google.script.run.runTransferForName(selectedNames);
     setTimeout(function() { google.script.host.close(); }, 200);
+  } else if (action === 'markOfficePaid') {
+    google.script.run.runMarkOfficeForName(selectedNames);
+    setTimeout(function() { google.script.host.close(); }, 200);
   } else {
     google.script.run.runMarkAllForName(selectedNames);
     setTimeout(function() { google.script.host.close(); }, 200);

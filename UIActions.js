@@ -84,6 +84,7 @@ function buildCustomMenu() {
   const manageMenu = ui.createMenu('ניהול שוטף')
     .addItem('סמן הכול כשולם', 'markAllAsPaid')
     .addItem('העבר חובות לטיפול המשרד', 'transferToOfficeCare')
+    .addItem('סמן חובות משרד כשולם', 'markOfficeAsPaid')
     .addItem('סנכרן לקוחות', 'syncCustomerSheet');
 
   // Assemble the main menu
@@ -615,5 +616,90 @@ function processTransferToOffice(name, ss) {
       appendRow = 1;
     }
     targetSheet.getRange(appendRow, 1, newRows.length, newRows[0].length).setValues(newRows);
+  }
+}
+
+// =======================================================================
+// סימון חובות משרד כשולם (תשלומים, לטיפול המשרד)
+// =======================================================================
+
+function markOfficeAsPaid() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ss.getSheetByName('פירוט נסיעות לפי לקוח');
+  const defaultName = sh.getRange(6, 3).getValue();
+
+  const html = HtmlService.createTemplateFromFile('officeMarkConfirm');
+  html.defaultName = defaultName;
+  const dialog = html.evaluate()
+    .setWidth(360)
+    .setHeight(170)
+    .setTitle('סמן חובות משרד כשולם');
+
+  SpreadsheetApp.getUi().showModalDialog(dialog, 'סמן חובות משרד כשולם');
+}
+
+function openNamePickerForOfficeMark(defaultName) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const html = HtmlService.createTemplateFromFile('namePicker');
+  html.defaultName = defaultName;
+  html.action = 'markOfficePaid';
+  const dialog = html.evaluate()
+    .setWidth(450)
+    .setHeight(420)
+    .setTitle("בחירת שם לסימון 'שולם' (משרד)");
+  SpreadsheetApp.getUi().showModalDialog(dialog, "בחירת שם לסימון 'שולם' (משרד)");
+}
+
+function runMarkOfficeForName(selectedName) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  Logger.log("🟢 Running markOfficeAsPaid...");
+
+  // Normalize input: always treat as array
+  const names = Array.isArray(selectedName) ? selectedName : [selectedName];
+
+  names.forEach(name => {
+    ss.toast(`מסמן כעת כשולם את חובות המשרד של:  ⭐ ⭐ ${name} ⭐ ⭐ `, "סימון כשולם (משרד)");
+    markOfficeForName(name, ss);
+    ss.toast(`חובות המשרד של הלקוח הבא: ⭐ ⭐ ${name} ⭐ ⭐ סומנו כשולם`, "סימון כשולם (משרד)");
+  });
+  ss.toast(`כל הלקוחות שנבחרו סומנו כשולם (משרד)`, "סימון כשולם (משרד)");
+}
+
+function markOfficeForName(name, ss) {
+  const normName = normalizeHebrew(name);
+
+  // -------- תשלומים --------
+  let sh = ss.getSheetByName('תשלומים');
+  if (sh) {
+    let last = sh.getLastRow();
+    if (last >= 2) {
+      const data = sh.getRange(2, 1, last - 1, 4).getValues(); // A to D
+      for (let i = 0; i < data.length; i++) {
+        const rowName = normalizeHebrew(data[i][0]); // Col A
+        const amount = Number(data[i][2]); // Col C
+        const isHandled = data[i][3]; // Col D
+        if (rowName === normName && amount !== 0 && isHandled !== true) {
+          sh.getRange(i + 2, 4).setValue(true); // Col D
+        }
+      }
+    }
+  }
+
+  // -------- לטיפול המשרד --------
+  sh = ss.getSheetByName('לטיפול המשרד');
+  if (sh) {
+    let last = sh.getLastRow();
+    if (last >= 2) {
+      const data = sh.getRange(2, 1, last - 1, 9).getValues(); // A to I
+      for (let i = 0; i < data.length; i++) {
+        const rowName = normalizeHebrew(data[i][0]); // Col A
+        const amount = Number(data[i][6]); // Col G
+        const isHandled = data[i][8]; // Col I
+        if (rowName === normName && amount !== 0 && isHandled !== true) {
+          sh.getRange(i + 2, 9).setValue(true); // Col I
+        }
+      }
+    }
   }
 }
