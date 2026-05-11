@@ -278,7 +278,7 @@ function onEdit(e) {
       }
     }
 
-    e.range.setValue('=LET(erorMessage, "",lookupFuncion, VLOOKUP(C6,follow_up_date!A:E,5,FALSE),IFNA(IF(lookupFuncion="",erorMessage,lookupFuncion),erorMessage))');
+    e.range.setValue('=LET(erorMessage, "קוד בתוכנה",lookupFuncion, VLOOKUP(C6,follow_up_date!A:E,5,FALSE),IFNA(IF(lookupFuncion="",erorMessage,lookupFuncion),erorMessage))');
   }
 
   // ===== A-column logic (col 1) =====
