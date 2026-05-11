@@ -492,7 +492,8 @@ function processTransferToOffice(name, ss) {
           todayStr,
           amount,
           comments,
-          ""
+          false, // Col I
+          44 // Invoice code (Col J in office sheet) — fixed value for דוחות
         ]);
 
         sh.getRange(i + 2, 24).setValue(true);
@@ -504,7 +505,7 @@ function processTransferToOffice(name, ss) {
   sh = ss.getSheetByName('כביש 6/מנהרות');
   last = sh.getLastRow();
   if (last >= 2) {
-    const dataRange = sh.getRange(2, 1, last - 1, 13); // A to M (13 columns)
+    const dataRange = sh.getRange(2, 1, last - 1, 21); // A to U (21 columns)
     const data = dataRange.getValues();
     for (let i = 0; i < data.length; i++) {
       const rowName = normalizeHebrew(data[i][4]); // Col E
@@ -519,6 +520,7 @@ function processTransferToOffice(name, ss) {
         const exitSegment = data[i][6]; // Col G
         const totalWithVat = Number(data[i][8]); // Col I
         const comments = data[i][12]; // Col M
+        const invoiceCode = data[i][20]; // Col U — invoice code
 
         const source = sourceVal.includes("מנהרה") ? "מנהרות הכרמל" : "כביש 6";
         const commission = (amount - totalWithVat).toFixed(2);
@@ -534,7 +536,8 @@ function processTransferToOffice(name, ss) {
           todayStr,
           amount,
           comments,
-          ""
+          false, // Col I
+          invoiceCode // Invoice code (Col J in office sheet) — from Col U
         ]);
 
         sh.getRange(i + 2, 12).setValue("טופל הועבר לטיפול המשרד");
@@ -546,7 +549,7 @@ function processTransferToOffice(name, ss) {
   sh = ss.getSheetByName('חוצה צפון/נתיב מהיר');
   last = sh.getLastRow();
   if (last >= 2) {
-    const dataRange = sh.getRange(2, 1, last - 1, 11); // A to K (11 columns)
+    const dataRange = sh.getRange(2, 1, last - 1, 18); // A to R (18 columns)
     const data = dataRange.getValues();
     for (let i = 0; i < data.length; i++) {
       const rowName = normalizeHebrew(data[i][4]); // Col E
@@ -560,6 +563,7 @@ function processTransferToOffice(name, ss) {
         const segment = data[i][5]; // Col F
         const totalWithVat = Number(data[i][6]); // Col G
         const comments = data[i][10]; // Col K
+        const invoiceCode = data[i][17]; // Col R — invoice code
 
         const source = sourceVal.includes("נתיב המהיר") ? "נתיב המהיר" : "חוצה צפון";
         const commission = (amount - totalWithVat).toFixed(2);
@@ -575,7 +579,8 @@ function processTransferToOffice(name, ss) {
           todayStr,
           amount,
           comments,
-          ""
+          false, // Col I
+          invoiceCode // Invoice code (Col J in office sheet) — from Col R
         ]);
 
         sh.getRange(i + 2, 10).setValue("טופל הועבר לטיפול המשרד");
@@ -588,8 +593,8 @@ function processTransferToOffice(name, ss) {
     let appendRow = targetSheet.getLastRow() + 1;
     const targetLast = targetSheet.getLastRow();
     if (targetLast > 0) {
-      // Fetch columns A to H (8 columns)
-      const targetData = targetSheet.getRange(1, 1, targetLast, 8).getValues();
+      // Fetch columns A to J (10 columns)
+      const targetData = targetSheet.getRange(1, 1, targetLast, 10).getValues();
       let found = false;
       for (let i = targetLast - 1; i >= 0; i--) {
         const row = targetData[i];
