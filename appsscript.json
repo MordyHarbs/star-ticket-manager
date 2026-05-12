@@ -13,12 +13,12 @@
       "developmentMode": true
     }]
   },
+  "webapp": {
+    "access": "ANYONE",
+    "executeAs": "USER_DEPLOYING"
+  },
   "exceptionLogging": "STACKDRIVER",
   "runtimeVersion": "V8",
-  "webapp": {
-    "executeAs": "USER_DEPLOYING",
-    "access": "ANYONE"
-  },
   "sheets": {
     "macros": [{
       "menuName": "showSourcesDialog",
@@ -30,16 +30,13 @@
       "defaultShortcut": "Ctrl+Alt+Shift+2"
     }, {
       "menuName": "checkFollowUpReminders",
-      "functionName": "checkFollowUpReminders",
-      "defaultShortcut": "Ctrl+Alt+Shift+3"
+      "functionName": "checkFollowUpReminders"
     }, {
       "menuName": "updateDateMenu",
-      "functionName": "updateDateMenu",
-      "defaultShortcut": "Ctrl+Alt+Shift+5"
+      "functionName": "updateDateMenu"
     }, {
       "menuName": "ShowAllFollowUpReminders",
-      "functionName": "ShowAllFollowUpReminders",
-      "defaultShortcut": "Ctrl+Alt+Shift+4"
+      "functionName": "ShowAllFollowUpReminders"
     }, {
       "menuName": "markAllAsPaid",
       "functionName": "markAllAsPaid",
@@ -47,7 +44,15 @@
     }, {
       "menuName": "runTicketCheck",
       "functionName": "runTicketCheck",
-      "defaultShortcut": "Ctrl+Alt+Shift+6"
+      "defaultShortcut": "Ctrl+Alt+Shift+5"
+    }, {
+      "menuName": "transferToOfficeCare",
+      "functionName": "transferToOfficeCare",
+      "defaultShortcut": "Ctrl+Alt+Shift+3"
+    }, {
+      "menuName": "markOfficeAsPaid",
+      "functionName": "markOfficeAsPaid",
+      "defaultShortcut": "Ctrl+Alt+Shift+4"
     }]
   }
 }

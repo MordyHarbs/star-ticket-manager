@@ -67,7 +67,7 @@ function onOpen(e) {
 function buildCustomMenu() {
   const ui = SpreadsheetApp.getUi();
 
-  // 1. תפריט דוחות
+  // 2. תפריט דוחות
   ui.createMenu('תפריט דוחות')
     .addSubMenu(ui.createMenu('הצגת סטטוס דוחות')
       .addItem('הצג דוחות לבדיקת סטטוס', 'runTicketCheck')
@@ -78,7 +78,7 @@ function buildCustomMenu() {
     )
     .addToUi();
 
-  // 2. תפריט לקוחות
+  // 3. תפריט לקוחות
   ui.createMenu('תפריט לקוחות')
     .addSubMenu(ui.createMenu('ניהול תזכורות')
       .addItem('הצג לקוחות ממתינים לטיפול תאריך עבר', 'checkFollowUpReminders')
@@ -89,7 +89,7 @@ function buildCustomMenu() {
     .addItem('חיפוש...', 'updateSearchInfo')
     .addToUi();
 
-  // 3. תפריט ראשי
+  // 1. תפריט ראשי
   ui.createMenu('⭐ תפריט ראשי')
     .addItem('סמן הכל כשולם', 'markAllAsPaid')
     .addItem('העבר חובות לטיפול המשרד', 'transferToOfficeCare')
