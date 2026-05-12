@@ -94,6 +94,7 @@
     var defaultName = "<?= defaultName ?>";
     var defaultSum = Number("<?= typeof defaultSum !== 'undefined' ? defaultSum : 0 ?>");
     document.getElementById('nameDisplay').textContent = defaultName;
+    var submitted = false;
 
     function copyMsg(name) {
       var reason = document.getElementById('reasonInput').value.trim();
@@ -106,12 +107,16 @@
     }
 
     function doYes() {
+      if (submitted) return;
+      submitted = true;
       copyMsg(defaultName);
       google.script.run.runTransferForName(defaultName);
       google.script.host.close();
     }
 
     function doOther() {
+      if (submitted) return;
+      submitted = true;
       google.script.run.openNamePickerForTransfer(defaultName);
       google.script.host.close();
     }
@@ -121,20 +126,20 @@
     }
 
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') doYes();
-      if (e.key === 'Escape') doCancel();
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        doYes();
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        doCancel();
+      }
     });
 
     window.onload = function() {
       var btn = document.getElementById('btnYes');
-      var attempts = 0;
-      var focusInterval = setInterval(function() {
-        window.focus();
+      setTimeout(function() {
         btn.focus();
-        attempts++;
-        if (document.activeElement === btn || attempts > 30) {
-          clearInterval(focusInterval);
-        }
       }, 100);
     };
   </script>
