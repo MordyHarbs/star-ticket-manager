@@ -600,6 +600,11 @@ function processTransferToOffice(name, ss) {
         ]);
 
         sh.getRange(i + 2, 24).setValue(true);
+
+        const colN = data[i][13]; // Col N
+        if (normalizeHebrew(colN) === 'אושרה הסבה') {
+          sh.getRange(i + 2, 14).setValue('סיום טיפול הוסב'); // N
+        }
       }
     }
   }
