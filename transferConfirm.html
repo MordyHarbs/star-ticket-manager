@@ -72,21 +72,34 @@
   <div class="question">להעביר לטיפול המשרד את כל החובות של:</div>
   <div class="name" id="nameDisplay"></div>
 
-  <div class="footer">
-    <button class="btn-cancel" onclick="doCancel()">ביטול</button>
-    <button class="btn-other"  onclick="doOther()">לקוח אחר</button>
-    <button class="btn-yes" id="btnYes" onclick="doYes()">✓ אישור</button>
+  <div style="margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+    <label for="reasonInput" style="font-size: 13px; color: #5f6368;">סיבת העברה:</label>
+    <input type="text" id="reasonInput" list="reasonOptions" value="סירוב אשראי" tabindex="2" style="font-size: 13px; padding: 4px; border: 1px solid #dadce0; border-radius: 4px; width: 140px; text-align: center;">
+    <datalist id="reasonOptions">
+      <option value="סירוב אשראי">
+      <option value="משלם מזומן">
+      <option value="אין אשראי">
+    </datalist>
+  </div>
+
+  <div class="footer" style="margin-top: 8px;">
+    <button class="btn-cancel" onclick="doCancel()" tabindex="5">ביטול</button>
+    <button class="btn-other"  onclick="doOther()" tabindex="4">לקוח אחר</button>
+    <button class="btn-yes" id="btnYes" onclick="doYes()" tabindex="1">✓ אישור</button>
   </div>
 
   <textarea id="clipTarget"></textarea>
 
   <script>
     var defaultName = "<?= defaultName ?>";
+    var defaultSum = Number("<?= typeof defaultSum !== 'undefined' ? defaultSum : 0 ?>");
     document.getElementById('nameDisplay').textContent = defaultName;
 
     function copyMsg(name) {
+      var reason = document.getElementById('reasonInput').value.trim();
+      var reasonText = reason ? ', סיבת העברה: ' + reason : '';
       var ta = document.getElementById('clipTarget');
-      ta.value = 'הוספתי עכשיו לטיפול המשרד את ' + name;
+      ta.value = 'העברתי עכשיו לטיפול המשרד חוב של ' + defaultSum + ' ש"ח על שם ' + name + reasonText;
       ta.focus();
       ta.select();
       document.execCommand('copy');

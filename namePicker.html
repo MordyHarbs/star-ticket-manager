@@ -116,29 +116,41 @@
     <script>
       let allClients = [];
       let selectedNames = [];
+      let debtMap = {};
       const defaultName = "<?= defaultName ?>";  // but we won't auto-select it
 
       function onLoad() {
-        google.script.run.withSuccessHandler(clients => {
-          allClients = clients;
-          const select = document.getElementById("nameSelect");
+        if (action === 'transfer') {
+          document.getElementById('reasonContainer').style.display = 'flex';
+          google.script.run.withSuccessHandler(data => {
+            allClients = data.clients;
+            debtMap = data.debtMap;
+            populateList();
+          }).getAllClientsWithDebts();
+        } else {
+          google.script.run.withSuccessHandler(clients => {
+            allClients = clients;
+            populateList();
+          }).getAllClients();
+        }
+      }
 
-          // Fill dropdown
-          clients.forEach(name => {
-            const opt = document.createElement("option");
-            opt.value = name;
-            opt.textContent = name;
-            select.appendChild(opt);
-          });
+      function populateList() {
+        const select = document.getElementById("nameSelect");
+        allClients.forEach(name => {
+          const opt = document.createElement("option");
+          opt.value = name;
+          opt.textContent = name;
+          select.appendChild(opt);
+        });
 
-          // *** DO NOT auto-select defaultName ***
-          // (We simply ignore defaultName completely)
+        // *** DO NOT auto-select defaultName ***
+        // (We simply ignore defaultName completely)
 
-          document.getElementById("searchBox").focus();
+        document.getElementById("btnOk").focus();
 
-          refreshSelectVisual();
-          updateSelectedBox();
-        }).getAllClients();
+        refreshSelectVisual();
+        updateSelectedBox();
       }
 
       function addName(name) {
@@ -196,8 +208,14 @@
 
       function submit() {
   if (action === 'transfer') {
-    var namesText = selectedNames.join(', ');
-    var msg = 'הוספתי עכשיו לטיפול המשרד את ' + namesText;
+    var reason = document.getElementById('reasonInput').value.trim();
+    var reasonText = reason ? ', סיבת העברה: ' + reason : '';
+    var msgs = [];
+    selectedNames.forEach(function(name) {
+      var sum = debtMap[name] || 0;
+      msgs.push('העברתי עכשיו לטיפול המשרד חוב של ' + sum + ' ש"ח על שם ' + name + reasonText);
+    });
+    var msg = msgs.join('\n');
 
     // Use persistent off-screen textarea for reliable execCommand copy
     var ta = document.getElementById('clipTarget');
@@ -264,9 +282,19 @@
       <div id="selectedList"></div>
     </div>
 
+    <div id="reasonContainer" style="margin-top: 16px; display: none; align-items: center; gap: 8px;">
+      <label for="reasonInput" style="font-size: 14px; font-weight: 500;">סיבת העברה:</label>
+      <input type="text" id="reasonInput" list="reasonOptions" value="סירוב אשראי" tabindex="2" style="flex-grow: 1; font-size: 14px; padding: 6px; border: 1px solid #dadce0; border-radius: 4px;">
+      <datalist id="reasonOptions">
+        <option value="סירוב אשראי">
+        <option value="משלם מזומן">
+        <option value="אין אשראי">
+      </datalist>
+    </div>
+
     <div class="footer">
-      <button class="btn-cancel" onclick="cancel()">בטל</button>
-      <button class="btn-ok" onclick="submit()">אישור</button>
+      <button class="btn-cancel" onclick="cancel()" tabindex="4">בטל</button>
+      <button class="btn-ok" id="btnOk" onclick="submit()" tabindex="1">אישור</button>
     </div>
 
     <!-- Persistent off-screen textarea used for clipboard copy -->

@@ -262,6 +262,108 @@ function getAllClients() {
   return values.map(r => r[0]).filter(x => x); // רק שמות לא ריקים
 }
 
+function getAllClientsWithDebts() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const clients = getAllClients();
+  const debtMap = {};
+  const normToExact = {};
+  
+  clients.forEach(c => {
+    debtMap[c] = 0;
+    normToExact[normalizeHebrew(c)] = c;
+  });
+
+  // -------- דוחות --------
+  let sh = ss.getSheetByName('דוחות');
+  let last = sh.getLastRow();
+  if (last >= 2) {
+    const data = sh.getRange(2, 1, last - 1, 13).getValues(); // A..M (13 columns)
+    for (let i = 0; i < data.length; i++) {
+      const normName = normalizeHebrew(data[i][1]); // Col B
+      if (Number(data[i][12]) !== 0) { // Col M
+        const exactName = normToExact[normName];
+        if (exactName) {
+          debtMap[exactName] += (Number(data[i][10]) || 0); // Col K
+        }
+      }
+    }
+  }
+
+  // -------- כביש 6 / מנהרות --------
+  sh = ss.getSheetByName('כביש 6/מנהרות');
+  last = sh.getLastRow();
+  if (last >= 2) {
+    const data = sh.getRange(2, 1, last - 1, 12).getValues(); // A..L (12 columns)
+    for (let i = 0; i < data.length; i++) {
+      const normName = normalizeHebrew(data[i][4]); // Col E
+      if (Number(data[i][10]) !== 0 && data[i][11] !== "טופל הועבר לטיפול המשרד") { // Col K, Col L
+        const exactName = normToExact[normName];
+        if (exactName) {
+          debtMap[exactName] += (Number(data[i][10]) || 0);
+        }
+      }
+    }
+  }
+
+  // -------- חוצה צפון / נתיב מהיר --------
+  sh = ss.getSheetByName('חוצה צפון/נתיב מהיר');
+  last = sh.getLastRow();
+  if (last >= 2) {
+    const data = sh.getRange(2, 1, last - 1, 10).getValues(); // A..J (10 columns)
+    for (let i = 0; i < data.length; i++) {
+      const normName = normalizeHebrew(data[i][4]); // Col E
+      if (Number(data[i][8]) !== 0 && data[i][9] !== "טופל הועבר לטיפול המשרד") { // Col I, Col J
+        const exactName = normToExact[normName];
+        if (exactName) {
+          debtMap[exactName] += (Number(data[i][8]) || 0);
+        }
+      }
+    }
+  }
+
+  return { clients: clients, debtMap: debtMap };
+}
+
+function calculateDebtForName(name, ss) {
+  const normName = normalizeHebrew(name);
+  let totalDebt = 0;
+
+  let sh = ss.getSheetByName('דוחות');
+  let last = sh.getLastRow();
+  if (last >= 2) {
+    const data = sh.getRange(2, 1, last - 1, 13).getValues();
+    for (let i = 0; i < data.length; i++) {
+      if (normalizeHebrew(data[i][1]) === normName && Number(data[i][12]) !== 0) {
+        totalDebt += (Number(data[i][10]) || 0);
+      }
+    }
+  }
+
+  sh = ss.getSheetByName('כביש 6/מנהרות');
+  last = sh.getLastRow();
+  if (last >= 2) {
+    const data = sh.getRange(2, 1, last - 1, 12).getValues();
+    for (let i = 0; i < data.length; i++) {
+      if (normalizeHebrew(data[i][4]) === normName && Number(data[i][10]) !== 0 && data[i][11] !== "טופל הועבר לטיפול המשרד") {
+        totalDebt += (Number(data[i][10]) || 0);
+      }
+    }
+  }
+
+  sh = ss.getSheetByName('חוצה צפון/נתיב מהיר');
+  last = sh.getLastRow();
+  if (last >= 2) {
+    const data = sh.getRange(2, 1, last - 1, 10).getValues();
+    for (let i = 0; i < data.length; i++) {
+      if (normalizeHebrew(data[i][4]) === normName && Number(data[i][8]) !== 0 && data[i][9] !== "טופל הועבר לטיפול המשרד") {
+        totalDebt += (Number(data[i][8]) || 0);
+      }
+    }
+  }
+
+  return totalDebt;
+}
+
 function markAllForName(name, ss) {
   const normName = normalizeHebrew(name);
 
@@ -410,9 +512,11 @@ function transferToOfficeCare() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sh = ss.getSheetByName('פירוט נסיעות לפי לקוח');
   const defaultName = sh.getRange(6, 3).getValue();
+  const sum = calculateDebtForName(defaultName, ss);
 
   const html = HtmlService.createTemplateFromFile('transferConfirm');
   html.defaultName = defaultName;
+  html.defaultSum = sum;
   const dialog = html.evaluate()
     .setWidth(360)
     .setHeight(170)
