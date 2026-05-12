@@ -469,8 +469,8 @@ function processTransferToOffice(name, ss) {
     for (let i = 0; i < data.length; i++) {
       const rowName = normalizeHebrew(data[i][1]); // Col B
       const amount = Number(data[i][10]); // Col K
-      const isProcessed = data[i][23] === true; // Col X
-      if (rowName === normName && amount !== 0 && !isProcessed) {
+      const balanceToPay = Number(data[i][12]); // Col M
+      if (rowName === normName && balanceToPay !== 0) {
         const sourceCity = data[i][2]; // Col C
         const plate = data[i][4]; // Col E
         const reportNumber = data[i][5]; // Col F
