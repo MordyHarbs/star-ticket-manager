@@ -85,6 +85,7 @@ function buildCustomMenu() {
       .addItem('הצג כל הלקוחות הממתינים לטיפול', 'ShowAllFollowUpReminders')
       .addItem('הוסף תאריך לטיפול', 'updateDateMenu')
     )
+    .addItem('הוסף הערה למשרד', 'openAddCustomerNoteDialog')
     .addItem('סנכרון לקוחות', 'syncCustomerSheet')
     .addItem('חיפוש...', 'updateSearchInfo')
     .addToUi();
@@ -518,8 +519,8 @@ function transferToOfficeCare() {
   html.defaultName = defaultName;
   html.defaultSum = sum;
   const dialog = html.evaluate()
-    .setWidth(360)
-    .setHeight(170)
+    .setWidth(400)
+    .setHeight(340)
     .setTitle('העברה לטיפול המשרד');
 
   SpreadsheetApp.getUi().showModalDialog(dialog, 'העברה לטיפול המשרד');
@@ -809,4 +810,73 @@ function markOfficeForName(name, ss) {
       }
     }
   }
+}
+
+// =======================================================================
+// הערות לקוחות לטיפול המשרד
+// =======================================================================
+
+function openAddCustomerNoteDialog() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ss.getSheetByName('פירוט נסיעות לפי לקוח');
+  let defaultName = "";
+  if (sh) {
+    defaultName = sh.getRange(6, 3).getValue();
+  }
+
+  const html = HtmlService.createTemplateFromFile('customerNoteDialog');
+  html.defaultName = defaultName;
+  const dialog = html.evaluate()
+    .setWidth(450)
+    .setHeight(400)
+    .setTitle('הוספת הערה למשרד');
+
+  SpreadsheetApp.getUi().showModalDialog(dialog, 'הוספת הערה למשרד');
+}
+
+function checkAndSaveCustomerNote(name, newNote) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ss.getSheetByName('הערות לקוחות לטיפול המשרד');
+  if (!sh) return { status: 'error', message: 'הגיליון "הערות לקוחות לטיפול המשרד" לא נמצא' };
+
+  const lastRow = sh.getLastRow();
+  if (lastRow > 1) {
+    const data = sh.getRange(2, 1, lastRow - 1, 2).getValues();
+    for (let i = 0; i < data.length; i++) {
+      if (normalizeHebrew(data[i][0]) === normalizeHebrew(name)) {
+        if (data[i][1] && String(data[i][1]).trim() !== "") {
+          return { status: 'exists', oldNote: data[i][1] };
+        } else {
+          // Exists but empty note, just overwrite
+          sh.getRange(i + 2, 2).setValue(newNote);
+          return { status: 'success' };
+        }
+      }
+    }
+  }
+
+  // Not found, append
+  sh.appendRow([name, newNote]);
+  return { status: 'success' };
+}
+
+function overwriteCustomerNote(name, finalNote) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ss.getSheetByName('הערות לקוחות לטיפול המשרד');
+  if (!sh) return { status: 'error', message: 'הגיליון "הערות לקוחות לטיפול המשרד" לא נמצא' };
+
+  const lastRow = sh.getLastRow();
+  if (lastRow > 1) {
+    const data = sh.getRange(2, 1, lastRow - 1, 2).getValues();
+    for (let i = 0; i < data.length; i++) {
+      if (normalizeHebrew(data[i][0]) === normalizeHebrew(name)) {
+        sh.getRange(i + 2, 2).setValue(finalNote);
+        return { status: 'success' };
+      }
+    }
+  }
+
+  // Should not happen if it existed, but just in case
+  sh.appendRow([name, finalNote]);
+  return { status: 'success' };
 }

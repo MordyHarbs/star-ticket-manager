@@ -15,13 +15,13 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       padding: 16px 20px;
       gap: 8px;
       text-align: center;
     }
 
-    .icon { font-size: 26px; line-height: 1; }
+    .icon { font-size: 26px; line-height: 1; margin-top: 5px; }
 
     .question {
       font-size: 13px;
@@ -43,6 +43,7 @@
       justify-content: center;
       gap: 8px;
       padding-top: 6px;
+      margin-top: auto;
     }
 
     button {
@@ -65,27 +66,79 @@
     .btn-cancel:hover { background: #e2e3e4; }
 
     #clipTarget { position: fixed; left: -9999px; top: -9999px; }
+    
+    /* New styles for note feature */
+    #view1 { display: flex; flex-direction: column; align-items: center; width: 100%; }
+    .note-container { margin-top: 10px; width: 100%; text-align: right; }
+    .note-container label { font-size: 13px; color: #5f6368; margin-bottom: 3px; display: block; font-weight: bold; }
+    .note-container textarea { width: 100%; height: 75px; padding: 6px; font-size: 13px; border: 1px solid #dadce0; border-radius: 4px; resize: none; font-family: inherit; }
+    
+    .loading { display: none; margin-top: 5px; font-size: 12px; color: #666; font-style: italic; }
+    .hidden { display: none !important; }
+    
+    #view2, #view3 { width: 100%; text-align: right; padding-top: 10px; display: flex; flex-direction: column; height: 100%; }
+    .old-note-preview { background-color: #fef7e0; padding: 8px; border-right: 4px solid #fbbc04; margin-bottom: 12px; white-space: pre-wrap; font-size: 12px; max-height: 100px; overflow-y: auto; color: #333; }
+    .action-btns { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; justify-content: center; }
   </style>
 </head>
 <body>
-  <div class="icon">🏢</div>
-  <div class="question">להעביר לטיפול המשרד את כל החובות של:</div>
-  <div class="name" id="nameDisplay"></div>
+  
+  <!-- View 1: Main Transfer Prompt -->
+  <div id="view1">
+    <div class="icon">🏢</div>
+    <div class="question">להעביר לטיפול המשרד את כל החובות של:</div>
+    <div class="name" id="nameDisplay"></div>
 
-  <div style="margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-    <label for="reasonInput" style="font-size: 13px; color: #5f6368;">סיבת העברה:</label>
-    <input type="text" id="reasonInput" list="reasonOptions" value="סירוב אשראי" tabindex="2" style="font-size: 13px; padding: 4px; border: 1px solid #dadce0; border-radius: 4px; width: 140px; text-align: center;">
-    <datalist id="reasonOptions">
-      <option value="סירוב אשראי">
-      <option value="משלם מזומן">
-      <option value="אין אשראי">
-    </datalist>
+    <div style="margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+      <label for="reasonInput" style="font-size: 13px; color: #5f6368; font-weight: bold;">סיבת העברה:</label>
+      <input type="text" id="reasonInput" list="reasonOptions" value="סירוב אשראי" tabindex="2" style="font-size: 13px; padding: 4px; border: 1px solid #dadce0; border-radius: 4px; width: 140px; text-align: center;">
+      <datalist id="reasonOptions">
+        <option value="סירוב אשראי">
+        <option value="משלם מזומן">
+        <option value="אין אשראי">
+      </datalist>
+    </div>
+
+    <div class="note-container">
+      <label for="newNote">הערה למשרד (אופציונלי):</label>
+      <textarea id="newNote" tabindex="3" placeholder="הזן כאן הערה ללקוח זה..."></textarea>
+    </div>
+    
+    <div id="loading1" class="loading">בודק הערות... אנא המתן</div>
+
+    <div class="footer" style="margin-top: 10px;">
+      <button class="btn-cancel" onclick="doCancel()" tabindex="6">ביטול</button>
+      <button class="btn-other"  onclick="doOther()" tabindex="5">לקוח אחר</button>
+      <button class="btn-yes" id="btnYes" onclick="doYes()" tabindex="1">✓ אישור</button>
+    </div>
   </div>
 
-  <div class="footer" style="margin-top: 8px;">
-    <button class="btn-cancel" onclick="doCancel()" tabindex="5">ביטול</button>
-    <button class="btn-other"  onclick="doOther()" tabindex="4">לקוח אחר</button>
-    <button class="btn-yes" id="btnYes" onclick="doYes()" tabindex="1">✓ אישור</button>
+  <!-- View 2: Exists Warning -->
+  <div id="view2" class="hidden">
+    <h3 style="color: #d32f2f; font-size: 16px; margin-bottom: 8px; text-align: center;">⚠️ הערה קיימת</h3>
+    <p style="font-size: 13px; margin-bottom: 8px;">כבר קיימת הערה במערכת עבור לקוח זה.</p>
+    <div class="old-note-preview" id="oldNotePreview"></div>
+    
+    <div id="loading2" class="loading">שומר ומעביר...</div>
+    
+    <div class="action-btns">
+      <button class="btn-yes" onclick="actionKeepBoth()" style="background:#34a853;">שמור שתיהן והעבר</button>
+      <button class="btn-other" onclick="showEditView()" style="background:#fbbc04; color:#333; border:none;">ערוך הערה</button>
+      <button class="btn-cancel" onclick="actionKeepNew()" style="background:#ea4335; color:#fff;">דרוס עם החדשה</button>
+      <button class="btn-cancel" onclick="doTransferAndClose()">השאר ישנה (התעלם)</button>
+    </div>
+  </div>
+
+  <!-- View 3: Edit Combined Note -->
+  <div id="view3" class="hidden">
+    <h3 style="font-size: 16px; margin-bottom: 8px; text-align: center;">עריכת הערה</h3>
+    <p style="font-size: 13px; margin-bottom: 8px;">ערוך את ההערה המשולבת לפני השמירה:</p>
+    <textarea id="editedNote" style="width: 100%; height: 110px; padding: 6px; font-size: 13px; border: 1px solid #dadce0; border-radius: 4px; resize: none; box-sizing: border-box; font-family: inherit;"></textarea>
+    <div id="loading3" class="loading">שומר ומעביר...</div>
+    <div class="action-btns" style="margin-top: 10px;">
+      <button class="btn-yes" onclick="submitEditedNote()">שמור והעבר</button>
+      <button class="btn-cancel" onclick="doTransferAndClose()">בטל שינויים והעבר</button>
+    </div>
   </div>
 
   <textarea id="clipTarget"></textarea>
@@ -95,6 +148,9 @@
     var defaultSum = Number("<?= typeof defaultSum !== 'undefined' ? defaultSum : 0 ?>");
     document.getElementById('nameDisplay').textContent = defaultName;
     var submitted = false;
+    
+    let globalOldNote = "";
+    let globalNewNote = "";
 
     function copyMsg(name) {
       var reason = document.getElementById('reasonInput').value.trim();
@@ -108,6 +164,93 @@
     }
 
     function doYes() {
+      if (submitted) return;
+      var newNote = document.getElementById('newNote').value.trim();
+      
+      if (!newNote) {
+        // No note entered, just proceed with transfer
+        doTransferAndClose();
+      } else {
+        // Check note logic first
+        globalNewNote = newNote;
+        document.getElementById('loading1').style.display = 'block';
+        document.getElementById('btnYes').disabled = true;
+        
+        google.script.run
+          .withSuccessHandler(function(response) {
+            document.getElementById('loading1').style.display = 'none';
+            document.getElementById('btnYes').disabled = false;
+            
+            if (response.status === 'exists') {
+              globalOldNote = response.oldNote;
+              document.getElementById('oldNotePreview').innerText = globalOldNote;
+              document.getElementById('view1').classList.add('hidden');
+              document.getElementById('view2').classList.remove('hidden');
+            } else if (response.status === 'success') {
+              doTransferAndClose();
+            } else {
+              alert('שגיאה: ' + response.message);
+              doTransferAndClose(); // Proceed anyway
+            }
+          })
+          .withFailureHandler(function(error) {
+            document.getElementById('loading1').style.display = 'none';
+            document.getElementById('btnYes').disabled = false;
+            alert('שגיאה בבדיקת ההערה');
+            doTransferAndClose();
+          })
+          .checkAndSaveCustomerNote(defaultName, newNote);
+      }
+    }
+
+    function actionKeepBoth() {
+      const combined = globalOldNote + '\n' + globalNewNote;
+      saveFinalNoteAndTransfer(combined, 2);
+    }
+
+    function actionKeepNew() {
+      saveFinalNoteAndTransfer(globalNewNote, 2);
+    }
+
+    function showEditView() {
+      document.getElementById('view2').classList.add('hidden');
+      document.getElementById('view3').classList.remove('hidden');
+      document.getElementById('editedNote').value = globalOldNote + '\n' + globalNewNote;
+    }
+
+    function submitEditedNote() {
+      const edited = document.getElementById('editedNote').value.trim();
+      if (!edited) {
+        alert('אנא הזן הערה');
+        return;
+      }
+      saveFinalNoteAndTransfer(edited, 3);
+    }
+
+    function saveFinalNoteAndTransfer(finalNote, viewNum) {
+      document.getElementById('loading' + viewNum).style.display = 'block';
+      const btns = document.getElementById('view' + viewNum).querySelectorAll('button');
+      btns.forEach(btn => btn.disabled = true);
+      
+      google.script.run
+        .withSuccessHandler(function(response) {
+          document.getElementById('loading' + viewNum).style.display = 'none';
+          if (response.status === 'success') {
+            doTransferAndClose();
+          } else {
+            alert('שגיאה בשמירת ההערה: ' + response.message);
+            doTransferAndClose();
+          }
+        })
+        .withFailureHandler(function(error) {
+          document.getElementById('loading' + viewNum).style.display = 'none';
+          alert('שגיאה בשמירת ההערה');
+          doTransferAndClose();
+        })
+        .overwriteCustomerNote(defaultName, finalNote);
+    }
+
+    function doTransferAndClose() {
       if (submitted) return;
       submitted = true;
       copyMsg(defaultName);
@@ -127,9 +270,16 @@
     }
 
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') {
+      // Disable default enter if focused on textarea to allow newlines
+      if (e.key === 'Enter' && document.activeElement.tagName !== 'TEXTAREA') {
         e.preventDefault();
-        doYes();
+        
+        // Find which view is active and trigger primary action
+        if (!document.getElementById('view1').classList.contains('hidden')) {
+          doYes();
+        } else if (!document.getElementById('view3').classList.contains('hidden')) {
+          submitEditedNote();
+        }
       }
       if (e.key === 'Escape') {
         e.preventDefault();

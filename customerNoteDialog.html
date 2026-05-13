@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: "Google Sans", Arial, sans-serif; padding: 15px; margin: 0; background-color: #f9f9f9; direction: rtl; }
+    h3 { margin-top: 0; color: #333; }
+    .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    textarea { width: 100%; height: 100px; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; resize: vertical; margin-bottom: 15px; font-family: inherit; font-size: 14px; }
+    button { padding: 8px 15px; margin-right: 5px; margin-bottom: 5px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background 0.2s; }
+    .btn-primary { background-color: #1a73e8; color: white; }
+    .btn-primary:hover { background-color: #1558b0; }
+    .btn-secondary { background-color: #fbbc04; color: #333; }
+    .btn-secondary:hover { background-color: #e0a800; }
+    .btn-danger { background-color: #ea4335; color: white; }
+    .btn-danger:hover { background-color: #c5221f; }
+    .btn-success { background-color: #34a853; color: white; }
+    .btn-success:hover { background-color: #2b8842; }
+    .btn-close { background-color: #f1f3f4; color: #5f6368; }
+    .btn-close:hover { background-color: #e2e3e4; }
+    .hidden { display: none; }
+    label { font-weight: bold; display: block; margin-bottom: 5px; font-size: 14px; }
+    .old-note-preview { background-color: #fef7e0; padding: 10px; border-right: 4px solid #fbbc04; margin-bottom: 15px; white-space: pre-wrap; font-size: 13px; max-height: 100px; overflow-y: auto; color: #333;}
+    .loading { display: none; margin-bottom: 10px; color: #666; font-style: italic; font-size: 13px; }
+    .name-display { font-size: 16px; color: #1a73e8; font-weight: 700; margin-bottom: 15px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    
+    <!-- View 1: Initial Entry -->
+    <div id="view1">
+      <h3>הוספת הערה ללקוח (משרד)</h3>
+      <div class="name-display"><?= defaultName ?></div>
+      <input type="hidden" id="customerName" value="<?= defaultName ?>">
+      <textarea id="newNote" placeholder="הכנס הערה כאן..."></textarea>
+      <div id="loading1" class="loading">שומר... אנה המתן</div>
+      <button class="btn-primary" onclick="submitNewNote()">שמור הערה</button>
+      <button class="btn-close" onclick="google.script.host.close()">ביטול</button>
+    </div>
+
+    <!-- View 2: Exists Warning -->
+    <div id="view2" class="hidden">
+      <h3 style="color: #d32f2f;">⚠️ הערה קיימת</h3>
+      <p style="font-size: 14px; margin-bottom: 10px;">כבר קיימת הערה במערכת עבור לקוח זה.</p>
+      <label>הערה קיימת:</label>
+      <div class="old-note-preview" id="oldNotePreview"></div>
+      
+      <div id="loading2" class="loading">שומר... אנה המתן</div>
+      
+      <button class="btn-success" onclick="actionKeepBoth()">שמור את שתיהן</button>
+      <button class="btn-secondary" onclick="showEditView()">ערוך הערה</button>
+      <button class="btn-danger" onclick="actionKeepNew()">דרוס עם החדשה</button>
+      <button class="btn-close" onclick="google.script.host.close()">השאר ישנה (ביטול)</button>
+    </div>
+
+    <!-- View 3: Edit Combined Note -->
+    <div id="view3" class="hidden">
+      <h3>עריכת הערה</h3>
+      <p style="font-size: 14px; margin-bottom: 10px;">ערוך את ההערה המשולבת לפני השמירה:</p>
+      <textarea id="editedNote" style="height: 150px;"></textarea>
+      <div id="loading3" class="loading">שומר... אנה המתן</div>
+      <button class="btn-primary" onclick="submitEditedNote()">שמור שינויים</button>
+      <button class="btn-close" onclick="google.script.host.close()">ביטול</button>
+    </div>
+
+  </div>
+
+  <script>
+    let globalOldNote = "";
+    let globalNewNote = "";
+
+    function showLoading(viewNum) {
+      document.getElementById('loading' + viewNum).style.display = 'block';
+      const btns = document.getElementById('view' + viewNum).querySelectorAll('button');
+      btns.forEach(btn => btn.disabled = true);
+    }
+
+    function hideLoading(viewNum) {
+      document.getElementById('loading' + viewNum).style.display = 'none';
+      const btns = document.getElementById('view' + viewNum).querySelectorAll('button');
+      btns.forEach(btn => btn.disabled = false);
+    }
+
+    function submitNewNote() {
+      const name = document.getElementById('customerName').value;
+      const newNote = document.getElementById('newNote').value.trim();
+      
+      if (!newNote) {
+        alert('אנא הזן הערה');
+        return;
+      }
+
+      globalNewNote = newNote;
+      showLoading(1);
+
+      google.script.run
+        .withSuccessHandler(function(response) {
+          hideLoading(1);
+          if (response.status === 'exists') {
+            globalOldNote = response.oldNote;
+            document.getElementById('oldNotePreview').innerText = globalOldNote;
+            document.getElementById('view1').classList.add('hidden');
+            document.getElementById('view2').classList.remove('hidden');
+          } else if (response.status === 'success') {
+            google.script.host.close();
+          } else {
+            alert('שגיאה: ' + response.message);
+          }
+        })
+        .withFailureHandler(function(error) {
+          hideLoading(1);
+          alert('שגיאה בתקשורת עם השרת');
+        })
+        .checkAndSaveCustomerNote(name, newNote);
+    }
+
+    function actionKeepBoth() {
+      const combined = globalOldNote + '\n' + globalNewNote;
+      saveFinalNote(combined, 2);
+    }
+
+    function actionKeepNew() {
+      saveFinalNote(globalNewNote, 2);
+    }
+
+    function showEditView() {
+      document.getElementById('view2').classList.add('hidden');
+      document.getElementById('view3').classList.remove('hidden');
+      document.getElementById('editedNote').value = globalOldNote + '\n' + globalNewNote;
+    }
+
+    function submitEditedNote() {
+      const edited = document.getElementById('editedNote').value.trim();
+      if (!edited) {
+        alert('אנא הזן הערה');
+        return;
+      }
+      saveFinalNote(edited, 3);
+    }
+
+    function saveFinalNote(finalNote, viewNum) {
+      showLoading(viewNum);
+      const name = document.getElementById('customerName').value;
+      
+      google.script.run
+        .withSuccessHandler(function(response) {
+          hideLoading(viewNum);
+          if (response.status === 'success') {
+            google.script.host.close();
+          } else {
+            alert('שגיאה: ' + response.message);
+          }
+        })
+        .withFailureHandler(function(error) {
+          hideLoading(viewNum);
+          alert('שגיאה בתקשורת עם השרת');
+        })
+        .overwriteCustomerNote(name, finalNote);
+    }
+  </script>
+</body>
+</html>
