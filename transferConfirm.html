@@ -155,9 +155,13 @@
     function copyMsg(name) {
       var reason = document.getElementById('reasonInput').value.trim();
       var reasonText = reason ? ', סיבת העברה: ' + reason : '';
+      
+      var newNoteText = document.getElementById('newNote').value.trim();
+      var noteAppend = newNoteText ? '\nהערה: ' + newNoteText : '';
+      
       var ta = document.getElementById('clipTarget');
       var roundedSum = Math.floor(defaultSum * 100) / 100;
-      ta.value = 'העברתי עכשיו לטיפול המשרד חוב של ' + roundedSum + ' ש"ח על שם ' + name + reasonText;
+      ta.value = 'העברתי עכשיו לטיפול המשרד חוב של ' + roundedSum + ' ש"ח על שם ' + name + reasonText + noteAppend;
       ta.focus();
       ta.select();
       document.execCommand('copy');
