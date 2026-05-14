@@ -834,21 +834,35 @@ function openAddCustomerNoteDialog() {
   SpreadsheetApp.getUi().showModalDialog(dialog, 'הוספת הערה למשרד');
 }
 
-function checkAndSaveCustomerNote(name, newNote) {
+function checkAndSaveCustomerNote(name, newNote, newReason) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sh = ss.getSheetByName('הערות לקוחות לטיפול המשרד');
   if (!sh) return { status: 'error', message: 'הגיליון "הערות לקוחות לטיפול המשרד" לא נמצא' };
 
   const lastRow = sh.getLastRow();
   if (lastRow > 1) {
-    const data = sh.getRange(2, 1, lastRow - 1, 2).getValues();
+    const maxCols = Math.max(3, sh.getLastColumn());
+    const data = sh.getRange(2, 1, lastRow - 1, maxCols).getValues();
     for (let i = 0; i < data.length; i++) {
       if (normalizeHebrew(data[i][0]) === normalizeHebrew(name)) {
-        if (data[i][1] && String(data[i][1]).trim() !== "") {
-          return { status: 'exists', oldNote: data[i][1] };
+        const existingNote = data[i][1];
+        const existingReason = data[i][2];
+        
+        let hasNoteConflict = newNote && existingNote && String(existingNote).trim() !== "";
+        let hasReasonConflict = newReason && existingReason && String(existingReason).trim() !== "";
+        
+        if (hasNoteConflict || hasReasonConflict) {
+          return { 
+            status: 'exists', 
+            oldNote: existingNote || "",
+            hasNoteConflict: !!hasNoteConflict,
+            oldReason: existingReason || "",
+            hasReasonConflict: !!hasReasonConflict
+          };
         } else {
-          // Exists but empty note, just overwrite
-          sh.getRange(i + 2, 2).setValue(newNote);
+          // No conflict.
+          if (newNote) sh.getRange(i + 2, 2).setValue(newNote);
+          if (newReason) sh.getRange(i + 2, 3).setValue(newReason);
           return { status: 'success' };
         }
       }
@@ -856,27 +870,28 @@ function checkAndSaveCustomerNote(name, newNote) {
   }
 
   // Not found, append
-  sh.appendRow([name, newNote]);
+  sh.appendRow([name, newNote || "", newReason || ""]);
   return { status: 'success' };
 }
 
-function overwriteCustomerNote(name, finalNote) {
+function overwriteCustomerNote(name, finalNote, finalReason) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sh = ss.getSheetByName('הערות לקוחות לטיפול המשרד');
   if (!sh) return { status: 'error', message: 'הגיליון "הערות לקוחות לטיפול המשרד" לא נמצא' };
 
   const lastRow = sh.getLastRow();
   if (lastRow > 1) {
-    const data = sh.getRange(2, 1, lastRow - 1, 2).getValues();
+    const data = sh.getRange(2, 1, lastRow - 1, 1).getValues();
     for (let i = 0; i < data.length; i++) {
       if (normalizeHebrew(data[i][0]) === normalizeHebrew(name)) {
-        sh.getRange(i + 2, 2).setValue(finalNote);
+        if (finalNote !== undefined) sh.getRange(i + 2, 2).setValue(finalNote);
+        if (finalReason !== undefined) sh.getRange(i + 2, 3).setValue(finalReason);
         return { status: 'success' };
       }
     }
   }
 
   // Should not happen if it existed, but just in case
-  sh.appendRow([name, finalNote]);
+  sh.appendRow([name, finalNote || "", finalReason || ""]);
   return { status: 'success' };
 }

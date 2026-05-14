@@ -115,25 +115,40 @@
 
   <!-- View 2: Exists Warning -->
   <div id="view2" class="hidden">
-    <h3 style="color: #d32f2f; font-size: 16px; margin-bottom: 8px; text-align: center;">⚠️ הערה קיימת</h3>
-    <p style="font-size: 13px; margin-bottom: 8px;">כבר קיימת הערה במערכת עבור לקוח זה.</p>
-    <div class="old-note-preview" id="oldNotePreview"></div>
+    <h3 style="color: #d32f2f; font-size: 16px; margin-bottom: 8px; text-align: center;">⚠️ מידע קיים</h3>
+    <p style="font-size: 13px; margin-bottom: 8px;">כבר קיימת הערה/סיבה במערכת עבור לקוח זה.</p>
+    
+    <div id="conflictNoteContainer" class="hidden">
+      <div style="font-size: 12px; font-weight: bold; text-align: right;">הערה קיימת:</div>
+      <div class="old-note-preview" id="oldNotePreview"></div>
+    </div>
+    
+    <div id="conflictReasonContainer" class="hidden">
+      <div style="font-size: 12px; font-weight: bold; text-align: right;">סיבת העברה קיימת:</div>
+      <div class="old-note-preview" id="oldReasonPreview"></div>
+    </div>
     
     <div id="loading2" class="loading">שומר ומעביר...</div>
     
     <div class="action-btns">
-      <button class="btn-yes" onclick="actionKeepBoth()" style="background:#34a853;">שמור שתיהן והעבר</button>
-      <button class="btn-other" onclick="showEditView()" style="background:#fbbc04; color:#333; border:none;">ערוך הערה</button>
-      <button class="btn-cancel" onclick="actionKeepNew()" style="background:#ea4335; color:#fff;">דרוס עם החדשה</button>
-      <button class="btn-cancel" onclick="doTransferAndClose()">השאר ישנה (התעלם)</button>
+      <button class="btn-yes" onclick="actionKeepBoth()" style="background:#34a853;">שמור הכל (שלב)</button>
+      <button class="btn-other" onclick="showEditView()" style="background:#fbbc04; color:#333; border:none;">ערוך</button>
+      <button class="btn-cancel" onclick="actionKeepNew()" style="background:#ea4335; color:#fff;">דרוס עם החדש</button>
+      <button class="btn-cancel" onclick="doTransferAndClose()">השאר ישן (התעלם)</button>
     </div>
   </div>
 
   <!-- View 3: Edit Combined Note -->
   <div id="view3" class="hidden">
-    <h3 style="font-size: 16px; margin-bottom: 8px; text-align: center;">עריכת הערה</h3>
-    <p style="font-size: 13px; margin-bottom: 8px;">ערוך את ההערה המשולבת לפני השמירה:</p>
-    <textarea id="editedNote" style="width: 100%; height: 110px; padding: 6px; font-size: 13px; border: 1px solid #dadce0; border-radius: 4px; resize: none; box-sizing: border-box; font-family: inherit;"></textarea>
+    <h3 style="font-size: 16px; margin-bottom: 8px; text-align: center;">עריכה</h3>
+    <p style="font-size: 13px; margin-bottom: 8px;">ערוך לפני השמירה:</p>
+    
+    <div style="text-align: right; margin-bottom: 4px; font-size: 13px; font-weight: bold;">הערה למשרד:</div>
+    <textarea id="editedNote" style="width: 100%; height: 70px; padding: 6px; font-size: 13px; border: 1px solid #dadce0; border-radius: 4px; resize: none; box-sizing: border-box; font-family: inherit; margin-bottom: 8px;"></textarea>
+    
+    <div style="text-align: right; margin-bottom: 4px; font-size: 13px; font-weight: bold;">סיבת העברה:</div>
+    <input type="text" id="editedReason" style="width: 100%; padding: 6px; font-size: 13px; border: 1px solid #dadce0; border-radius: 4px; box-sizing: border-box; font-family: inherit; margin-bottom: 8px;">
+    
     <div id="loading3" class="loading">שומר ומעביר...</div>
     <div class="action-btns" style="margin-top: 10px;">
       <button class="btn-yes" onclick="submitEditedNote()">שמור והעבר</button>
@@ -152,6 +167,8 @@
     
     let globalOldNote = "";
     let globalNewNote = "";
+    let globalOldReason = "";
+    let globalNewReason = "";
 
     function copyMsg(name) {
       var reason = document.getElementById('reasonInput').value.trim();
@@ -177,68 +194,81 @@
       }
       
       var newNote = document.getElementById('newNote').value.trim();
+      var newReason = document.getElementById('reasonInput').value.trim();
       
-      if (!newNote) {
-        // No note entered, just proceed with transfer
-        doTransferAndClose();
-      } else {
-        // Check note logic first
-        globalNewNote = newNote;
-        document.getElementById('loading1').style.display = 'block';
-        document.getElementById('btnYes').disabled = true;
-        
-        google.script.run
-          .withSuccessHandler(function(response) {
-            document.getElementById('loading1').style.display = 'none';
-            document.getElementById('btnYes').disabled = false;
+      // We always check now because reason usually has a default
+      globalNewNote = newNote;
+      globalNewReason = newReason;
+      document.getElementById('loading1').style.display = 'block';
+      document.getElementById('btnYes').disabled = true;
+      
+      google.script.run
+        .withSuccessHandler(function(response) {
+          document.getElementById('loading1').style.display = 'none';
+          document.getElementById('btnYes').disabled = false;
+          
+          if (response.status === 'exists') {
+            globalOldNote = response.oldNote || "";
+            globalOldReason = response.oldReason || "";
             
-            if (response.status === 'exists') {
-              globalOldNote = response.oldNote;
+            if (response.hasNoteConflict) {
+              document.getElementById('conflictNoteContainer').classList.remove('hidden');
               document.getElementById('oldNotePreview').innerText = globalOldNote;
-              document.getElementById('view1').classList.add('hidden');
-              document.getElementById('view2').classList.remove('hidden');
-            } else if (response.status === 'success') {
-              doTransferAndClose();
             } else {
-              alert('שגיאה: ' + response.message);
-              doTransferAndClose(); // Proceed anyway
+              document.getElementById('conflictNoteContainer').classList.add('hidden');
             }
-          })
-          .withFailureHandler(function(error) {
-            document.getElementById('loading1').style.display = 'none';
-            document.getElementById('btnYes').disabled = false;
-            alert('שגיאה בבדיקת ההערה');
+            
+            if (response.hasReasonConflict) {
+              document.getElementById('conflictReasonContainer').classList.remove('hidden');
+              document.getElementById('oldReasonPreview').innerText = globalOldReason;
+            } else {
+              document.getElementById('conflictReasonContainer').classList.add('hidden');
+            }
+            
+            document.getElementById('view1').classList.add('hidden');
+            document.getElementById('view2').classList.remove('hidden');
+          } else if (response.status === 'success') {
             doTransferAndClose();
-          })
-          .checkAndSaveCustomerNote(defaultName, newNote);
-      }
+          } else {
+            alert('שגיאה: ' + response.message);
+            doTransferAndClose(); // Proceed anyway
+          }
+        })
+        .withFailureHandler(function(error) {
+          document.getElementById('loading1').style.display = 'none';
+          document.getElementById('btnYes').disabled = false;
+          alert('שגיאה בבדיקת המידע');
+          doTransferAndClose();
+        })
+        .checkAndSaveCustomerNote(defaultName, newNote, newReason);
     }
 
     function actionKeepBoth() {
-      const combined = globalOldNote + '\n' + globalNewNote;
-      saveFinalNoteAndTransfer(combined, 2);
+      const finalNote = document.getElementById('conflictNoteContainer').classList.contains('hidden') ? globalOldNote : globalOldNote + '\n' + globalNewNote;
+      const finalReason = document.getElementById('conflictReasonContainer').classList.contains('hidden') ? globalOldReason : globalOldReason + " / " + globalNewReason;
+      saveFinalNoteAndTransfer(finalNote, finalReason, 2);
     }
 
     function actionKeepNew() {
-      saveFinalNoteAndTransfer(globalNewNote, 2);
+      const finalNote = document.getElementById('conflictNoteContainer').classList.contains('hidden') ? globalOldNote : globalNewNote;
+      const finalReason = document.getElementById('conflictReasonContainer').classList.contains('hidden') ? globalOldReason : globalNewReason;
+      saveFinalNoteAndTransfer(finalNote, finalReason, 2);
     }
 
     function showEditView() {
       document.getElementById('view2').classList.add('hidden');
       document.getElementById('view3').classList.remove('hidden');
-      document.getElementById('editedNote').value = globalOldNote + '\n' + globalNewNote;
+      document.getElementById('editedNote').value = document.getElementById('conflictNoteContainer').classList.contains('hidden') ? globalOldNote : globalOldNote + '\n' + globalNewNote;
+      document.getElementById('editedReason').value = document.getElementById('conflictReasonContainer').classList.contains('hidden') ? globalOldReason : globalOldReason + " / " + globalNewReason;
     }
 
     function submitEditedNote() {
-      const edited = document.getElementById('editedNote').value.trim();
-      if (!edited) {
-        alert('אנא הזן הערה');
-        return;
-      }
-      saveFinalNoteAndTransfer(edited, 3);
+      const editedNote = document.getElementById('editedNote').value.trim();
+      const editedReason = document.getElementById('editedReason').value.trim();
+      saveFinalNoteAndTransfer(editedNote, editedReason, 3);
     }
 
-    function saveFinalNoteAndTransfer(finalNote, viewNum) {
+    function saveFinalNoteAndTransfer(finalNote, finalReason, viewNum) {
       document.getElementById('loading' + viewNum).style.display = 'block';
       const btns = document.getElementById('view' + viewNum).querySelectorAll('button');
       btns.forEach(btn => btn.disabled = true);
@@ -249,16 +279,16 @@
           if (response.status === 'success') {
             doTransferAndClose();
           } else {
-            alert('שגיאה בשמירת ההערה: ' + response.message);
+            alert('שגיאה בשמירה: ' + response.message);
             doTransferAndClose();
           }
         })
         .withFailureHandler(function(error) {
           document.getElementById('loading' + viewNum).style.display = 'none';
-          alert('שגיאה בשמירת ההערה');
+          alert('שגיאה בשמירה');
           doTransferAndClose();
         })
-        .overwriteCustomerNote(defaultName, finalNote);
+        .overwriteCustomerNote(defaultName, finalNote, finalReason);
     }
 
     function doTransferAndClose() {
