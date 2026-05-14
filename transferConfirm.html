@@ -148,6 +148,7 @@
     var defaultSum = Number("<?= typeof defaultSum !== 'undefined' ? defaultSum : 0 ?>");
     document.getElementById('nameDisplay').textContent = defaultName;
     var submitted = false;
+    var msgCopied = false;
     
     let globalOldNote = "";
     let globalNewNote = "";
@@ -169,6 +170,12 @@
 
     function doYes() {
       if (submitted) return;
+      
+      if (!msgCopied) {
+        copyMsg(defaultName);
+        msgCopied = true;
+      }
+      
       var newNote = document.getElementById('newNote').value.trim();
       
       if (!newNote) {
@@ -257,7 +264,10 @@
     function doTransferAndClose() {
       if (submitted) return;
       submitted = true;
-      copyMsg(defaultName);
+      if (!msgCopied) {
+        copyMsg(defaultName);
+        msgCopied = true;
+      }
       google.script.run.runTransferForName(defaultName);
       google.script.host.close();
     }
