@@ -810,6 +810,22 @@ function markOfficeForName(name, ss) {
       }
     }
   }
+
+  // -------- הערות לקוחות לטיפול המשרד --------
+  sh = ss.getSheetByName('הערות לקוחות לטיפול המשרד');
+  if (sh) {
+    let last = sh.getLastRow();
+    if (last >= 2) {
+      const data = sh.getRange(2, 1, last - 1, 1).getValues(); // Col A
+      // Iterate backwards to safely delete rows
+      for (let i = data.length - 1; i >= 0; i--) {
+        const rowName = normalizeHebrew(data[i][0]);
+        if (rowName === normName) {
+          sh.deleteRow(i + 2);
+        }
+      }
+    }
+  }
 }
 
 // =======================================================================
