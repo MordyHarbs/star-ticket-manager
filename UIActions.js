@@ -520,7 +520,7 @@ function transferToOfficeCare() {
   html.defaultSum = sum;
   const dialog = html.evaluate()
     .setWidth(400)
-    .setHeight(340)
+    .setHeight(460)
     .setTitle('העברה לטיפול המשרד');
 
   SpreadsheetApp.getUi().showModalDialog(dialog, 'העברה לטיפול המשרד');
@@ -834,22 +834,30 @@ function openAddCustomerNoteDialog() {
   SpreadsheetApp.getUi().showModalDialog(dialog, 'הוספת הערה למשרד');
 }
 
-function checkAndSaveCustomerNote(name, newNote, newReason) {
+function checkAndSaveCustomerNote(name, newNote, newReason, dealAccount) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sh = ss.getSheetByName('הערות לקוחות לטיפול המשרד');
   if (!sh) return { status: 'error', message: 'הגיליון "הערות לקוחות לטיפול המשרד" לא נמצא' };
 
   const lastRow = sh.getLastRow();
   if (lastRow > 1) {
-    const maxCols = Math.max(3, sh.getLastColumn());
+    const maxCols = Math.max(4, sh.getLastColumn());
     const data = sh.getRange(2, 1, lastRow - 1, maxCols).getValues();
     for (let i = 0; i < data.length; i++) {
       if (normalizeHebrew(data[i][0]) === normalizeHebrew(name)) {
         const existingNote = data[i][1];
         const existingReason = data[i][2];
+        const existingDealAccount = maxCols >= 4 ? data[i][3] : "";
         
         let hasNoteConflict = newNote && existingNote && String(existingNote).trim() !== "";
         let hasReasonConflict = newReason && existingReason && String(existingReason).trim() !== "";
+        
+        let newDealAccountToSave = dealAccount || "";
+        if (dealAccount && existingDealAccount && String(existingDealAccount).trim() !== "") {
+           newDealAccountToSave = String(existingDealAccount).trim() + ", " + dealAccount;
+        } else if (existingDealAccount && String(existingDealAccount).trim() !== "") {
+           newDealAccountToSave = existingDealAccount;
+        }
         
         if (hasNoteConflict || hasReasonConflict) {
           return { 
@@ -857,12 +865,14 @@ function checkAndSaveCustomerNote(name, newNote, newReason) {
             oldNote: existingNote || "",
             hasNoteConflict: !!hasNoteConflict,
             oldReason: existingReason || "",
-            hasReasonConflict: !!hasReasonConflict
+            hasReasonConflict: !!hasReasonConflict,
+            dealAccountToSave: newDealAccountToSave
           };
         } else {
           // No conflict.
           if (newNote) sh.getRange(i + 2, 2).setValue(newNote);
           if (newReason) sh.getRange(i + 2, 3).setValue(newReason);
+          if (dealAccount) sh.getRange(i + 2, 4).setValue(newDealAccountToSave);
           return { status: 'success' };
         }
       }
@@ -870,28 +880,30 @@ function checkAndSaveCustomerNote(name, newNote, newReason) {
   }
 
   // Not found, append
-  sh.appendRow([name, newNote || "", newReason || ""]);
+  sh.appendRow([name, newNote || "", newReason || "", dealAccount || ""]);
   return { status: 'success' };
 }
 
-function overwriteCustomerNote(name, finalNote, finalReason) {
+function overwriteCustomerNote(name, finalNote, finalReason, dealAccountToSave) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sh = ss.getSheetByName('הערות לקוחות לטיפול המשרד');
   if (!sh) return { status: 'error', message: 'הגיליון "הערות לקוחות לטיפול המשרד" לא נמצא' };
 
   const lastRow = sh.getLastRow();
   if (lastRow > 1) {
+    const maxCols = Math.max(4, sh.getLastColumn());
     const data = sh.getRange(2, 1, lastRow - 1, 1).getValues();
     for (let i = 0; i < data.length; i++) {
       if (normalizeHebrew(data[i][0]) === normalizeHebrew(name)) {
         if (finalNote !== undefined) sh.getRange(i + 2, 2).setValue(finalNote);
         if (finalReason !== undefined) sh.getRange(i + 2, 3).setValue(finalReason);
+        if (dealAccountToSave !== undefined) sh.getRange(i + 2, 4).setValue(dealAccountToSave);
         return { status: 'success' };
       }
     }
   }
 
   // Should not happen if it existed, but just in case
-  sh.appendRow([name, finalNote || "", finalReason || ""]);
+  sh.appendRow([name, finalNote || "", finalReason || "", dealAccountToSave || ""]);
   return { status: 'success' };
 }

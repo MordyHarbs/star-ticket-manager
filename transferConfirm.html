@@ -20,86 +20,94 @@
     }
 
     body {
-      font-family: "Google Sans", Arial, sans-serif;
-      background: #fff;
+      font-family: "Segoe UI", "Google Sans", Arial, sans-serif;
+      background: #f8fafd;
       color: #202124;
       direction: rtl;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      padding: 16px 20px;
-      gap: 8px;
+      padding: 24px 20px;
+      gap: 12px;
       text-align: center;
     }
 
     .icon {
-      font-size: 26px;
+      font-size: 36px;
       line-height: 1;
-      margin-top: 5px;
+      margin-bottom: 4px;
     }
 
     .question {
-      font-size: 13px;
+      font-size: 15px;
       color: #5f6368;
+      font-weight: 500;
     }
 
     .name {
-      font-size: 16px;
+      font-size: 18px;
       color: #1a73e8;
       font-weight: 700;
       max-width: 100%;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      margin-bottom: 8px;
     }
 
     .footer {
       display: flex;
       justify-content: center;
-      gap: 8px;
-      padding-top: 6px;
+      gap: 12px;
+      padding-top: 10px;
       margin-top: auto;
+      width: 100%;
     }
 
     button {
-      padding: 6px 14px;
-      font-size: 13px;
-      border-radius: 20px;
+      padding: 10px 18px;
+      font-size: 14px;
+      border-radius: 8px;
       cursor: pointer;
       border: none;
       font-family: inherit;
-      font-weight: 500;
-      transition: background 0.15s;
+      font-weight: 600;
+      transition: all 0.2s ease;
       white-space: nowrap;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
 
     .btn-yes {
       background: #1a73e8;
       color: #fff;
+      flex-grow: 1;
     }
 
     .btn-yes:hover {
       background: #1558b0;
+      box-shadow: 0 4px 6px rgba(26,115,232,0.2);
+      transform: translateY(-1px);
     }
 
     .btn-other {
-      background: #e8f0fe;
+      background: #fff;
       color: #1a73e8;
-      border: 1px solid #c6dafc;
+      border: 1px solid #dadce0;
     }
 
     .btn-other:hover {
-      background: #d2e3fc;
+      background: #f1f3f4;
     }
 
     .btn-cancel {
-      background: #f1f3f4;
+      background: #fff;
       color: #5f6368;
+      border: 1px solid #dadce0;
     }
 
     .btn-cancel:hover {
-      background: #e2e3e4;
+      background: #f1f3f4;
     }
 
     #clipTarget {
@@ -109,78 +117,110 @@
     }
 
     /* New styles for note feature */
-    #view1 {
+    #view1, #view2, #view3 {
       display: flex;
       flex-direction: column;
       align-items: center;
       width: 100%;
+      height: 100%;
     }
 
-    .note-container {
-      margin-top: 10px;
+    .input-group {
       width: 100%;
       text-align: right;
+      margin-bottom: 12px;
+    }
+    
+    .input-group.row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
     }
 
-    .note-container label {
-      font-size: 13px;
-      color: #5f6368;
-      margin-bottom: 3px;
+    .input-group label {
+      font-size: 14px;
+      color: #3c4043;
+      margin-bottom: 6px;
       display: block;
-      font-weight: bold;
+      font-weight: 600;
     }
 
-    .note-container textarea {
+    .input-style {
       width: 100%;
-      height: 75px;
-      padding: 6px;
-      font-size: 13px;
+      padding: 10px 12px;
+      font-size: 14px;
       border: 1px solid #dadce0;
-      border-radius: 4px;
-      resize: none;
+      border-radius: 8px;
+      box-sizing: border-box;
       font-family: inherit;
+      background: #fff;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    
+    .input-style:focus {
+      outline: none;
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2);
+    }
+
+    .input-style.textarea {
+      height: 70px;
+      resize: none;
     }
 
     .loading {
       display: none;
-      margin-top: 5px;
-      font-size: 12px;
-      color: #666;
-      font-style: italic;
+      margin-top: 8px;
+      font-size: 13px;
+      color: #1a73e8;
+      font-weight: 500;
     }
 
     .hidden {
       display: none !important;
     }
 
-    #view2,
-    #view3 {
-      width: 100%;
-      text-align: right;
-      padding-top: 10px;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
+    #view2, #view3 {
+      padding-top: 4px;
     }
 
     .old-note-preview {
       background-color: #fef7e0;
-      padding: 8px;
+      padding: 10px;
       border-right: 4px solid #fbbc04;
       margin-bottom: 12px;
       white-space: pre-wrap;
-      font-size: 12px;
-      max-height: 100px;
+      font-size: 13px;
+      max-height: 90px;
       overflow-y: auto;
       color: #333;
+      border-radius: 4px 0 0 4px;
+      text-align: right;
     }
 
     .action-btns {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 8px;
       margin-top: auto;
       justify-content: center;
+      width: 100%;
+    }
+    
+    .action-btns button {
+      flex: 1 1 calc(50% - 8px);
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+    
+    .conflict-label {
+      font-size: 13px; 
+      font-weight: 600; 
+      text-align: right; 
+      margin-bottom: 4px;
+      color: #3c4043;
     }
   </style>
 </head>
@@ -193,10 +233,10 @@
     <div class="question">להעביר לטיפול המשרד את כל החובות של:</div>
     <div class="name" id="nameDisplay"></div>
 
-    <div style="margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-      <label for="reasonInput" style="font-size: 13px; color: #5f6368; font-weight: bold;">סיבת העברה:</label>
+    <div class="input-group row" style="margin-bottom: 16px;">
+      <label for="reasonInput" style="margin: 0;">סיבת העברה:</label>
       <input type="text" id="reasonInput" list="reasonOptions" value="סירוב אשראי" tabindex="2"
-        style="font-size: 13px; padding: 4px; border: 1px solid #dadce0; border-radius: 4px; width: 140px; text-align: center;">
+        class="input-style" style="width: 140px; text-align: center; padding: 8px;">
       <datalist id="reasonOptions">
         <option value="סירוב אשראי">
         <option value="משלם מזומן">
@@ -206,33 +246,38 @@
       </datalist>
     </div>
 
-    <div class="note-container">
+    <!-- NEW Deal Account Input -->
+    <div class="input-group">
+      <label for="dealAccountInput">חשבון עסקה (אופציונלי):</label>
+      <input type="text" id="dealAccountInput" tabindex="3" placeholder="חשבון עסקה" class="input-style">
+    </div>
+
+    <div class="input-group" style="margin-bottom: 4px;">
       <label for="newNote">הערה למשרד (אופציונלי):</label>
-      <textarea id="newNote" tabindex="3" placeholder="הזן כאן הערה ללקוח זה..."></textarea>
+      <textarea id="newNote" tabindex="4" placeholder="הזן כאן הערה ללקוח זה..." class="input-style textarea"></textarea>
     </div>
 
     <div id="loading1" class="loading">בודק הערות... אנא המתן</div>
 
-    <div class="footer" style="margin-top: 10px;">
-      <button class="btn-cancel" onclick="doCancel()" tabindex="6">ביטול</button>
-      <button class="btn-other" onclick="doOther()" tabindex="5">לקוח אחר</button>
-      <button class="btn-yes" id="btnYes" onclick="doYes()" tabindex="1">✓ אישור</button>
+    <div class="footer">
+      <button class="btn-cancel" onclick="doCancel()" tabindex="7">ביטול</button>
+      <button class="btn-other" onclick="doOther()" tabindex="6">לקוח אחר</button>
+      <button class="btn-yes" id="btnYes" onclick="doYes()" tabindex="1">✓ אישור והעבר</button>
     </div>
   </div>
 
   <!-- View 2: Exists Warning -->
   <div id="view2" class="hidden">
-    <h3 style="color: #d32f2f; font-size: 16px; margin-bottom: 8px; text-align: center;">⚠️ מידע קיים</h3>
-    <p style="font-size: 13px; margin-bottom: 8px
-    ;">כבר קיימת הערה/סיבה במערכת עבור לקוח זה.</p>
+    <h3 style="color: #d32f2f; font-size: 18px; margin-bottom: 8px; text-align: center;">⚠️ מידע קיים</h3>
+    <p style="font-size: 14px; margin-bottom: 12px; color: #5f6368;">כבר קיימת הערה/סיבה במערכת עבור לקוח זה.</p>
 
-    <div id="conflictNoteContainer" class="hidden">
-      <div style="font-size: 12px; font-weight: bold; text-align: right;">הערה קיימת:</div>
+    <div id="conflictNoteContainer" class="hidden" style="width: 100%;">
+      <div class="conflict-label">הערה קיימת:</div>
       <div class="old-note-preview" id="oldNotePreview"></div>
     </div>
 
-    <div id="conflictReasonContainer" class="hidden">
-      <div style="font-size: 12px; font-weight: bold; text-align: right;">סיבת העברה קיימת:</div>
+    <div id="conflictReasonContainer" class="hidden" style="width: 100%;">
+      <div class="conflict-label">סיבת העברה קיימת:</div>
       <div class="old-note-preview" id="oldReasonPreview"></div>
     </div>
 
@@ -241,29 +286,31 @@
     <div class="action-btns">
       <button class="btn-yes" onclick="actionKeepBoth()" style="background:#34a853;">שמור הכל (שלב)</button>
       <button class="btn-other" onclick="showEditView()"
-        style="background:#fbbc04; color:#333; border:none;">ערוך</button>
-      <button class="btn-cancel" onclick="actionKeepNew()" style="background:#ea4335; color:#fff;">דרוס עם החדש</button>
+        style="background:#fbbc04; color:#333; border:none; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">ערוך ידנית</button>
+      <button class="btn-cancel" onclick="actionKeepNew()" style="background:#ea4335; color:#fff; border:none;">דרוס עם החדש</button>
       <button class="btn-cancel" onclick="doTransferAndClose()">השאר ישן (התעלם)</button>
     </div>
   </div>
 
   <!-- View 3: Edit Combined Note -->
   <div id="view3" class="hidden">
-    <h3 style="font-size: 16px; margin-bottom: 8px; text-align: center;">עריכה</h3>
-    <p style="font-size: 13px; margin-bottom: 8px;">ערוך לפני השמירה:</p>
+    <h3 style="font-size: 18px; margin-bottom: 8px; text-align: center; color: #1a73e8;">עריכה מתקדמת</h3>
+    <p style="font-size: 14px; margin-bottom: 16px; color: #5f6368;">ערוך לפני השמירה:</p>
 
-    <div style="text-align: right; margin-bottom: 4px; font-size: 13px; font-weight: bold;">הערה למשרד:</div>
-    <textarea id="editedNote"
-      style="width: 100%; height: 70px; padding: 6px; font-size: 13px; border: 1px solid #dadce0; border-radius: 4px; resize: none; box-sizing: border-box; font-family: inherit; margin-bottom: 8px;"></textarea>
+    <div class="input-group">
+      <label for="editedNote">הערה למשרד:</label>
+      <textarea id="editedNote" class="input-style textarea"></textarea>
+    </div>
 
-    <div style="text-align: right; margin-bottom: 4px; font-size: 13px; font-weight: bold;">סיבת העברה:</div>
-    <input type="text" id="editedReason"
-      style="width: 100%; padding: 6px; font-size: 13px; border: 1px solid #dadce0; border-radius: 4px; box-sizing: border-box; font-family: inherit; margin-bottom: 8px;">
+    <div class="input-group">
+      <label for="editedReason">סיבת העברה:</label>
+      <input type="text" id="editedReason" class="input-style">
+    </div>
 
     <div id="loading3" class="loading">שומר ומעביר...</div>
-    <div class="action-btns" style="margin-top: 10px;">
+    <div class="footer" style="margin-top: auto;">
+      <button class="btn-cancel" onclick="doTransferAndClose()">בטל והעבר</button>
       <button class="btn-yes" onclick="submitEditedNote()">שמור והעבר</button>
-      <button class="btn-cancel" onclick="doTransferAndClose()">בטל שינויים והעבר</button>
     </div>
   </div>
 
@@ -280,6 +327,7 @@
     let globalNewNote = "";
     let globalOldReason = "";
     let globalNewReason = "";
+    let globalDealAccountToSave = ""; // NEW
 
     function copyMsg(name) {
       var reason = document.getElementById('reasonInput').value.trim();
@@ -288,9 +336,12 @@
       var newNoteText = document.getElementById('newNote').value.trim();
       var noteAppend = newNoteText ? '\nהערה: ' + newNoteText : '';
 
+      var dealAcc = document.getElementById('dealAccountInput').value.trim();
+      var dealAppend = dealAcc ? '\nחשבון עסקה: ' + dealAcc : '';
+
       var ta = document.getElementById('clipTarget');
       var roundedSum = Math.floor(defaultSum * 100) / 100;
-      ta.value = 'העברתי עכשיו לטיפול המשרד חוב של ' + roundedSum + ' ש"ח על שם ' + name + reasonText + noteAppend;
+      ta.value = 'העברתי עכשיו לטיפול המשרד חוב של ' + roundedSum + ' ש"ח על שם ' + name + reasonText + dealAppend + noteAppend;
       ta.focus();
       ta.select();
       document.execCommand('copy');
@@ -306,6 +357,7 @@
 
       var newNote = document.getElementById('newNote').value.trim();
       var newReason = document.getElementById('reasonInput').value.trim();
+      var dealAccount = document.getElementById('dealAccountInput').value.trim();
 
       // We always check now because reason usually has a default
       globalNewNote = newNote;
@@ -321,6 +373,7 @@
           if (response.status === 'exists') {
             globalOldNote = response.oldNote || "";
             globalOldReason = response.oldReason || "";
+            globalDealAccountToSave = response.dealAccountToSave || "";
 
             if (response.hasNoteConflict) {
               document.getElementById('conflictNoteContainer').classList.remove('hidden');
@@ -351,7 +404,7 @@
           alert('שגיאה בבדיקת המידע');
           doTransferAndClose();
         })
-        .checkAndSaveCustomerNote(defaultName, newNote, newReason);
+        .checkAndSaveCustomerNote(defaultName, newNote, newReason, dealAccount);
     }
 
     function actionKeepBoth() {
@@ -399,7 +452,7 @@
           alert('שגיאה בשמירה');
           doTransferAndClose();
         })
-        .overwriteCustomerNote(defaultName, finalNote, finalReason);
+        .overwriteCustomerNote(defaultName, finalNote, finalReason, globalDealAccountToSave);
     }
 
     function doTransferAndClose() {
