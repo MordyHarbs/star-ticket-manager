@@ -3,16 +3,21 @@
  * This should be triggered by a Time-Driven Trigger (e.g., every 15 minutes or 1 hour).
  */
 function sendPendingPaymentEmails() {
+  console.log('Entering sendPendingPaymentEmails');
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('תשלומים');
   
   if (!sheet) {
+    console.error("sendPendingPaymentEmails: Sheet 'תשלומים' not found.");
     Logger.log("Sheet 'תשלומים' not found.");
+    console.log('Exiting sendPendingPaymentEmails (sheet not found)');
     return;
   }
   
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) {
+    console.log('sendPendingPaymentEmails mid-step: No data found');
+    console.log('Exiting sendPendingPaymentEmails (no data)');
     return; // No data
   }
   
@@ -98,5 +103,7 @@ function sendPendingPaymentEmails() {
     sheet.getRange(rowNum, 7).setValue(true);
   });
   
+  console.log(`sendPendingPaymentEmails mid-step: Marked ${rowsToUpdate.length} rows as sent`);
   Logger.log('Successfully sent email for ' + pendingPayments.length + ' payments.');
+  console.log('Exiting sendPendingPaymentEmails');
 }

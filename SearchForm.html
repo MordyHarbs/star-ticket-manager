@@ -305,13 +305,19 @@
 
     // Initialize
     window.onload = function() {
+      console.log('Entering window.onload (SearchForm)');
       google.script.run
         .withSuccessHandler(initForms)
-        .withFailureHandler(err => alert("Error: " + err))
+        .withFailureHandler(err => {
+          console.error('Error in window.onload', err);
+          alert("Error: " + err);
+        })
         .getSearchFormData();
+      console.log('Exiting window.onload (SearchForm)');
     };
 
     function initForms(data) {
+      console.log('Entering initForms', { dataKeys: Object.keys(data) });
       document.getElementById('loading').style.display = 'none';
 
       // Setup Multi-Select Fields
@@ -330,6 +336,7 @@
       // *** Set Default Value to "כולל שולם" ***
       formState.paidStatus = ['כולל שולם'];
       renderPills('paidStatus', true);
+      console.log('Exiting initForms');
     }
 
     /**
@@ -447,6 +454,7 @@
     }
 
     function selectItem(key, value, isSingle) {
+      console.log('Entering selectItem', { key, value, isSingle });
       if (isSingle) {
         formState[key] = [value];
       } else {
@@ -458,6 +466,7 @@
         }
       }
       renderPills(key, isSingle);
+      console.log('Exiting selectItem');
     }
 
     function removePill(key, value) {
@@ -492,6 +501,7 @@
     }
 
     function submitForm() {
+      console.log('Entering submitForm');
       const btn = document.querySelector('.btn-submit');
       btn.textContent = 'שומר...';
       btn.disabled = true;
@@ -509,16 +519,21 @@
         notes: document.getElementById('input-notes').value
       };
 
+      console.log('submitForm mid-step: payload prepared', { payload });
+
       google.script.run
         .withSuccessHandler(() => {
+          console.log('submitForm mid-step: success');
           google.script.host.close();
         })
         .withFailureHandler(err => {
+          console.error('Error in submitForm', err);
           alert('Error: ' + err);
           btn.textContent = 'עדכן בגיליון';
           btn.disabled = false;
         })
         .processSearchForm(payload);
+      console.log('Exiting submitForm');
     }
   </script>
 </body>

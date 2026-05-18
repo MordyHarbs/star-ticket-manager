@@ -2,6 +2,7 @@
  * Main function to trigger the check.
  */
 function runTicketCheck() {
+  console.log('Entering runTicketCheck');
   try {
     const LOCK_duration_ms = 10000; // 10 seconds
     const props = PropertiesService.getScriptProperties();
@@ -16,13 +17,16 @@ function runTicketCheck() {
     props.setProperty('LAST_TICKET_CHECK_RUN', now.toString());
 
     const ABC = 28; // Days threshold
+    console.log('runTicketCheck mid-step: Showing warnings for', { days: ABC });
     showTicketWarnings(ABC);
+    console.log('Exiting runTicketCheck');
   } catch (e) {
     console.error(`Error in runTicketCheck: ${e.toString()}`);
   }
 }
 
 function runTicketCheckWithPrompt() {
+  console.log('Entering runTicketCheckWithPrompt');
   const ui = SpreadsheetApp.getUi();
   const response = ui.prompt(
     "בדיקת סטטוס דוחות",
@@ -39,15 +43,21 @@ function runTicketCheckWithPrompt() {
 
     // Update the run timestamp so onOpen doesn't trigger immediately after this
     PropertiesService.getScriptProperties().setProperty('LAST_TICKET_CHECK_RUN', new Date().getTime().toString());
+    console.log('runTicketCheckWithPrompt mid-step: User confirmed with days', { days });
     showTicketWarnings(days);
+  } else {
+    console.log('runTicketCheckWithPrompt mid-step: User cancelled prompt');
   }
+  console.log('Exiting runTicketCheckWithPrompt');
 }
 
 function showTicketWarnings(abcDays) {
+  console.log('Entering showTicketWarnings', { abcDays });
   const html = HtmlService.createTemplateFromFile('TicketAlert');
   html.abcDays = abcDays;
   const ui = SpreadsheetApp.getUi();
   ui.showModalDialog(html.evaluate().setWidth(1400).setHeight(800), 'דוח סטטוס דוחות - התראות');
+  console.log('Exiting showTicketWarnings');
 }
 
 function parseDate(val) {
@@ -70,22 +80,27 @@ function toMidnight(d) {
 }
 
 function updateLastChecked(rowIndex) {
+  console.log('Entering updateLastChecked', { rowIndex });
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('דוחות');
   sheet.getRange(rowIndex, 23).setValue(new Date());
+  console.log('Exiting updateLastChecked');
   return "Updated";
 }
 
 function updateTicketNote(rowIndex, newNote) {
+  console.log('Entering updateTicketNote', { rowIndex, newNote });
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('דוחות');
   // Column Q is the 17th column
   sheet.getRange(rowIndex, 17).setValue(newNote);
+  console.log('Exiting updateTicketNote');
   return "Note Updated";
 }
 
 // --- NEW FUNCTION FOR TRANSFER APPROVAL ---
 function updateTransferStatus(rowIndex) {
+  console.log('Entering updateTransferStatus', { rowIndex });
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('דוחות');
 
@@ -106,17 +121,25 @@ function updateTransferStatus(rowIndex) {
   }
 
   rangeN.setValue(newStatus);
+  console.log('Exiting updateTransferStatus', { newStatus });
   return newStatus;
 }
 
 function getBodyDetails(bodyName) {
+  console.log('Entering getBodyDetails', { bodyName });
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('רשימות');
 
-  if (!sheet) return { error: "Sheet 'רשימות' not found" };
+  if (!sheet) {
+    console.log('Exiting getBodyDetails (sheet not found)');
+    return { error: "Sheet 'רשימות' not found" };
+  }
 
   const lastRow = sheet.getLastRow();
-  if (lastRow < 3) return { error: "No data in lists sheet" };
+  if (lastRow < 3) {
+    console.log('Exiting getBodyDetails (no data)');
+    return { error: "No data in lists sheet" };
+  }
 
   // Headers are in Row 3. Data starts in Row 4.
   // We need to fetch Columns G (7) to L (12).
@@ -133,7 +156,10 @@ function getBodyDetails(bodyName) {
   // Find the matching row (Index 0 is Column G - Body Name)
   const foundRow = rows.find(r => String(r[0]).trim() === searchStr);
 
-  if (!foundRow) return null;
+  if (!foundRow) {
+    console.log('Exiting getBodyDetails (row not found)');
+    return null;
+  }
 
   const result = {};
   headers.forEach((header, index) => {
@@ -146,6 +172,7 @@ function getBodyDetails(bodyName) {
     }
   });
 
+  console.log('Exiting getBodyDetails', { resultKeys: Object.keys(result) });
   return result;
 }
 
@@ -153,6 +180,7 @@ function getBodyDetails(bodyName) {
 
 
 function getTicketData(abcDays, countOnly = false) {
+  console.log('Entering getTicketData', { abcDays, countOnly });
   try {
     if (!countOnly) {
       console.log("Server: getTicketData called with " + abcDays);
@@ -313,9 +341,11 @@ function getTicketData(abcDays, countOnly = false) {
     });
 
     if (countOnly) {
+      console.log('Exiting getTicketData', { count: section1.length + section2.length });
       return section1.length + section2.length;
     }
 
+    console.log('Exiting getTicketData', { section1Size: section1.length, section2Size: section2.length });
     return { section1: section1, section2: section2 };
 
   } catch (e) {

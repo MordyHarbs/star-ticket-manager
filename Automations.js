@@ -6,20 +6,25 @@
  *  - Trimming edges
  */
 function normalizeHebrew(str) {
-  return str
+  console.log('Entering normalizeHebrew', { str });
+  const result = str
     .toString()
     .replace(/\u00A0/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+  console.log('Exiting normalizeHebrew', { result });
+  return result;
 }
 
 /**
  * getSourcesTable: return rich values from named range “reprot_table”
  */
 function getSourcesTable() {
+  console.log('Entering getSourcesTable');
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const range = ss.getRangeByName('reprot_table');
-  return range.getRichTextValues().map(row =>
+  console.log('getSourcesTable: Fetched reprot_table range');
+  const result = range.getRichTextValues().map(row =>
     row.map(cell => {
       const url = cell.getLinkUrl();
       return url
@@ -27,10 +32,13 @@ function getSourcesTable() {
         : cell.getText();
     })
   );
+  console.log('Exiting getSourcesTable', { rowCount: result.length });
+  return result;
 }
 
 function updateFollowUpDate(key, val) {
-  Logger.log(`saving date from menu, date selected is: ${val}, name is: ${key}`)
+  console.log('Entering updateFollowUpDate', { key, val });
+  Logger.log(`saving date from menu, date selected is: ${val}, name is: ${key}`);
   const ss = SpreadsheetApp.getActive();
   const followSheet = ss.getSheetByName('follow_up_date');
   const data = followSheet.getRange('A:A').getValues();
@@ -40,6 +48,7 @@ function updateFollowUpDate(key, val) {
   // Update existing row
   for (let i = 0; i < data.length; i++) {
     if (data[i][0] === key) {
+      console.log('updateFollowUpDate: Found key in followSheet', { row: i + 1 });
       if (val === '') {
         // Clearing logic
         const cod_d = followSheet.getRange(i + 1, 4).getValue(); // Column D
@@ -48,12 +57,15 @@ function updateFollowUpDate(key, val) {
         const keepRow = (cod_d || col_c || col_e);
 
         if (keepRow) {
+          console.log('updateFollowUpDate: Clearing content in column B');
           followSheet.getRange(i + 1, 2).clearContent();
         } else {
+          console.log('updateFollowUpDate: Deleting row', { row: i + 1 });
           followSheet.deleteRow(i + 1);
         }
       } else {
         // Standard update
+        console.log('updateFollowUpDate: Updating column B value');
         followSheet.getRange(i + 1, 2).setValue(val);
       }
 
@@ -65,13 +77,16 @@ function updateFollowUpDate(key, val) {
   // If not found and val not empty → append new
   if (!found && val !== '') {
     const lastRow = followSheet.getLastRow() + 1;
+    console.log('updateFollowUpDate: Key not found, appending new row', { lastRow });
     followSheet.getRange(lastRow, 1).setValue(key);
     followSheet.getRange(lastRow, 2).setValue(val);
   }
+  console.log('Exiting updateFollowUpDate');
 }
 
 // on edit auto trigger
 function onEdit(e) {
+  console.log('Entering onEdit', { authMode: e.authMode, user: e.user ? e.user.getEmail() : 'unknown' });
   const ss = e.source;
   const sh = e.range.getSheet();
   const r = e.range.getRow();
@@ -80,6 +95,7 @@ function onEdit(e) {
 
   // Log basic trigger info
   Logger.log(`onEdit triggered: sheet=${sh.getName()}, row=${r}, col=${c}, val=${val}`);
+  console.log(`onEdit mid-step: sheet=${sh.getName()}, row=${r}, col=${c}, val=${val}`);
 
   //================================================================================
   // ===== update follow_up_date based on value added in פירוט נסיעות לפי לקוח =====
@@ -572,6 +588,7 @@ function onEdit(e) {
     }
     // for case of marking שולם in column L - if סטטוס is אושרה הסבה switch it to סיום טיפול הוסב
     if (c === 12 && val === true) {
+      console.log('onEdit mid-step: Processed paid in column L for "דוחות"');
       col14Value = sh.getRange(r, 14).getValue()
       if (col14Value === 'אושרה הסבה') {
         sh.getRange(r, 14).setValue('סיום טיפול הוסב')
@@ -579,4 +596,5 @@ function onEdit(e) {
 
     }
   }
+  console.log('Exiting onEdit');
 }

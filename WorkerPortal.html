@@ -492,9 +492,13 @@
 
     // Authentication
     function handleLogin(e) {
+      console.log('Entering handleLogin');
       e.preventDefault();
       const pin = document.getElementById('password').value;
-      if (!pin) return;
+      if (!pin) {
+        console.log('Exiting handleLogin (no pin)');
+        return;
+      }
 
       const btn = document.getElementById('loginBtn');
       const loader = document.getElementById('loginLoader');
@@ -525,13 +529,15 @@
             document.getElementById('password').value = '';
             showApp();
             processTasksData(data);
+            console.log('Exiting handleLogin (success)');
           }
         })
         .catch(err => {
-          console.error(err);
+          console.error('Error in handleLogin:', err);
           btn.disabled = false;
           loader.classList.add('hidden');
           showToast('שגיאת תקשורת, נסה שוב', true);
+          console.log('Exiting handleLogin (catch error)');
         });
     }
 
@@ -561,7 +567,11 @@
     }
 
     function fetchTasks() {
-      if (!workerPin) return;
+      console.log('Entering fetchTasks');
+      if (!workerPin) {
+        console.log('Exiting fetchTasks (no pin)');
+        return;
+      }
       document.getElementById('loadingState').classList.remove('hidden');
       document.getElementById('customerList').classList.add('hidden');
       document.getElementById('emptyState').classList.add('hidden');
@@ -577,17 +587,21 @@
         .then(res => res.json())
         .then(data => {
           if (data && data.error === 'Unauthorized') {
+            console.log('fetchTasks: Unauthorized');
             handleUnauthorized();
+            console.log('Exiting fetchTasks (Unauthorized)');
             return;
           } else if (data && data.error) {
             throw new Error(data.error);
           }
           processTasksData(data);
+          console.log('Exiting fetchTasks (success)');
         })
         .catch(error => {
-          console.error(error);
+          console.error('Error in fetchTasks:', error);
           document.getElementById('loadingState').classList.add('hidden');
           showToast('שגיאה בטעינת הנתונים', true);
+          console.log('Exiting fetchTasks (catch error)');
         });
     }
 
@@ -899,6 +913,7 @@
     }
 
     function submitPayment(e) {
+      console.log('Entering submitPayment');
       e.preventDefault();
 
       const submitBtn = document.getElementById('submitPaymentBtn');
@@ -913,6 +928,7 @@
         bankInfo: document.getElementById('payBankInfo').value,
         comments: document.getElementById('payComments').value
       };
+      console.log('submitPayment mid-step: payment data', { paymentData });
 
       // Manual JS Validation
       if (!paymentData.date) {
@@ -966,13 +982,15 @@
           }
           pendingPaymentsMap[paymentData.customerName] += Number(paymentData.amount);
           render();
+          console.log('Exiting submitPayment (success)');
         })
         .catch(error => {
-          console.error(error);
+          console.error('Error in submitPayment:', error);
           submitBtn.disabled = false;
           submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
           submitLoader.classList.add('hidden');
           showToast('שגיאה בשמירת התשלום', true);
+          console.log('Exiting submitPayment (catch error)');
         });
     }
 

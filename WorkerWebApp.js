@@ -8,29 +8,40 @@
 const WORKER_PASSWORD = "x7#M9$kL2@pQ5&vN8*wZ";
 
 function doGet(e) {
-  return ContentService.createTextOutput(JSON.stringify({ status: "Worker Portal API is running successfully." }))
+  console.log('Entering doGet', { queryString: e.queryString });
+  const result = ContentService.createTextOutput(JSON.stringify({ status: "Worker Portal API is running successfully." }))
     .setMimeType(ContentService.MimeType.JSON);
+  console.log('Exiting doGet');
+  return result;
 }
 
 function doPost(e) {
+  console.log('Entering doPost');
   try {
     const requestData = JSON.parse(e.postData.contents);
     const action = requestData.action;
     const pin = requestData.pin;
     
+    console.log('doPost mid-step: Parsed request', { action });
+
     if (action === 'getTasks') {
       const response = getPendingTasks(pin);
+      console.log('Exiting doPost (getTasks)');
       return ContentService.createTextOutput(JSON.stringify(response))
         .setMimeType(ContentService.MimeType.JSON);
     } else if (action === 'addPayment') {
       const response = addPaymentToSheet(requestData.paymentData, pin);
+      console.log('Exiting doPost (addPayment)');
       return ContentService.createTextOutput(JSON.stringify(response))
         .setMimeType(ContentService.MimeType.JSON);
     }
     
+    console.log('Exiting doPost (unknown action)');
     return ContentService.createTextOutput(JSON.stringify({ error: "Unknown action" }))
       .setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
+    console.error('doPost error', err);
+    console.log('Exiting doPost (error)');
     return ContentService.createTextOutput(JSON.stringify({ error: err.toString() }))
       .setMimeType(ContentService.MimeType.JSON);
   }
@@ -104,6 +115,7 @@ function getPendingTasks(password) {
   }
   
   Logger.log(`Found ${tasks.length} pending tasks`);
+  console.log('Exiting getPendingTasks', { tasksCount: tasks.length });
   return { tasks: tasks, pendingPayments: pendingPaymentsMap };
 }
 
@@ -171,5 +183,6 @@ function addPaymentToSheet(paymentData, password) {
     combinedInfo
   ]]);
   
+  console.log('Exiting addPaymentToSheet');
   return true;
 }

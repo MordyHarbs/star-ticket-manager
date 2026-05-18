@@ -31,19 +31,25 @@ function removeDuplicateTriggers() {
 }
 
 function onOpenWithUi(e) {
+  console.log('Entering onOpenWithUi');
   buildCustomMenu();
 
   // --- DEBOUNCE PROTECTION: Prevent duplicate triggers from firing multiple popups ---
   const props = PropertiesService.getScriptProperties();
   const lastRun = parseInt(props.getProperty('LAST_ONOPEN_POPUP_TIME') || '0', 10);
   const now = new Date().getTime();
-  if (now - lastRun < 2000) return; // If script was triggered less than 2 seconds ago, ignore this run
+  if (now - lastRun < 2000) {
+    console.log('onOpenWithUi mid-step: Debounced');
+    console.log('Exiting onOpenWithUi (debounced)');
+    return; // If script was triggered less than 2 seconds ago, ignore this run
+  }
   props.setProperty('LAST_ONOPEN_POPUP_TIME', now.toString());
 
   try {
     const ticketCount = getTicketData(28, true); // Fast count only
 
     if (ticketCount > 0) {
+      console.log('onOpenWithUi mid-step: Prompting user for ticketCount', { ticketCount });
       const ui = SpreadsheetApp.getUi();
       const response = ui.alert(
         "התראת דוחות 🚨",
@@ -58,6 +64,7 @@ function onOpenWithUi(e) {
   } catch (err) {
     console.error("Error fetching fast ticket count on open: " + err);
   }
+  console.log('Exiting onOpenWithUi');
 }
 
 function onOpen(e) {
@@ -208,6 +215,7 @@ function ShowAllFollowUpReminders() {
 }
 
 function markAllAsPaid() {
+  console.log('Entering markAllAsPaid');
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sh = ss.getSheetByName('פירוט נסיעות לפי לקוח');
   const defaultName = sh.getRange(6, 3).getValue()
@@ -222,6 +230,7 @@ function markAllAsPaid() {
   );
 
   if (response == ui.Button.NO) {
+    console.log('markAllAsPaid mid-step: User selected NO, opening namePicker');
     const html = HtmlService.createTemplateFromFile("namePicker");
     html.defaultName = defaultName;
     const dialog = html.evaluate()
@@ -232,15 +241,18 @@ function markAllAsPaid() {
     ss.show(dialog);
   }
   else if (response == ui.Button.YES) {
+    console.log('markAllAsPaid mid-step: User selected YES, running markAllForName');
     runMarkAllForName(defaultName)
   }
   else {
+    console.log('markAllAsPaid mid-step: User cancelled');
     ui.alert("הפעולה בוטלה.");
   }
-
+  console.log('Exiting markAllAsPaid');
 }
 
 function runMarkAllForName(selectedName) {
+  console.log('Entering runMarkAllForName', { selectedName });
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
   Logger.log("🟢 Running markAllAsPaid...");
@@ -254,6 +266,7 @@ function runMarkAllForName(selectedName) {
     ss.toast(`כל החובות של הלקוח הבא: ⭐ ⭐ ${name} ⭐ ⭐ סומנו כשולם`, "סימון כשולם");
   });
   ss.toast(`כל הלקוחות שנבחרו סומנו כשולם`, "סימון כשולם");
+  console.log('Exiting runMarkAllForName');
 }
 
 function getAllClients() {
@@ -510,6 +523,7 @@ function processPaymentRow(sh, r, ss) {
 // =======================================================================
 
 function transferToOfficeCare() {
+  console.log('Entering transferToOfficeCare');
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sh = ss.getSheetByName('פירוט נסיעות לפי לקוח');
   const defaultName = sh.getRange(6, 3).getValue();
@@ -524,6 +538,7 @@ function transferToOfficeCare() {
     .setTitle('העברה לטיפול המשרד');
 
   SpreadsheetApp.getUi().showModalDialog(dialog, 'העברה לטיפול המשרד');
+  console.log('Exiting transferToOfficeCare');
 }
 
 function openNamePickerForTransfer(defaultName) {
@@ -555,10 +570,13 @@ function runTransferForName(selectedName) {
 }
 
 function processTransferToOffice(name, ss) {
+  console.log('Entering processTransferToOffice', { name });
   const normName = normalizeHebrew(name);
   const targetSheet = ss.getSheetByName('לטיפול המשרד');
   if (!targetSheet) {
+    console.error("processTransferToOffice: Sheet 'לטיפול המשרד' not found.");
     SpreadsheetApp.getUi().alert("שגיאה: הגיליון 'לטיפול המשרד' לא נמצא.");
+    console.log('Exiting processTransferToOffice (sheet not found)');
     return;
   }
 
@@ -725,6 +743,7 @@ function processTransferToOffice(name, ss) {
     }
     targetSheet.getRange(appendRow, 1, newRows.length, newRows[0].length).setValues(newRows);
   }
+  console.log('Exiting processTransferToOffice', { newRowsCount: newRows.length });
 }
 
 // =======================================================================

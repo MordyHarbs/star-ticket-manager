@@ -1,6 +1,7 @@
 // --- Search Interface Functions ---
 
 function updateSearchInfo() {
+  console.log('Entering updateSearchInfo');
   const html = HtmlService.createTemplateFromFile("SearchForm");
   const dialog = html.evaluate()
     .setWidth(600)
@@ -8,9 +9,11 @@ function updateSearchInfo() {
     .setTitle("ביצוע חיפוש בפירוט לפי לקוח");
   
   SpreadsheetApp.getUi().showModalDialog(dialog, "חיפוש מתקדם");
+  console.log('Exiting updateSearchInfo');
 }
 
 function getSearchFormData() {
+  console.log('Entering getSearchFormData');
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   
   // Helper to get unique non-empty values from a column
@@ -26,7 +29,7 @@ function getSearchFormData() {
     return unique.sort();
   };
 
-  return {
+  const formData = {
     names: getValues('לקוחות', 'A'),
     debtTypes: ['דוחות', 'חוצה צפון', 'כביש 6', 'תשלומים', 'סיכומי מחיר'],
     carNumbers: getValues('רשימת רכבים', 'A'),
@@ -37,15 +40,22 @@ function getSearchFormData() {
     statuses: getValues('רשימות', 'Y'),
     // Note: Notes (Field 9) is free text, Paid (Field 10) is static
   };
+  console.log('Exiting getSearchFormData', { dataKeys: Object.keys(formData) });
+  return formData;
 }
 
 function processSearchForm(form) {
+  console.log('Entering processSearchForm', { form });
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sh = ss.getSheetByName('פירוט נסיעות לפי לקוח');
-  if (!sh) throw new Error("Sheet 'פירוט נסיעות לפי לקוח' not found");
+  if (!sh) {
+    console.error("Sheet 'פירוט נסיעות לפי לקוח' not found");
+    throw new Error("Sheet 'פירוט נסיעות לפי לקוח' not found");
+  }
 
   // *** Requirement 3: Activate the sheet ***
   sh.activate();
+  console.log('processSearchForm mid-step: Sheet activated');
 
   // Helper to join array or return empty string
   const joinVal = (arr) => Array.isArray(arr) ? arr.join(',') : (arr || '');
@@ -72,4 +82,5 @@ function processSearchForm(form) {
   sh.getRange('P5').setValue(joinVal(form.status));
   sh.getRange('Q5').setValue(form.notes || '');
   sh.getRange('I1').setValue(form.paidStatus || '');
+  console.log('Exiting processSearchForm');
 }
