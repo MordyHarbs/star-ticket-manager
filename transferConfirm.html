@@ -462,15 +462,36 @@
         copyMsg(defaultName);
         msgCopied = true;
       }
-      google.script.run.runTransferForName(defaultName);
-      google.script.host.close();
+      
+      // Show loading indicators and disable buttons
+      ['loading1', 'loading2', 'loading3'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.style.display = 'block';
+          el.innerText = 'מעביר לטיפול המשרד... אנא המתן';
+        }
+      });
+      document.querySelectorAll('button').forEach(b => b.disabled = true);
+
+      google.script.run
+        .withSuccessHandler(function() {
+          google.script.host.close();
+        })
+        .withFailureHandler(function(err) {
+          alert('שגיאה בהעברה: ' + err.message);
+          google.script.host.close();
+        })
+        .runTransferForName(defaultName);
     }
 
     function doOther() {
       if (submitted) return;
       submitted = true;
-      google.script.run.openNamePickerForTransfer(defaultName);
-      google.script.host.close();
+      google.script.run
+        .withSuccessHandler(function() {
+          google.script.host.close();
+        })
+        .openNamePickerForTransfer(defaultName);
     }
 
     function doCancel() {

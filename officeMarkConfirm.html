@@ -85,15 +85,26 @@
     function doYes() {
       if (submitted) return;
       submitted = true;
-      google.script.run.runMarkOfficeForName(defaultName);
-      google.script.host.close();
+      document.getElementById('btnYes').innerText = 'מעדכן...';
+      google.script.run
+        .withSuccessHandler(function() {
+          google.script.host.close();
+        })
+        .withFailureHandler(function(err) {
+          alert("שגיאה: " + err.message);
+          google.script.host.close();
+        })
+        .runMarkOfficeForName(defaultName);
     }
 
     function doOther() {
       if (submitted) return;
       submitted = true;
-      google.script.run.openNamePickerForOfficeMark(defaultName);
-      google.script.host.close();
+      google.script.run
+        .withSuccessHandler(function() {
+          google.script.host.close();
+        })
+        .openNamePickerForOfficeMark(defaultName);
     }
 
     function doCancel() {
