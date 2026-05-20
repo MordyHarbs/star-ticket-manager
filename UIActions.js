@@ -391,12 +391,15 @@ function markAllForName(name, ss) {
       const rowName = normalizeHebrew(data[i][0]); // col B
       const total = Number(data[i][11]); // col M
       const colN = data[i][13 - 1]; // col N (index 12)
-      if (rowName === normName && total != 0) {
+      if (rowName === normName) {
         const tr = i + 2;
-        sh.getRange(tr, 12).setValue(true); // L = true
-
+        
         if (normalizeHebrew(colN) === 'אושרה הסבה') {
           sh.getRange(tr, 14).setValue('סיום טיפול הוסב'); // N
+        }
+
+        if (total != 0) {
+          sh.getRange(tr, 12).setValue(true); // L = true
         }
       }
     }
@@ -593,36 +596,39 @@ function processTransferToOffice(name, ss) {
       const rowName = normalizeHebrew(data[i][1]); // Col B
       const amount = Number(data[i][10]); // Col K
       const balanceToPay = Number(data[i][12]); // Col M
-      if (rowName === normName && balanceToPay !== 0) {
-        const sourceCity = data[i][2]; // Col C
-        const plate = data[i][4]; // Col E
-        const reportNumber = data[i][5]; // Col F
-        const rawReportDate = data[i][6]; // Col G
-        const reportDate = (rawReportDate instanceof Date) ? Utilities.formatDate(rawReportDate, Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm') : rawReportDate;
-        const reportAmount = data[i][9]; // Col J
-        const formattedReportAmount = !isNaN(Number(reportAmount)) && reportAmount !== "" ? Number(reportAmount).toFixed(2) : reportAmount;
-        const comments = data[i][16]; // Col Q
-
-        const details = `דוח מ${sourceCity}, מספר דוח: ${reportNumber}, תאריך ושעת דוח: ${reportDate}, סכום הדוח: ${formattedReportAmount}.`;
-
-        newRows.push([
-          data[i][1], // Customer name (original Col B)
-          plate,
-          "",
-          "דוחות",
-          details,
-          todayStr,
-          amount,
-          comments,
-          false, // Col I
-          44 // Invoice code (Col J in office sheet) — fixed value for דוחות
-        ]);
-
-        sh.getRange(i + 2, 24).setValue(true);
-
+      
+      if (rowName === normName) {
         const colN = data[i][13]; // Col N
         if (normalizeHebrew(colN) === 'אושרה הסבה') {
           sh.getRange(i + 2, 14).setValue('סיום טיפול הוסב'); // N
+        }
+
+        if (balanceToPay !== 0) {
+          const sourceCity = data[i][2]; // Col C
+          const plate = data[i][4]; // Col E
+          const reportNumber = data[i][5]; // Col F
+          const rawReportDate = data[i][6]; // Col G
+          const reportDate = (rawReportDate instanceof Date) ? Utilities.formatDate(rawReportDate, Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm') : rawReportDate;
+          const reportAmount = data[i][9]; // Col J
+          const formattedReportAmount = !isNaN(Number(reportAmount)) && reportAmount !== "" ? Number(reportAmount).toFixed(2) : reportAmount;
+          const comments = data[i][16]; // Col Q
+
+          const details = `דוח מ${sourceCity}, מספר דוח: ${reportNumber}, תאריך ושעת דוח: ${reportDate}, סכום הדוח: ${formattedReportAmount}.`;
+
+          newRows.push([
+            data[i][1], // Customer name (original Col B)
+            plate,
+            "",
+            "דוחות",
+            details,
+            todayStr,
+            amount,
+            comments,
+            false, // Col I
+            44 // Invoice code (Col J in office sheet) — fixed value for דוחות
+          ]);
+
+          sh.getRange(i + 2, 24).setValue(true);
         }
       }
     }
