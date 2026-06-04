@@ -102,6 +102,7 @@ function buildCustomMenu() {
     .addItem('סמן הכל כשולם', 'markAllAsPaid')
     .addItem('העבר חובות לטיפול המשרד', 'transferToOfficeCare')
     .addItem('סמן חובות משרד כשולם', 'markOfficeAsPaid')
+    .addItem('סמן שורות ריקות כ"טופל נשלח בקבוצה"', 'markAllAsGroupSent')
     .addToUi();
 
 
@@ -947,4 +948,91 @@ function overwriteCustomerNote(name, finalNote, finalReason, dealAccountToSave) 
   // Should not happen if it existed, but just in case
   sh.appendRow([name, finalNote || "", finalReason || "", dealAccountToSave || ""]);
   return { status: 'success' };
+}
+
+function markAllAsGroupSent() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ss.getSheetByName('פירוט נסיעות לפי לקוח');
+  const defaultName = sh.getRange(6, 3).getValue();
+
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.alert(
+    "אישור פעולה",
+    'האם לסמן את כל השורות ללא סטטוס כ"טופל נשלח בקבוצה" עבור:\n\n' +
+    '            ------ ' + defaultName + ' ------',
+    ui.ButtonSet.YES_NO
+  );
+
+  if (response === ui.Button.YES) {
+    runGroupSentForName(defaultName);
+  }
+}
+
+function runGroupSentForName(selectedName) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const names = Array.isArray(selectedName) ? selectedName : [selectedName];
+
+  names.forEach(name => {
+    ss.toast(`מסמן כ"טופל נשלח בקבוצה" את כל החובות של:  ⭐ ⭐ ${name} ⭐ ⭐`, 'סימון נשלח בקבוצה');
+    groupSentForName(name, ss);
+    ss.toast(`כל החובות של ⭐ ⭐ ${name} ⭐ ⭐ סומנו כ"טופל נשלח בקבוצה"`, 'סימון נשלח בקבוצה');
+  });
+  ss.toast('כל הלקוחות שנבחרו סומנו כ"טופל נשלח בקבוצה"', 'סימון נשלח בקבוצה');
+}
+
+function groupSentForName(name, ss) {
+  const normName = normalizeHebrew(name);
+  const date = new Date();
+  const formattedDate = Utilities.formatDate(date, Session.getScriptTimeZone(), 'dd/MM/yy');
+
+  // -------- דוחות --------
+  let sh = ss.getSheetByName('דוחות');
+  let last = sh.getLastRow();
+  if (last >= 2) {
+    const data = sh.getRange(2, 1, last - 1, 17).getValues();
+    for (let i = 0; i < data.length; i++) {
+      if (normalizeHebrew(data[i][1]) !== normName) continue; // col B = name
+      if (data[i][13] !== '') continue;                        // col N already has status
+      const row = i + 2;
+      sh.getRange(row, 14).setValue('טופל נשלח בקבוצה');
+      sh.getRange(row, 15).setValue('נשלח בקבוצה');
+      sh.getRange(row, 16).setValue(new Date());
+      const oldComment = data[i][16]; // col Q
+      sh.getRange(row, 17).setValue(oldComment ? `${oldComment}\n נשלח בקבוצה ${formattedDate}` : `נשלח בקבוצה ${formattedDate}`);
+      sh.getRange(row, 12).setValue(true);
+      sh.getRange(row, 11).setValue(0);
+    }
+  }
+
+  // -------- כביש 6 / מנהרות --------
+  sh = ss.getSheetByName('כביש 6/מנהרות');
+  last = sh.getLastRow();
+  if (last >= 2) {
+    const data = sh.getRange(2, 1, last - 1, 13).getValues();
+    for (let i = 0; i < data.length; i++) {
+      if (normalizeHebrew(data[i][4]) !== normName) continue; // col E = name
+      if (data[i][11] !== '') continue;                        // col L already has status
+      const row = i + 2;
+      sh.getRange(row, 12).setValue('טופל נשלח בקבוצה');
+      sh.getRange(row, 10).setValue('פטור');
+      const oldComment = data[i][12]; // col M
+      sh.getRange(row, 13).setValue(oldComment ? `${oldComment}\n נשלח בקבוצה ${formattedDate}` : `נשלח בקבוצה ${formattedDate}`);
+    }
+  }
+
+  // -------- חוצה צפון / נתיב מהיר --------
+  sh = ss.getSheetByName('חוצה צפון/נתיב מהיר');
+  last = sh.getLastRow();
+  if (last >= 2) {
+    const data = sh.getRange(2, 1, last - 1, 11).getValues();
+    for (let i = 0; i < data.length; i++) {
+      if (normalizeHebrew(data[i][4]) !== normName) continue; // col E = name
+      if (data[i][9] !== '') continue;                         // col J already has status
+      const row = i + 2;
+      sh.getRange(row, 10).setValue('טופל נשלח בקבוצה');
+      sh.getRange(row, 8).setValue('פטור');
+      const oldComment = data[i][10]; // col K
+      sh.getRange(row, 11).setValue(oldComment ? `${oldComment}\n נשלח בקבוצה ${formattedDate}` : `נשלח בקבוצה ${formattedDate}`);
+    }
+  }
 }
