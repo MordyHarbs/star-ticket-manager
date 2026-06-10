@@ -258,39 +258,39 @@ function onEdit(e) {
     const followSheet = ss.getSheetByName('follow_up_date');
     const data = followSheet.getRange('A:A').getValues();
 
-    let found = false;
+    let foundIndex = -1;
     for (let i = 0; i < data.length; i++) {
       if (data[i][0] === key) {
-        Logger.log(`Key found in follow_up_date at row ${i + 1}. Updating column E to ${val}`);
-        followSheet.getRange(i + 1, 5).setValue(val);
-        found = true;
+        foundIndex = i;
         break;
       }
     }
 
-    if (!found) {
-      const lastRow = followSheet.getLastRow() + 1;
-      Logger.log(`Key not found. Appending new row ${lastRow} with (A: ${key}, E: ${val})`);
-      followSheet.getRange(lastRow, 1).setValue(key);
-      followSheet.getRange(lastRow, 5).setValue(val);
-    }
+    if (val !== '') {
+      const isLink = typeof val === 'string' && (val.startsWith('http://') || val.startsWith('https://') || val.startsWith('http'));
+      const valueToSave = isLink ? `=HYPERLINK("${val}","קישור לתוכנה")` : val;
 
-    // If M3 is cleared → delete logic based on whether column B, C, or D has value
-    if (val === '') {
-      for (let i = 0; i < data.length; i++) {
-        if (data[i][0] === key) {
-          const col_b = followSheet.getRange(i + 1, 2).getValue(); // Column B
-          const col_c = followSheet.getRange(i + 1, 3).getValue(); // Column C
-          const col_d = followSheet.getRange(i + 1, 4).getValue(); // Column D
-          const keepRow = (col_b || col_c || col_d); // true if any is non-empty
+      if (foundIndex !== -1) {
+        Logger.log(`Key found in follow_up_date at row ${foundIndex + 1}. Updating column E to ${valueToSave}`);
+        followSheet.getRange(foundIndex + 1, 5).setValue(valueToSave);
+      } else {
+        const lastRow = followSheet.getLastRow() + 1;
+        Logger.log(`Key not found. Appending new row ${lastRow} with (A: ${key}, E: ${valueToSave})`);
+        followSheet.getRange(lastRow, 1).setValue(key);
+        followSheet.getRange(lastRow, 5).setValue(valueToSave);
+      }
+    } else if (foundIndex !== -1) {
+      // If M3 is cleared and key is found → delete or clear logic
+      const rowIndex = foundIndex + 1;
+      const col_b = followSheet.getRange(rowIndex, 2).getValue(); // Column B
+      const col_c = followSheet.getRange(rowIndex, 3).getValue(); // Column C
+      const col_d = followSheet.getRange(rowIndex, 4).getValue(); // Column D
+      const keepRow = (col_b || col_c || col_d); // true if any is non-empty
 
-          if (keepRow) {
-            followSheet.getRange(i + 1, 5).clearContent();
-          } else {
-            followSheet.deleteRow(i + 1);
-          }
-          break;
-        }
+      if (keepRow) {
+        followSheet.getRange(rowIndex, 5).clearContent();
+      } else {
+        followSheet.deleteRow(rowIndex);
       }
     }
 
