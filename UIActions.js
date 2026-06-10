@@ -891,8 +891,8 @@ function checkAndSaveCustomerNote(name, newNote, newReason, dealAccount) {
         const existingReason = data[i][2];
         const existingDealAccount = maxCols >= 4 ? data[i][3] : "";
         
-        let hasNoteConflict = newNote && existingNote && String(existingNote).trim() !== "";
-        let hasReasonConflict = newReason && existingReason && String(existingReason).trim() !== "";
+        let hasNoteConflict = newNote && existingNote && String(existingNote).trim() !== "" && String(newNote).trim() !== String(existingNote).trim();
+        let hasReasonConflict = newReason && existingReason && String(existingReason).trim() !== "" && String(newReason).trim() !== String(existingReason).trim();
         
         let newDealAccountToSave = dealAccount || "";
         if (dealAccount && existingDealAccount && String(existingDealAccount).trim() !== "") {
