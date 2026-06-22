@@ -538,7 +538,7 @@ function transferToOfficeCare() {
   html.defaultSum = sum;
   const dialog = html.evaluate()
     .setWidth(400)
-    .setHeight(460)
+    .setHeight(500)
     .setTitle('העברה לטיפול המשרד');
 
   SpreadsheetApp.getUi().showModalDialog(dialog, 'העברה לטיפול המשרד');
@@ -894,6 +894,11 @@ function checkAndSaveCustomerNote(name, newNote, newReason, dealAccount) {
         let hasNoteConflict = newNote && existingNote && String(existingNote).trim() !== "" && String(newNote).trim() !== String(existingNote).trim();
         let hasReasonConflict = newReason && existingReason && String(existingReason).trim() !== "" && String(newReason).trim() !== String(existingReason).trim();
         
+        let hasDealAccountConflict = false;
+        if (dealAccount === "") {
+          hasDealAccountConflict = existingDealAccount && String(existingDealAccount).trim() !== "";
+        }
+        
         let newDealAccountToSave = dealAccount || "";
         if (dealAccount && existingDealAccount && String(existingDealAccount).trim() !== "") {
            newDealAccountToSave = String(existingDealAccount).trim() + ", " + dealAccount;
@@ -901,13 +906,15 @@ function checkAndSaveCustomerNote(name, newNote, newReason, dealAccount) {
            newDealAccountToSave = existingDealAccount;
         }
         
-        if (hasNoteConflict || hasReasonConflict) {
+        if (hasNoteConflict || hasReasonConflict || hasDealAccountConflict) {
           return { 
             status: 'exists', 
             oldNote: existingNote || "",
             hasNoteConflict: !!hasNoteConflict,
             oldReason: existingReason || "",
             hasReasonConflict: !!hasReasonConflict,
+            oldDealAccount: existingDealAccount || "",
+            hasDealAccountConflict: !!hasDealAccountConflict,
             dealAccountToSave: newDealAccountToSave
           };
         } else {

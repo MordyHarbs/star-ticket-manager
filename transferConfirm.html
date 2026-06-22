@@ -281,6 +281,11 @@
       <div class="old-note-preview" id="oldReasonPreview"></div>
     </div>
 
+    <div id="conflictDealAccountContainer" class="hidden" style="width: 100%;">
+      <div class="conflict-label">חשבון עסקה קיים:</div>
+      <div class="old-note-preview" id="oldDealAccountPreview"></div>
+    </div>
+
     <div id="loading2" class="loading">שומר ומעביר...</div>
 
     <div class="action-btns">
@@ -307,6 +312,11 @@
       <input type="text" id="editedReason" class="input-style">
     </div>
 
+    <div class="input-group" id="editedDealAccountGroup">
+      <label for="editedDealAccount">חשבון עסקה:</label>
+      <input type="text" id="editedDealAccount" class="input-style">
+    </div>
+
     <div id="loading3" class="loading">שומר ומעביר...</div>
     <div class="footer" style="margin-top: auto;">
       <button class="btn-cancel" onclick="doTransferAndClose()">בטל והעבר</button>
@@ -328,6 +338,7 @@
     let globalOldReason = "";
     let globalNewReason = "";
     let globalDealAccountToSave = ""; // NEW
+    let globalNewDealAccount = "";
 
     function copyMsg(name) {
       var reason = document.getElementById('reasonInput').value.trim();
@@ -362,6 +373,7 @@
       // We always check now because reason usually has a default
       globalNewNote = newNote;
       globalNewReason = newReason;
+      globalNewDealAccount = dealAccount;
       document.getElementById('loading1').style.display = 'block';
       document.getElementById('btnYes').disabled = true;
 
@@ -389,6 +401,13 @@
               document.getElementById('conflictReasonContainer').classList.add('hidden');
             }
 
+            if (response.hasDealAccountConflict) {
+              document.getElementById('conflictDealAccountContainer').classList.remove('hidden');
+              document.getElementById('oldDealAccountPreview').innerText = response.oldDealAccount || "";
+            } else {
+              document.getElementById('conflictDealAccountContainer').classList.add('hidden');
+            }
+
             document.getElementById('view1').classList.add('hidden');
             document.getElementById('view2').classList.remove('hidden');
           } else if (response.status === 'success') {
@@ -410,13 +429,13 @@
     function actionKeepBoth() {
       const finalNote = document.getElementById('conflictNoteContainer').classList.contains('hidden') ? globalOldNote : globalOldNote + '\n' + globalNewNote;
       const finalReason = document.getElementById('conflictReasonContainer').classList.contains('hidden') ? globalOldReason : globalOldReason + " / " + globalNewReason;
-      saveFinalNoteAndTransfer(finalNote, finalReason, 2);
+      saveFinalNoteAndTransfer(finalNote, finalReason, globalDealAccountToSave, 2);
     }
 
     function actionKeepNew() {
       const finalNote = document.getElementById('conflictNoteContainer').classList.contains('hidden') ? globalOldNote : globalNewNote;
       const finalReason = document.getElementById('conflictReasonContainer').classList.contains('hidden') ? globalOldReason : globalNewReason;
-      saveFinalNoteAndTransfer(finalNote, finalReason, 2);
+      saveFinalNoteAndTransfer(finalNote, finalReason, globalNewDealAccount, 2);
     }
 
     function showEditView() {
@@ -424,15 +443,17 @@
       document.getElementById('view3').classList.remove('hidden');
       document.getElementById('editedNote').value = document.getElementById('conflictNoteContainer').classList.contains('hidden') ? globalOldNote : globalOldNote + '\n' + globalNewNote;
       document.getElementById('editedReason').value = document.getElementById('conflictReasonContainer').classList.contains('hidden') ? globalOldReason : globalOldReason + " / " + globalNewReason;
+      document.getElementById('editedDealAccount').value = globalDealAccountToSave;
     }
 
     function submitEditedNote() {
       const editedNote = document.getElementById('editedNote').value.trim();
       const editedReason = document.getElementById('editedReason').value.trim();
-      saveFinalNoteAndTransfer(editedNote, editedReason, 3);
+      const editedDealAccount = document.getElementById('editedDealAccount').value.trim();
+      saveFinalNoteAndTransfer(editedNote, editedReason, editedDealAccount, 3);
     }
 
-    function saveFinalNoteAndTransfer(finalNote, finalReason, viewNum) {
+    function saveFinalNoteAndTransfer(finalNote, finalReason, finalDealAccount, viewNum) {
       document.getElementById('loading' + viewNum).style.display = 'block';
       const btns = document.getElementById('view' + viewNum).querySelectorAll('button');
       btns.forEach(btn => btn.disabled = true);
@@ -452,7 +473,7 @@
           alert('שגיאה בשמירה');
           doTransferAndClose();
         })
-        .overwriteCustomerNote(defaultName, finalNote, finalReason, globalDealAccountToSave);
+        .overwriteCustomerNote(defaultName, finalNote, finalReason, finalDealAccount);
     }
 
     function doTransferAndClose() {
