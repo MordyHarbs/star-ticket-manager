@@ -86,7 +86,7 @@ function updateFollowUpDate(key, val) {
 
 // on edit auto trigger
 function onEdit(e) {
-  console.log('Entering onEdit', { authMode: e.authMode, user: e.user ? e.user.getEmail() : 'unknown' });
+  console.log('Entering onEdit', { authMode: e.authMode ? e.authMode.toString() : 'unknown', user: e.user ? e.user.getEmail() : 'unknown' });
   const ss = e.source;
   const sh = e.range.getSheet();
   const r = e.range.getRow();
@@ -589,9 +589,9 @@ function onEdit(e) {
     // for case of marking שולם in column L - if סטטוס is אושרה הסבה switch it to סיום טיפול הוסב
     if (c === 12 && val === true) {
       console.log('onEdit mid-step: Processed paid in column L for "דוחות"');
-      col14Value = sh.getRange(r, 14).getValue()
+      const col14Value = sh.getRange(r, 14).getValue();
       if (col14Value === 'אושרה הסבה') {
-        sh.getRange(r, 14).setValue('סיום טיפול הוסב')
+        sh.getRange(r, 14).setValue('סיום טיפול הוסב');
       }
 
     }
