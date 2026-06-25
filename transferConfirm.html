@@ -484,25 +484,10 @@
         msgCopied = true;
       }
       
-      // Show loading indicators and disable buttons
-      ['loading1', 'loading2', 'loading3'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-          el.style.display = 'block';
-          el.innerText = 'מעביר לטיפול המשרד... אנא המתן';
-        }
-      });
-      document.querySelectorAll('button').forEach(b => b.disabled = true);
-
-      google.script.run
-        .withSuccessHandler(function() {
-          google.script.host.close();
-        })
-        .withFailureHandler(function(err) {
-          alert('שגיאה בהעברה: ' + err.message);
-          google.script.host.close();
-        })
-        .runTransferForName(defaultName);
+      google.script.run.runTransferForName(defaultName);
+      setTimeout(function() {
+        google.script.host.close();
+      }, 200);
     }
 
     function doOther() {
