@@ -561,6 +561,10 @@ function onEdit(e) {
     if (c === 1 && typeof val === 'string' && val.startsWith('http')) {
       sh.getRange(r, 1).setFormula(`=HYPERLINK("${val}","AA")`);
     }
+    // for case of adding a value in column C, add 70 to column K (column 11)
+    if (c === 3 && val !== "") {
+      sh.getRange(r, 11).setValue(70);
+    }
     // for case of marking "טופל נשלח בקבוצה"
     if (c === 14 && typeof val === 'string' && val.includes('טופל נשלח בקבוצה')) {
       sh.getRange(r, 15).setValue("נשלח בקבוצה");
