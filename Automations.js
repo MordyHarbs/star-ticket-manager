@@ -134,16 +134,16 @@ function onEdit(e) {
       }
     }
   }
-  // date added in P3
-  if (sh.getName() === 'פירוט נסיעות לפי לקוח' && r === 3 && c === 16) {
-    Logger.log('P3 edited')
+  // date added in Q3
+  if (sh.getName() === 'פירוט נסיעות לפי לקוח' && r === 3 && c === 17) {
+    Logger.log('Q3 edited')
     const key = sh.getRange('C6').getValue();
     Logger.log(`Processing key: ${key}`);
     updateFollowUpDate(key, val)
     e.range.setValue('=LET(erorMessage, "אין תאריך לטיפול",lookupFuncion, VLOOKUP(C6,follow_up_date!A:B,2,FALSE),IFNA(IF(lookupFuncion="",erorMessage,lookupFuncion),erorMessage))')
   }
 
-  // general comment for costomer added in R3
+  // general comment for customer added in N3
   if (sh.getName() === 'פירוט נסיעות לפי לקוח' && r === 3 && c === 14) {
     Logger.log('N3 edited')
     const key = sh.getRange('C6').getValue();
@@ -195,19 +195,19 @@ function onEdit(e) {
     e.range.setValue('=LET(erorMessage, "אין הערות כלליות ללקוח",lookupFuncion, VLOOKUP(C6,follow_up_date!A:D,4,FALSE),IFNA(IF(lookupFuncion="",erorMessage,lookupFuncion),erorMessage))')
   }
 
-  // comment added in Q3
-  if (sh.getName() === 'פירוט נסיעות לפי לקוח' && r === 3 && c === 17) {
-    Logger.log('Q3 edited');
+  // comment added in R3
+  if (sh.getName() === 'פירוט נסיעות לפי לקוח' && r === 3 && c === 18) {
+    Logger.log('R3 edited');
 
     const key = sh.getRange('C6').getValue();
     const followSheet = ss.getSheetByName('follow_up_date');
     const data = followSheet.getRange('A:A').getValues();
 
-    // Always restore VLOOKUP for Q3 after edit
-    sh.getRange('Q3').setFormula(`=IFNA(IF(VLOOKUP($C$6,follow_up_date!A:C,3,false)="","אין הערות לטיפול להצגה",VLOOKUP($C$6,follow_up_date!A:C,3,false)),"אין הערות לטיפול להצגה")
+    // Always restore VLOOKUP for R3 after edit
+    sh.getRange('R3').setFormula(`=IFNA(IF(VLOOKUP($C$6,follow_up_date!A:C,3,false)="","אין הערות לטיפול להצגה",VLOOKUP($C$6,follow_up_date!A:C,3,false)),"אין הערות לטיפול להצגה")
     `);
 
-    // If Q3 is cleared → delete logic based on whether column B has value
+    // If R3 is cleared → delete logic based on whether column B has value
     if (val === '') {
       for (let i = 0; i < data.length; i++) {
         if (data[i][0] === key) {
@@ -366,8 +366,8 @@ function onEdit(e) {
     return;
   }
 
-  // ===== P-column logic (col 16) =====
-  if (sh.getName() === 'פירוט נסיעות לפי לקוח' && c === 16 && r >= 6) {
+  // ===== Q-column logic (col 17) =====
+  if (sh.getName() === 'פירוט נסיעות לפי לקוח' && c === 17 && r >= 6) {
     if (!val) return;
     const newVal = val;
     e.range.clearContent();
@@ -448,8 +448,8 @@ function onEdit(e) {
     return;
   }
 
-  // ===== O-column logic (col 15) =====
-  if (sh.getName() === 'פירוט נסיעות לפי לקוח' && c === 15 && r >= 6) {
+  // ===== P-column logic (col 16) =====
+  if (sh.getName() === 'פירוט נסיעות לפי לקוח' && c === 16 && r >= 6) {
     const newVal = val;
     e.range.clearContent();
     Utilities.sleep(500);
@@ -476,8 +476,8 @@ function onEdit(e) {
     return;
   }
 
-  // ===== Q-column logic (col 17) =====
-  if (sh.getName() === 'פירוט נסיעות לפי לקוח' && c === 17 && r >= 6) {
+  // ===== R-column logic (col 18) =====
+  if (sh.getName() === 'פירוט נסיעות לפי לקוח' && c === 18 && r >= 6) {
     if (!val) return;
     const qVal = val;
     e.range.clearContent();
