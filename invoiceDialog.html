@@ -173,17 +173,10 @@
       btn.disabled = true;
       btn.innerText = 'מעדכן...';
 
-      google.script.run
-        .withSuccessHandler(function() {
-          google.script.host.close();
-        })
-        .withFailureHandler(function(err) {
-          alert('שגיאה: ' + (err.message || err));
-          submitted = false;
-          btn.disabled = false;
-          btn.innerText = 'אישור';
-        })
-        .runMarkAllForName(clientName, invoiceText);
+      google.script.run.runMarkAllForName(clientName, invoiceText);
+      setTimeout(function() {
+        google.script.host.close();
+      }, 150);
     }
 
     function cancel() {

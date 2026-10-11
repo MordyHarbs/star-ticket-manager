@@ -273,11 +273,14 @@ function runMarkAllForName(selectedName, invoiceNumber) {
   const names = Array.isArray(selectedName) ? selectedName : [selectedName];
 
   names.forEach(name => {
-    ss.toast(`מסמן כעת כשולם את כל החובות של:  ⭐ ⭐ ${name} ⭐ ⭐ `, "סימון כשולם");
+    ss.toast(`מסמן כעת כשולם את כל החובות של:  ⭐ ⭐ ${name} ⭐ ⭐ `, "סימון כשולם", 4);
+    SpreadsheetApp.flush();
     markAllForName(name, ss, invoiceNumber);
-    ss.toast(`כל החובות של הלקוח הבא: ⭐ ⭐ ${name} ⭐ ⭐ סומנו כשולם`, "סימון כשולם");
+    SpreadsheetApp.flush();
+    ss.toast(`כל החובות של הלקוח הבא: ⭐ ⭐ ${name} ⭐ ⭐ סומנו כשולם`, "סימון כשולם", 4);
   });
-  ss.toast(`כל הלקוחות שנבחרו סומנו כשולם`, "סימון כשולם");
+  SpreadsheetApp.flush();
+  ss.toast(`כל הלקוחות שנבחרו סומנו כשולם`, "סימון כשולם", 4);
   console.log('Exiting runMarkAllForName');
 }
 
