@@ -219,7 +219,7 @@ function markAllAsPaid() {
   console.log('Entering markAllAsPaid');
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sh = ss.getSheetByName('פירוט נסיעות לפי לקוח');
-  const defaultName = sh.getRange(6, 3).getValue()
+  const defaultName = sh.getRange(6, 3).getValue();
 
   const ui = SpreadsheetApp.getUi();
   const response = ui.alert(
@@ -236,14 +236,39 @@ function markAllAsPaid() {
     html.defaultName = defaultName;
     const dialog = html.evaluate()
       .setWidth(450)
-      .setHeight(420)
+      .setHeight(480)
       .setTitle("בחירת שם לסימון 'שולם'");
 
     ss.show(dialog);
   }
   else if (response == ui.Button.YES) {
-    console.log('markAllAsPaid mid-step: User selected YES, running markAllForName');
-    runMarkAllForName(defaultName)
+    console.log('markAllAsPaid mid-step: User selected YES, asking for invoice number');
+    const promptResponse = ui.prompt(
+      "מספר מסמך",
+      "נא להזין מספר מסמך / חשבונית:",
+      ui.ButtonSet.OK_CANCEL
+    );
+
+    if (promptResponse.getSelectedButton() === ui.Button.OK) {
+      const invoiceNumber = promptResponse.getResponseText().trim();
+      if (!invoiceNumber) {
+        const confirmWithoutInvoice = ui.alert(
+          "לא הוזן מספר מסמך",
+          "לא הוזן מספר מסמך. האם להמשיך ללא מספר מסמך?",
+          ui.ButtonSet.YES_NO
+        );
+        if (confirmWithoutInvoice !== ui.Button.YES) {
+          console.log('markAllAsPaid mid-step: User cancelled after empty invoice prompt');
+          ui.alert("הפעולה בוטלה.");
+          return;
+        }
+      }
+      console.log('markAllAsPaid mid-step: User confirmed, running markAllForName', { invoiceNumber });
+      runMarkAllForName(defaultName, invoiceNumber);
+    } else {
+      console.log('markAllAsPaid mid-step: User cancelled invoice prompt');
+      ui.alert("הפעולה בוטלה.");
+    }
   }
   else {
     console.log('markAllAsPaid mid-step: User cancelled');
@@ -252,8 +277,8 @@ function markAllAsPaid() {
   console.log('Exiting markAllAsPaid');
 }
 
-function runMarkAllForName(selectedName) {
-  console.log('Entering runMarkAllForName', { selectedName });
+function runMarkAllForName(selectedName, invoiceNumber) {
+  console.log('Entering runMarkAllForName', { selectedName, invoiceNumber });
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
   Logger.log("🟢 Running markAllAsPaid...");
@@ -263,7 +288,7 @@ function runMarkAllForName(selectedName) {
 
   names.forEach(name => {
     ss.toast(`מסמן כעת כשולם את כל החובות של:  ⭐ ⭐ ${name} ⭐ ⭐ `, "סימון כשולם");
-    markAllForName(name, ss);
+    markAllForName(name, ss, invoiceNumber);
     ss.toast(`כל החובות של הלקוח הבא: ⭐ ⭐ ${name} ⭐ ⭐ סומנו כשולם`, "סימון כשולם");
   });
   ss.toast(`כל הלקוחות שנבחרו סומנו כשולם`, "סימון כשולם");
@@ -379,19 +404,31 @@ function calculateDebtForName(name, ss) {
   return totalDebt;
 }
 
-function markAllForName(name, ss) {
+function appendInvoiceComment(existingComment, invoiceComment) {
+  if (!invoiceComment) return existingComment;
+  const existingStr = existingComment != null ? String(existingComment).trim() : '';
+  if (!existingStr) return invoiceComment;
+  if (existingStr.includes(invoiceComment)) return existingStr;
+  return `${existingStr}\n${invoiceComment}`;
+}
+
+function markAllForName(name, ss, invoiceNumber) {
+  console.log('Entering markAllForName', { name, invoiceNumber });
   const normName = normalizeHebrew(name);
+  const invoiceComment = invoiceNumber && String(invoiceNumber).trim() !== ''
+    ? `מספר מסמך: ${String(invoiceNumber).trim()}`
+    : '';
 
   // -------- דוחות --------
   let sh = ss.getSheetByName('דוחות');
   let last = sh.getLastRow();
   if (last >= 2) {
-    const data = sh.getRange(2, 2, last - 1, 13).getValues();
-    // columns B..N (13 columns)
+    const data = sh.getRange(2, 2, last - 1, 16).getValues();
+    // columns B..Q (16 columns: B=0, ..., L=10, M=11, N=12, ..., Q=15)
     for (let i = 0; i < data.length; i++) {
       const rowName = normalizeHebrew(data[i][0]); // col B
       const total = Number(data[i][11]); // col M
-      const colN = data[i][13 - 1]; // col N (index 12)
+      const colN = data[i][12]; // col N
       if (rowName === normName) {
         const tr = i + 2;
         
@@ -401,6 +438,13 @@ function markAllForName(name, ss) {
 
         if (total != 0) {
           sh.getRange(tr, 12).setValue(true); // L = true
+          if (invoiceComment) {
+            const currentComment = data[i][15]; // col Q (17)
+            const newComment = appendInvoiceComment(currentComment, invoiceComment);
+            if (newComment !== currentComment) {
+              sh.getRange(tr, 17).setValue(newComment);
+            }
+          }
         }
       }
     }
@@ -410,14 +454,21 @@ function markAllForName(name, ss) {
   sh = ss.getSheetByName('כביש 6/מנהרות');
   last = sh.getLastRow();
   if (last >= 2) {
-    const data = sh.getRange(2, 5, last - 1, 7).getValues();
-    // columns E..K (7 columns)
+    const data = sh.getRange(2, 5, last - 1, 9).getValues();
+    // columns E..M (9 columns: E=0, ..., K=6, L=7, M=8)
     for (let i = 0; i < data.length; i++) {
       const rowName = normalizeHebrew(data[i][0]); // E
       const total = Number(data[i][6]); // K (index 6 in this slice)
       if (rowName === normName && total != 0) {
         const tr = i + 2;
         sh.getRange(tr, 12).setValue('שולם'); // L
+        if (invoiceComment) {
+          const currentComment = data[i][8]; // col M (13)
+          const newComment = appendInvoiceComment(currentComment, invoiceComment);
+          if (newComment !== currentComment) {
+            sh.getRange(tr, 13).setValue(newComment);
+          }
+        }
       }
     }
   }
@@ -426,14 +477,21 @@ function markAllForName(name, ss) {
   sh = ss.getSheetByName('חוצה צפון/נתיב מהיר');
   last = sh.getLastRow();
   if (last >= 2) {
-    const data = sh.getRange(2, 5, last - 1, 5).getValues();
-    // columns E..I (5 columns)
+    const data = sh.getRange(2, 5, last - 1, 7).getValues();
+    // columns E..K (7 columns: E=0, ..., I=4, J=5, K=6)
     for (let i = 0; i < data.length; i++) {
       const rowName = normalizeHebrew(data[i][0]); // E
       const total = Number(data[i][4]); // I (index 4)
       if (rowName === normName && total != 0) {
         const tr = i + 2;
         sh.getRange(tr, 10).setValue('שולם'); // J
+        if (invoiceComment) {
+          const currentComment = data[i][6]; // col K (11)
+          const newComment = appendInvoiceComment(currentComment, invoiceComment);
+          if (newComment !== currentComment) {
+            sh.getRange(tr, 11).setValue(newComment);
+          }
+        }
       }
     }
   }
@@ -442,9 +500,20 @@ function markAllForName(name, ss) {
   if (sh) { // Safety check to ensure sheet exists
     last = sh.getLastRow();
     if (last >= 2) {
-      // Get columns A through E
+      const numCols = Math.max(5, sh.getLastColumn());
+      const headers = sh.getRange(1, 1, 1, numCols).getValues()[0];
+      let commentCol = 0;
+      for (let c = 0; c < headers.length; c++) {
+        const h = String(headers[c] || '').trim();
+        if (h.includes('הער')) {
+          commentCol = c + 1;
+          break;
+        }
+      }
+
+      // Get columns 1 through numCols
       // Column A (1) = Name, Column E (5) = Value
-      const data = sh.getRange(2, 1, last - 1, 5).getValues();
+      const data = sh.getRange(2, 1, last - 1, numCols).getValues();
 
       for (let i = 0; i < data.length; i++) {
         const rowName = normalizeHebrew(data[i][0]); // Column A (index 0)
@@ -453,11 +522,19 @@ function markAllForName(name, ss) {
         if (rowName === normName && total != 0) {
           const tr = i + 2; // Real row index in the sheet
           sh.getRange(tr, 4).setValue(true); // Column D (4) = true
+
+          if (invoiceComment && commentCol > 0) {
+            const currentComment = data[i][commentCol - 1];
+            const newComment = appendInvoiceComment(currentComment, invoiceComment);
+            if (newComment !== currentComment) {
+              sh.getRange(tr, commentCol).setValue(newComment);
+            }
+          }
         }
       }
     }
   }
-
+  console.log('Exiting markAllForName');
 }
 
 function processPaymentRow(sh, r, ss) {

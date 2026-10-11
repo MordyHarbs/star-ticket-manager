@@ -127,7 +127,13 @@
             debtMap = data.debtMap;
             populateList();
           }).getAllClientsWithDebts();
+        } else if (action === 'markOfficePaid') {
+          google.script.run.withSuccessHandler(clients => {
+            allClients = clients;
+            populateList();
+          }).getAllClients();
         } else {
+          document.getElementById('invoiceContainer').style.display = 'flex';
           google.script.run.withSuccessHandler(clients => {
             allClients = clients;
             populateList();
@@ -230,7 +236,9 @@
     google.script.run.runMarkOfficeForName(selectedNames);
     setTimeout(function() { google.script.host.close(); }, 200);
   } else {
-    google.script.run.runMarkAllForName(selectedNames);
+    var invoiceInput = document.getElementById('invoiceInput');
+    var invoiceNumber = invoiceInput ? invoiceInput.value.trim() : '';
+    google.script.run.runMarkAllForName(selectedNames, invoiceNumber);
     setTimeout(function() { google.script.host.close(); }, 200);
   }
 }
@@ -280,6 +288,11 @@
     <div id="selectedBox" class="selected-box">
       <strong>נבחרו:</strong>
       <div id="selectedList"></div>
+    </div>
+
+    <div id="invoiceContainer" style="margin-top: 16px; display: none; align-items: center; gap: 8px;">
+      <label for="invoiceInput" style="font-size: 14px; font-weight: 500;">מספר מסמך:</label>
+      <input type="text" id="invoiceInput" placeholder="הזן מספר מסמך / חשבונית..." tabindex="2" onkeydown="if(event.key === 'Enter') submit();" style="flex-grow: 1; font-size: 14px; padding: 6px; border: 1px solid #dadce0; border-radius: 4px;">
     </div>
 
     <div id="reasonContainer" style="margin-top: 16px; display: none; align-items: center; gap: 8px;">
