@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <base target="_top">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      padding: 18px 22px;
+      font-family: "Google Sans", Arial, sans-serif;
+      background: #fff;
+      color: #202124;
+      direction: rtl;
+    }
+
+    .header {
+      margin-bottom: 14px;
+    }
+
+    .title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #202124;
+    }
+
+    .customer-name {
+      font-size: 13px;
+      color: #1a73e8;
+      font-weight: 500;
+      margin-top: 3px;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #5f6368;
+      margin-bottom: 6px;
+    }
+
+    select, input[type="text"] {
+      width: 100%;
+      font-size: 14px;
+      padding: 8px 10px;
+      border: 1px solid #dadce0;
+      border-radius: 6px;
+      background: #fff;
+      color: #202124;
+      font-family: inherit;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    select:focus, input[type="text"]:focus {
+      outline: none;
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 1px #1a73e8;
+    }
+
+    .footer {
+      margin-top: 20px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    button {
+      padding: 8px 20px;
+      font-size: 13px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+      font-weight: 500;
+      transition: background 0.15s;
+    }
+
+    .btn-submit {
+      background: #1a73e8;
+      color: white;
+    }
+
+    .btn-submit:hover {
+      background: #1558b0;
+    }
+
+    .btn-cancel {
+      background: #f1f3f4;
+      color: #5f6368;
+    }
+
+    .btn-cancel:hover {
+      background: #e2e3e4;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="title">הזנת פרטי מסמך לתשלום</div>
+    <div class="customer-name">עבור: <?= name ?></div>
+  </div>
+
+  <div class="form-group">
+    <label for="docType">סוג מסמך:</label>
+    <select id="docType" tabindex="1">
+      <option value="חשבונית מס קבלה" selected>חשבונית מס קבלה</option>
+      <option value="חשבונית מס">חשבונית מס</option>
+      <option value="חשבון עסקה">חשבון עסקה</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="docNumber">מספר מסמך:</label>
+    <input
+      type="text"
+      id="docNumber"
+      placeholder="הזן מספר מסמך..."
+      tabindex="2"
+      autofocus
+      autocomplete="off"
+    >
+  </div>
+
+  <div class="footer">
+    <button type="button" class="btn-cancel" onclick="cancel()" tabindex="4">ביטול</button>
+    <button type="button" class="btn-submit" id="btnSubmit" onclick="submit()" tabindex="3">אישור</button>
+  </div>
+
+  <script>
+    var clientName = "<?= name ?>";
+    var submitted = false;
+
+    function initFocus() {
+      var inp = document.getElementById('docNumber');
+      if (inp) {
+        inp.focus();
+        inp.select();
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', initFocus);
+    window.onload = initFocus;
+
+    document.getElementById('docNumber').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        submit();
+      }
+    });
+
+    function submit() {
+      if (submitted) return;
+      var docNumber = document.getElementById('docNumber').value.trim();
+      if (!docNumber) {
+        alert('נא להזין מספר מסמך');
+        document.getElementById('docNumber').focus();
+        return;
+      }
+
+      var docType = document.getElementById('docType').value;
+      var invoiceText = docType + ' ' + docNumber;
+
+      submitted = true;
+      var btn = document.getElementById('btnSubmit');
+      btn.disabled = true;
+      btn.innerText = 'מעדכן...';
+
+      google.script.run
+        .withSuccessHandler(function() {
+          google.script.host.close();
+        })
+        .withFailureHandler(function(err) {
+          alert('שגיאה: ' + (err.message || err));
+          submitted = false;
+          btn.disabled = false;
+          btn.innerText = 'אישור';
+        })
+        .runMarkAllForName(clientName, invoiceText);
+    }
+
+    function cancel() {
+      google.script.host.close();
+    }
+  </script>
+</body>
+</html>

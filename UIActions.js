@@ -242,39 +242,25 @@ function markAllAsPaid() {
     ss.show(dialog);
   }
   else if (response == ui.Button.YES) {
-    console.log('markAllAsPaid mid-step: User selected YES, asking for invoice number');
-    const promptResponse = ui.prompt(
-      "מספר מסמך",
-      "נא להזין מספר מסמך / חשבונית:",
-      ui.ButtonSet.OK_CANCEL
-    );
-
-    if (promptResponse.getSelectedButton() === ui.Button.OK) {
-      const invoiceNumber = promptResponse.getResponseText().trim();
-      if (!invoiceNumber) {
-        const confirmWithoutInvoice = ui.alert(
-          "לא הוזן מספר מסמך",
-          "לא הוזן מספר מסמך. האם להמשיך ללא מספר מסמך?",
-          ui.ButtonSet.YES_NO
-        );
-        if (confirmWithoutInvoice !== ui.Button.YES) {
-          console.log('markAllAsPaid mid-step: User cancelled after empty invoice prompt');
-          ui.alert("הפעולה בוטלה.");
-          return;
-        }
-      }
-      console.log('markAllAsPaid mid-step: User confirmed, running markAllForName', { invoiceNumber });
-      runMarkAllForName(defaultName, invoiceNumber);
-    } else {
-      console.log('markAllAsPaid mid-step: User cancelled invoice prompt');
-      ui.alert("הפעולה בוטלה.");
-    }
+    console.log('markAllAsPaid mid-step: User selected YES, opening invoiceDialog');
+    openInvoiceDialog(defaultName);
   }
   else {
     console.log('markAllAsPaid mid-step: User cancelled');
     ui.alert("הפעולה בוטלה.");
   }
   console.log('Exiting markAllAsPaid');
+}
+
+function openInvoiceDialog(name) {
+  const template = HtmlService.createTemplateFromFile("invoiceDialog");
+  template.name = name;
+  const dialog = template.evaluate()
+    .setWidth(380)
+    .setHeight(270)
+    .setTitle("פרטי מסמך לתשלום");
+
+  SpreadsheetApp.getUi().showModalDialog(dialog, "פרטי מסמך לתשלום");
 }
 
 function runMarkAllForName(selectedName, invoiceNumber) {
@@ -412,11 +398,11 @@ function appendInvoiceComment(existingComment, invoiceComment) {
   return `${existingStr}\n${invoiceComment}`;
 }
 
-function markAllForName(name, ss, invoiceNumber) {
-  console.log('Entering markAllForName', { name, invoiceNumber });
+function markAllForName(name, ss, invoiceText) {
+  console.log('Entering markAllForName', { name, invoiceText });
   const normName = normalizeHebrew(name);
-  const invoiceComment = invoiceNumber && String(invoiceNumber).trim() !== ''
-    ? `מספר מסמך: ${String(invoiceNumber).trim()}`
+  const invoiceComment = invoiceText && String(invoiceText).trim() !== ''
+    ? String(invoiceText).trim()
     : '';
 
   // -------- דוחות --------
