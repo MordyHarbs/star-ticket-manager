@@ -104,7 +104,7 @@
 </head>
 <body>
   <div class="header">
-    <div class="title">הזנת פרטי מסמך לתשלום</div>
+    <div class="title"><?= typeof action !== 'undefined' && action === 'markOffice' ? 'הזנת פרטי מסמך לתשלום (משרד)' : 'הזנת פרטי מסמך לתשלום' ?></div>
     <div class="customer-name">עבור: <?= name ?></div>
   </div>
 
@@ -136,6 +136,7 @@
 
   <script>
     var clientName = "<?= name ?>";
+    var action = "<?= typeof action !== 'undefined' ? action : 'markAll' ?>";
     var submitted = false;
 
     function initFocus() {
@@ -173,7 +174,11 @@
       btn.disabled = true;
       btn.innerText = 'מעדכן...';
 
-      google.script.run.runMarkAllForName(clientName, invoiceText);
+      if (action === 'markOffice') {
+        google.script.run.runMarkOfficeForName(clientName, invoiceText);
+      } else {
+        google.script.run.runMarkAllForName(clientName, invoiceText);
+      }
       setTimeout(function() {
         google.script.host.close();
       }, 150);

@@ -128,6 +128,7 @@
             populateList();
           }).getAllClientsWithDebts();
         } else if (action === 'markOfficePaid') {
+          document.getElementById('invoiceContainer').style.display = 'flex';
           google.script.run.withSuccessHandler(clients => {
             allClients = clients;
             populateList();
@@ -233,9 +234,27 @@
     google.script.run.runTransferForName(selectedNames);
     setTimeout(function() { google.script.host.close(); }, 200);
   } else if (action === 'markOfficePaid') {
-    google.script.run.runMarkOfficeForName(selectedNames);
+    if (!selectedNames || selectedNames.length === 0) {
+      alert('נא לבחור לפחות לקוח אחד');
+      return;
+    }
+    var invoiceInput = document.getElementById('invoiceInput');
+    var docNumber = invoiceInput ? invoiceInput.value.trim() : '';
+    if (!docNumber) {
+      alert('נא להזין מספר מסמך');
+      if (invoiceInput) invoiceInput.focus();
+      return;
+    }
+    var docTypeSelect = document.getElementById('docTypeSelect');
+    var docType = docTypeSelect ? docTypeSelect.value : 'חשבונית מס קבלה';
+    var invoiceText = docType + ' ' + docNumber;
+    google.script.run.runMarkOfficeForName(selectedNames, invoiceText);
     setTimeout(function() { google.script.host.close(); }, 200);
   } else {
+    if (!selectedNames || selectedNames.length === 0) {
+      alert('נא לבחור לפחות לקוח אחד');
+      return;
+    }
     var invoiceInput = document.getElementById('invoiceInput');
     var docNumber = invoiceInput ? invoiceInput.value.trim() : '';
     if (!docNumber) {

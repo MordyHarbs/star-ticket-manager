@@ -85,7 +85,7 @@
     function doYes() {
       if (submitted) return;
       submitted = true;
-      document.getElementById('btnYes').innerText = 'מעדכן...';
+      document.getElementById('btnYes').innerText = 'טוען...';
       google.script.run
         .withSuccessHandler(function() {
           google.script.host.close();
@@ -94,7 +94,7 @@
           alert("שגיאה: " + err.message);
           google.script.host.close();
         })
-        .runMarkOfficeForName(defaultName);
+        .openOfficeInvoiceDialog(defaultName);
     }
 
     function doOther() {

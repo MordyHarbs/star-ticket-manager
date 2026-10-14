@@ -252,15 +252,21 @@ function markAllAsPaid() {
   console.log('Exiting markAllAsPaid');
 }
 
-function openInvoiceDialog(name) {
+function openInvoiceDialog(name, action) {
   const template = HtmlService.createTemplateFromFile("invoiceDialog");
   template.name = name;
+  template.action = action || 'markAll';
+  const title = (action === 'markOffice') ? "פרטי מסמך לתשלום (משרד)" : "פרטי מסמך לתשלום";
   const dialog = template.evaluate()
     .setWidth(380)
     .setHeight(270)
-    .setTitle("פרטי מסמך לתשלום");
+    .setTitle(title);
 
-  SpreadsheetApp.getUi().showModalDialog(dialog, "פרטי מסמך לתשלום");
+  SpreadsheetApp.getUi().showModalDialog(dialog, title);
+}
+
+function openOfficeInvoiceDialog(name) {
+  openInvoiceDialog(name, 'markOffice');
 }
 
 function runMarkAllForName(selectedName, invoiceNumber) {
@@ -845,12 +851,13 @@ function openNamePickerForOfficeMark(defaultName) {
   html.action = 'markOfficePaid';
   const dialog = html.evaluate()
     .setWidth(450)
-    .setHeight(420)
+    .setHeight(480)
     .setTitle("בחירת שם לסימון 'שולם' (משרד)");
   SpreadsheetApp.getUi().showModalDialog(dialog, "בחירת שם לסימון 'שולם' (משרד)");
 }
 
-function runMarkOfficeForName(selectedName) {
+function runMarkOfficeForName(selectedName, invoiceNumber) {
+  console.log('Entering runMarkOfficeForName', { selectedName, invoiceNumber });
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
   Logger.log("🟢 Running markOfficeAsPaid...");
@@ -859,28 +866,43 @@ function runMarkOfficeForName(selectedName) {
   const names = Array.isArray(selectedName) ? selectedName : [selectedName];
 
   names.forEach(name => {
-    ss.toast(`מסמן כעת כשולם את חובות המשרד של:  ⭐ ⭐ ${name} ⭐ ⭐ `, "סימון כשולם (משרד)");
-    markOfficeForName(name, ss);
-    ss.toast(`חובות המשרד של הלקוח הבא: ⭐ ⭐ ${name} ⭐ ⭐ סומנו כשולם`, "סימון כשולם (משרד)");
+    ss.toast(`מסמן כעת כשולם את חובות המשרד של:  ⭐ ⭐ ${name} ⭐ ⭐ `, "סימון כשולם (משרד)", 4);
+    SpreadsheetApp.flush();
+    markOfficeForName(name, ss, invoiceNumber);
+    SpreadsheetApp.flush();
+    ss.toast(`חובות המשרד של הלקוח הבא: ⭐ ⭐ ${name} ⭐ ⭐ סומנו כשולם`, "סימון כשולם (משרד)", 4);
   });
-  ss.toast(`כל הלקוחות שנבחרו סומנו כשולם (משרד)`, "סימון כשולם (משרד)");
+  SpreadsheetApp.flush();
+  ss.toast(`כל הלקוחות שנבחרו סומנו כשולם (משרד)`, "סימון כשולם (משרד)", 4);
+  console.log('Exiting runMarkOfficeForName');
 }
 
-function markOfficeForName(name, ss) {
+function markOfficeForName(name, ss, invoiceText) {
+  console.log('Entering markOfficeForName', { name, invoiceText });
   const normName = normalizeHebrew(name);
+  const invoiceComment = invoiceText && String(invoiceText).trim() !== ''
+    ? String(invoiceText).trim()
+    : '';
 
   // -------- תשלומים --------
   let sh = ss.getSheetByName('תשלומים');
   if (sh) {
     let last = sh.getLastRow();
     if (last >= 2) {
-      const data = sh.getRange(2, 1, last - 1, 4).getValues(); // A to D
+      const data = sh.getRange(2, 1, last - 1, 5).getValues(); // A to E (Col E = 5)
       for (let i = 0; i < data.length; i++) {
         const rowName = normalizeHebrew(data[i][0]); // Col A
         const amount = Number(data[i][2]); // Col C
         const isHandled = data[i][3]; // Col D
         if (rowName === normName && amount !== 0 && isHandled !== true) {
           sh.getRange(i + 2, 4).setValue(true); // Col D
+          if (invoiceComment) {
+            const currentComment = data[i][4]; // Col E (5)
+            const newComment = appendInvoiceComment(currentComment, invoiceComment);
+            if (newComment !== currentComment) {
+              sh.getRange(i + 2, 5).setValue(newComment);
+            }
+          }
         }
       }
     }
@@ -898,6 +920,13 @@ function markOfficeForName(name, ss) {
         const isHandled = data[i][8]; // Col I
         if (rowName === normName && amount !== 0 && isHandled !== true) {
           sh.getRange(i + 2, 9).setValue(true); // Col I
+          if (invoiceComment) {
+            const currentComment = data[i][7]; // Col H (8)
+            const newComment = appendInvoiceComment(currentComment, invoiceComment);
+            if (newComment !== currentComment) {
+              sh.getRange(i + 2, 8).setValue(newComment);
+            }
+          }
         }
       }
     }
@@ -918,6 +947,7 @@ function markOfficeForName(name, ss) {
       }
     }
   }
+  console.log('Exiting markOfficeForName');
 }
 
 // =======================================================================
