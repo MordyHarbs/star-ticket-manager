@@ -110,15 +110,16 @@
 
   <div class="form-group">
     <label for="docType">סוג מסמך:</label>
-    <select id="docType" tabindex="1">
+    <select id="docType" tabindex="1" onchange="handleDocTypeChange()">
       <option value="חשבונית מס קבלה" selected>חשבונית מס קבלה</option>
       <option value="חשבונית מס">חשבונית מס</option>
       <option value="חשבון עסקה">חשבון עסקה</option>
+      <option value="הערה">הערה</option>
     </select>
   </div>
 
   <div class="form-group">
-    <label for="docNumber">מספר מסמך:</label>
+    <label for="docNumber" id="docNumberLabel">מספר מסמך:</label>
     <input
       type="text"
       id="docNumber"
@@ -138,6 +139,19 @@
     var clientName = "<?= name ?>";
     var action = "<?= typeof action !== 'undefined' ? action : 'markAll' ?>";
     var submitted = false;
+
+    function handleDocTypeChange() {
+      var docType = document.getElementById('docType').value;
+      var isNote = (docType === 'הערה');
+      var label = document.getElementById('docNumberLabel');
+      var inp = document.getElementById('docNumber');
+      if (label) {
+        label.textContent = isNote ? 'הערה:' : 'מספר מסמך:';
+      }
+      if (inp) {
+        inp.placeholder = isNote ? 'הזן הערה...' : 'הזן מספר מסמך...';
+      }
+    }
 
     function initFocus() {
       var inp = document.getElementById('docNumber');
@@ -159,15 +173,16 @@
 
     function submit() {
       if (submitted) return;
+      var docType = document.getElementById('docType').value;
+      var isNote = (docType === 'הערה');
       var docNumber = document.getElementById('docNumber').value.trim();
       if (!docNumber) {
-        alert('נא להזין מספר מסמך');
+        alert(isNote ? 'נא להזין הערה' : 'נא להזין מספר מסמך');
         document.getElementById('docNumber').focus();
         return;
       }
 
-      var docType = document.getElementById('docType').value;
-      var invoiceText = docType + ' ' + docNumber;
+      var invoiceText = isNote ? docNumber : (docType + ' ' + docNumber);
 
       submitted = true;
       var btn = document.getElementById('btnSubmit');

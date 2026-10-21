@@ -238,16 +238,17 @@
       alert('נא לבחור לפחות לקוח אחד');
       return;
     }
+    var docTypeSelect = document.getElementById('docTypeSelect');
+    var docType = docTypeSelect ? docTypeSelect.value : 'חשבונית מס קבלה';
+    var isNote = (docType === 'הערה');
     var invoiceInput = document.getElementById('invoiceInput');
     var docNumber = invoiceInput ? invoiceInput.value.trim() : '';
     if (!docNumber) {
-      alert('נא להזין מספר מסמך');
+      alert(isNote ? 'נא להזין הערה' : 'נא להזין מספר מסמך');
       if (invoiceInput) invoiceInput.focus();
       return;
     }
-    var docTypeSelect = document.getElementById('docTypeSelect');
-    var docType = docTypeSelect ? docTypeSelect.value : 'חשבונית מס קבלה';
-    var invoiceText = docType + ' ' + docNumber;
+    var invoiceText = isNote ? docNumber : (docType + ' ' + docNumber);
     google.script.run.runMarkOfficeForName(selectedNames, invoiceText);
     setTimeout(function() { google.script.host.close(); }, 200);
   } else {
@@ -255,20 +256,35 @@
       alert('נא לבחור לפחות לקוח אחד');
       return;
     }
+    var docTypeSelect = document.getElementById('docTypeSelect');
+    var docType = docTypeSelect ? docTypeSelect.value : 'חשבונית מס קבלה';
+    var isNote = (docType === 'הערה');
     var invoiceInput = document.getElementById('invoiceInput');
     var docNumber = invoiceInput ? invoiceInput.value.trim() : '';
     if (!docNumber) {
-      alert('נא להזין מספר מסמך');
+      alert(isNote ? 'נא להזין הערה' : 'נא להזין מספר מסמך');
       if (invoiceInput) invoiceInput.focus();
       return;
     }
-    var docTypeSelect = document.getElementById('docTypeSelect');
-    var docType = docTypeSelect ? docTypeSelect.value : 'חשבונית מס קבלה';
-    var invoiceText = docType + ' ' + docNumber;
+    var invoiceText = isNote ? docNumber : (docType + ' ' + docNumber);
     google.script.run.runMarkAllForName(selectedNames, invoiceText);
     setTimeout(function() { google.script.host.close(); }, 200);
   }
 }
+
+      function handleDocTypeChange() {
+        var docTypeSelect = document.getElementById('docTypeSelect');
+        var docType = docTypeSelect ? docTypeSelect.value : '';
+        var isNote = (docType === 'הערה');
+        var label = document.getElementById('invoiceInputLabel');
+        var input = document.getElementById('invoiceInput');
+        if (label) {
+          label.textContent = isNote ? 'הערה:' : 'מספר מסמך:';
+        }
+        if (input) {
+          input.placeholder = isNote ? 'הזן הערה...' : 'הזן מספר מסמך...';
+        }
+      }
 
       function cancel() {
         google.script.host.close();
@@ -320,14 +336,15 @@
     <div id="invoiceContainer" style="margin-top: 16px; display: none; flex-direction: column; gap: 8px;">
       <div style="display: flex; align-items: center; gap: 8px;">
         <label for="docTypeSelect" style="font-size: 14px; font-weight: 500; min-width: 70px;">סוג מסמך:</label>
-        <select id="docTypeSelect" tabindex="2" style="flex-grow: 1; font-size: 14px; padding: 6px; border: 1px solid #dadce0; border-radius: 4px; background: #fff;">
+        <select id="docTypeSelect" tabindex="2" onchange="handleDocTypeChange()" style="flex-grow: 1; font-size: 14px; padding: 6px; border: 1px solid #dadce0; border-radius: 4px; background: #fff;">
           <option value="חשבונית מס קבלה" selected>חשבונית מס קבלה</option>
           <option value="חשבונית מס">חשבונית מס</option>
           <option value="חשבון עסקה">חשבון עסקה</option>
+          <option value="הערה">הערה</option>
         </select>
       </div>
       <div style="display: flex; align-items: center; gap: 8px;">
-        <label for="invoiceInput" style="font-size: 14px; font-weight: 500; min-width: 70px;">מספר מסמך:</label>
+        <label for="invoiceInput" id="invoiceInputLabel" style="font-size: 14px; font-weight: 500; min-width: 70px;">מספר מסמך:</label>
         <input type="text" id="invoiceInput" placeholder="הזן מספר מסמך..." tabindex="3" onkeydown="if(event.key === 'Enter') submit();" style="flex-grow: 1; font-size: 14px; padding: 6px; border: 1px solid #dadce0; border-radius: 4px;">
       </div>
     </div>
