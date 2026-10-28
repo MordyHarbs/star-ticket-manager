@@ -39,6 +39,7 @@ function getSourcesTable() {
 function updateFollowUpDate(key, val) {
   console.log('Entering updateFollowUpDate', { key, val });
   Logger.log(`saving date from menu, date selected is: ${val}, name is: ${key}`);
+  const normKey = normalizeHebrew(key);
   const ss = SpreadsheetApp.getActive();
   const followSheet = ss.getSheetByName('follow_up_date');
   const data = followSheet.getRange('A:A').getValues();
@@ -47,7 +48,7 @@ function updateFollowUpDate(key, val) {
 
   // Update existing row
   for (let i = 0; i < data.length; i++) {
-    if (data[i][0] === key) {
+    if (data[i][0] && normalizeHebrew(data[i][0]) === normKey) {
       console.log('updateFollowUpDate: Found key in followSheet', { row: i + 1 });
       if (val === '') {
         // Clearing logic
@@ -137,69 +138,70 @@ function onEdit(e) {
   // date added in Q3
   if (sh.getName() === 'פירוט נסיעות לפי לקוח' && r === 3 && c === 17) {
     Logger.log('Q3 edited')
-    const key = sh.getRange('C6').getValue();
+    const rawKey = sh.getRange('C6').getValue() || sh.getRange('C5').getValue();
+    const key = normalizeHebrew(rawKey);
     Logger.log(`Processing key: ${key}`);
     updateFollowUpDate(key, val)
-    e.range.setValue('=LET(erorMessage, "אין תאריך לטיפול",lookupFuncion, VLOOKUP(C6,follow_up_date!A:B,2,FALSE),IFNA(IF(lookupFuncion="",erorMessage,lookupFuncion),erorMessage))')
+    e.range.setFormula('=IFNA(IF(VLOOKUP($C$6,follow_up_date!A:B,2,false)="","אין תאריך לטיפול",VLOOKUP($C$6,follow_up_date!A:B,2,false)),"אין תאריך לטיפול")');
   }
 
-  // general comment for customer added in N3
-  if (sh.getName() === 'פירוט נסיעות לפי לקוח' && r === 3 && c === 14) {
-    Logger.log('N3 edited')
-    const key = sh.getRange('C6').getValue();
+  // general comment for customer added in N3 (or shifted to O3)
+  if (sh.getName() === 'פירוט נסיעות לפי לקוח' && r === 3 && (c === 14 || c === 15)) {
+    Logger.log(`General comment edited in row 3, col ${c}`);
+    const rawKey = sh.getRange('C6').getValue() || sh.getRange('C5').getValue();
+    const key = normalizeHebrew(rawKey);
     Logger.log(`Processing key: ${key}`);
 
-    const followSheet = ss.getSheetByName('follow_up_date');
-    const data = followSheet.getRange('A:A').getValues();
+    if (key) {
+      const followSheet = ss.getSheetByName('follow_up_date');
+      const data = followSheet.getRange('A:A').getValues();
 
-    let found = false;
-    for (let i = 0; i < data.length; i++) {
-      if (data[i][0] === key) {
-        Logger.log(`Key found in follow_up_date at row ${i + 1}. Updating column D to ${val}`);
-        followSheet.getRange(i + 1, 4).setValue(val);
-        found = true;
-        break;
-      }
-    }
+      if (val === '') {
+        // Clearing logic
+        for (let i = 0; i < data.length; i++) {
+          if (data[i][0] && normalizeHebrew(data[i][0]) === key) {
+            const rowIndex = i + 1;
+            const col_b = followSheet.getRange(rowIndex, 2).getValue(); // Column B
+            const col_c = followSheet.getRange(rowIndex, 3).getValue(); // Column C
+            const col_e = followSheet.getRange(rowIndex, 5).getValue(); // Column E
+            const hasOther = (col_b || col_c || col_e);
 
-    if (!found) {
-      const lastRow = followSheet.getLastRow() + 1;
-      Logger.log(`Key not found. Appending new row ${lastRow} with (A: ${key}, B: ${val})`);
-      followSheet.getRange(lastRow, 1).setValue(key);
-      followSheet.getRange(lastRow, 4).setValue(val);
-    }
-
-    // If R3 is cleared → delete logic based on whether column C has value
-    if (val === '') {
-      for (let i = 0; i < data.length; i++) {
-        if (data[i][0] === key) {
-          // Get values from columns B and C (1 row, 2 columns)
-          const col_b = followSheet.getRange(i + 1, 2).getValue(); // Column B
-          const col_c = followSheet.getRange(i + 1, 3).getValue(); // Column C
-          const col_e = followSheet.getRange(i + 1, 5).getValue(); // Column E
-          const hasValueInBOrC = (col_b || col_c || col_e); // true if any is non-empty
-
-          if (hasValueInBOrC) {
-            // Clear only column D
-            followSheet.getRange(i + 1, 4).clearContent();
-          } else {
-            // Delete entire row
-            followSheet.deleteRow(i + 1);
+            if (hasOther) {
+              followSheet.getRange(rowIndex, 4).clearContent();
+            } else {
+              followSheet.deleteRow(rowIndex);
+            }
           }
-          ;
+        }
+      } else {
+        // Update all matching rows or append new row if none found
+        let found = false;
+        for (let i = 0; i < data.length; i++) {
+          if (data[i][0] && normalizeHebrew(data[i][0]) === key) {
+            followSheet.getRange(i + 1, 4).setValue(val);
+            found = true;
+          }
+        }
+
+        if (!found) {
+          const lastRow = followSheet.getLastRow() + 1;
+          Logger.log(`Key not found. Appending new row ${lastRow} with (A: ${key}, D: ${val})`);
+          followSheet.getRange(lastRow, 1).setValue(key);
+          followSheet.getRange(lastRow, 4).setValue(val);
         }
       }
-      ;
-    }
 
-    e.range.setValue('=LET(erorMessage, "אין הערות כלליות ללקוח",lookupFuncion, VLOOKUP(C6,follow_up_date!A:D,4,FALSE),IFNA(IF(lookupFuncion="",erorMessage,lookupFuncion),erorMessage))')
+      // Restore formula using setFormula with absolute reference $C$6
+      e.range.setFormula('=IFNA(IF(VLOOKUP($C$6,follow_up_date!A:D,4,false)="","אין הערות כלליות ללקוח",VLOOKUP($C$6,follow_up_date!A:D,4,false)),"אין הערות כלליות ללקוח")');
+    }
   }
 
   // comment added in R3
   if (sh.getName() === 'פירוט נסיעות לפי לקוח' && r === 3 && c === 18) {
     Logger.log('R3 edited');
 
-    const key = sh.getRange('C6').getValue();
+    const rawKey = sh.getRange('C6').getValue() || sh.getRange('C5').getValue();
+    const key = normalizeHebrew(rawKey);
     const followSheet = ss.getSheetByName('follow_up_date');
     const data = followSheet.getRange('A:A').getValues();
 
@@ -210,7 +212,7 @@ function onEdit(e) {
     // If R3 is cleared → delete logic based on whether column B has value
     if (val === '') {
       for (let i = 0; i < data.length; i++) {
-        if (data[i][0] === key) {
+        if (data[i][0] && normalizeHebrew(data[i][0]) === key) {
 
           const col_b = followSheet.getRange(i + 1, 2).getValue(); // Column B
           const col_d = followSheet.getRange(i + 1, 4).getValue(); // Column D
@@ -233,7 +235,7 @@ function onEdit(e) {
     // Otherwise, update or insert value in column C
     let found = false;
     for (let i = 0; i < data.length; i++) {
-      if (data[i][0] === key) {
+      if (data[i][0] && normalizeHebrew(data[i][0]) === key) {
         followSheet.getRange(i + 1, 3).setValue(val); // Column C
         found = true;
         Logger.log(`Updated existing row for key ${key} in column C with value ${val}`);
@@ -252,7 +254,8 @@ function onEdit(e) {
   // M3 cell logic for column E (col 13)
   if (sh.getName() === 'פירוט נסיעות לפי לקוח' && r === 3 && c === 13) {
     Logger.log('M3 edited');
-    const key = sh.getRange('C6').getValue();
+    const rawKey = sh.getRange('C6').getValue() || sh.getRange('C5').getValue();
+    const key = normalizeHebrew(rawKey);
     Logger.log(`Processing key: ${key}`);
 
     const followSheet = ss.getSheetByName('follow_up_date');
@@ -260,7 +263,7 @@ function onEdit(e) {
 
     let foundIndex = -1;
     for (let i = 0; i < data.length; i++) {
-      if (data[i][0] === key) {
+      if (data[i][0] && normalizeHebrew(data[i][0]) === key) {
         foundIndex = i;
         break;
       }
@@ -294,7 +297,7 @@ function onEdit(e) {
       }
     }
 
-    e.range.setValue('=LET(erorMessage, "קוד בתוכנה",lookupFuncion, VLOOKUP(C6,follow_up_date!A:E,5,FALSE),IFNA(IF(lookupFuncion="",erorMessage,lookupFuncion),erorMessage))');
+    e.range.setFormula('=IFNA(IF(VLOOKUP($C$6,follow_up_date!A:E,5,false)="","קוד בתוכנה",VLOOKUP($C$6,follow_up_date!A:E,5,false)),"קוד בתוכנה")');
   }
 
   // ===== A-column logic (col 1) =====
